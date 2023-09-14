@@ -9,7 +9,7 @@ import {MarketLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/ma
 import {IChromaticRouter} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticRouter.sol";
 import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketTrade.sol";
 import {IChromaticLPLens, ValueInfo} from "@/lp/interfaces/IChromaticLPLens.sol";
-import {ChromaticLPStorage} from "./ChromaticLPStorage.sol";
+import {ChromaticLPStorage} from "@/lp/ChromaticLPStorage.sol";
 import {IChromaticAccount} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticAccount.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 

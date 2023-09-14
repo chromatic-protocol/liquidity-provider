@@ -7,9 +7,9 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 
-import {ChromaticLPReceipt, ChromaticLPAction} from "./libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorage} from "./ChromaticLPStorage.sol";
-import {ValueInfo} from "./interfaces/IChromaticLPLens.sol";
+import {ChromaticLPReceipt, ChromaticLPAction} from "@/lp/libraries/ChromaticLPReceipt.sol";
+import {ChromaticLPStorage} from "@/lp/ChromaticLPStorage.sol";
+import {ValueInfo} from "@/lp/interfaces/IChromaticLPLens.sol";
 
 abstract contract ChromaticLPBase is ChromaticLPStorage {
     using Math for uint256;

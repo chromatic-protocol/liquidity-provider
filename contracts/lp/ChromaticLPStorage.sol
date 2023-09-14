@@ -11,8 +11,8 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/base/gelato/Types.sol";
 
-import {ChromaticLPReceipt, ChromaticLPAction} from "./libraries/ChromaticLPReceipt.sol";
-import {IChromaticLPLens, ValueInfo} from "./interfaces/IChromaticLPLens.sol";
+import {ChromaticLPReceipt, ChromaticLPAction} from "@/lp/libraries/ChromaticLPReceipt.sol";
+import {IChromaticLPLens, ValueInfo} from "@/lp/interfaces/IChromaticLPLens.sol";
 
 abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
     using Math for uint256;

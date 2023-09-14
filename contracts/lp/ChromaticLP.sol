@@ -7,10 +7,10 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Recei
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import {IChromaticLP} from "./interfaces/IChromaticLP.sol";
-import {ChromaticLPBase} from "./ChromaticLPBase.sol";
-import {ChromaticLPLogic} from "./ChromaticLPLogic.sol";
-import {ChromaticLPReceipt} from "./libraries/ChromaticLPReceipt.sol";
+import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
+import {ChromaticLPBase} from "@/lp/ChromaticLPBase.sol";
+import {ChromaticLPLogic} from "@/lp/ChromaticLPLogic.sol";
+import {ChromaticLPReceipt} from "@/lp/libraries/ChromaticLPReceipt.sol";
 
 uint16 constant BPS = 10000;
 
