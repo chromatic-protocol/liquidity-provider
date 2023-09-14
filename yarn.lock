@@ -53,10 +53,10 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.225":
-  version "0.0.1-rc.225"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.225.tgz#9592d5311b0c2fc086071a5525deaba1f967579c"
-  integrity sha512-dexy3I1XXKtS/TAyYZeg0PV5R8Txb5Q/jSSP/Sno7/v2xohvh1m3DZmcHDBO9/taaluagX45SRP8RVaBFI99yg==
+"@chromatic-protocol/contracts@^0.0.1-rc.226":
+  version "0.0.1-rc.226"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.226.tgz#d3bb9be58a2734b3c874d4eee3cd0ee89b037151"
+  integrity sha512-RRlRyX8lYN53bbCw2lVOTRlO962BWlI+CAtfApiA4x5Zo+FaZLS+Jxp8xKz1np+9iB4o9ciz85cVbVVtf93jDQ==
   dependencies:
     "@chainlink/contracts" "^0.6.1"
     "@openzeppelin/contracts" "^4.9.3"

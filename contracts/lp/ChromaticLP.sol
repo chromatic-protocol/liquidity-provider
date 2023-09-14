@@ -4,17 +4,17 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Proxy} from "@openzeppelin/contracts/proxy/Proxy.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
-import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPBase} from "@/lp/ChromaticLPBase.sol";
 import {ChromaticLPLogic} from "@/lp/ChromaticLPLogic.sol";
+import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {ChromaticLPReceipt} from "@/lp/libraries/ChromaticLPReceipt.sol";
 
 uint16 constant BPS = 10000;
 
-contract ChromaticLP is ChromaticLPBase, Proxy, IChromaticLP, IChromaticLiquidityCallback {
+contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBase, Proxy  {
     // using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
