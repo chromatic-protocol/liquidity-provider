@@ -1,0 +1,39 @@
+node_modules
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+
+# Foundry files
+cache_forge
+out/*
+
+# coverage output
+lcov.info
+
+
+# packaging
+dist/
+package-build-v5/
+package-build-v6/
+
+.idea
+.vsls.json
+
+# vscode
+.vscode
+
+# generated docs
+docs/out
+
+# dotenv
+.env
+.env.*
+!.env.example
+
+deployments/anvil
+wagmi/

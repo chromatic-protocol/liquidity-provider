@@ -1,0 +1,11 @@
+@chainlink/=node_modules/@chainlink/
+@equilibria/=node_modules/@equilibria/
+@openzeppelin/=node_modules/@openzeppelin/
+ds-test/=lib/forge-std/lib/ds-test/src/
+forge-std/=lib/forge-std/src/
+hardhat/=node_modules/hardhat/
+@chromatic-protocol/contracts/=node_modules/@chromatic-protocol/contracts/
+@eth-optimism/=node_modules/@eth-optimism/
+@uniswap/=node_modules/@uniswap/
+base64-sol/=node_modules/base64-sol/
+@/=contracts/
