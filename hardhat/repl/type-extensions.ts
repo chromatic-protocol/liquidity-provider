@@ -5,13 +5,14 @@ import { type ChromaticLP } from '@chromatic/typechain-types'
 import { type Signer } from 'ethers'
 import 'hardhat-deploy'
 import 'hardhat/types/runtime'
+import { Client } from './Client'
 import type { LPContractMap, MarketInfo } from './types'
-
 declare module 'hardhat/types/runtime' {
   interface HardhatRuntimeEnvironment {
     deployLP?: () => Promise<LPContractMap>
     lpAddresses?: LPContractMap
     getMarkets?: () => Promise<Array<MarketInfo>>
     connectMarketLP?: (marketAddress: string, signer?: Signer) => ChromaticLP
+    getClient?: (signer?: Signer) => Promise<Client>
   }
 }

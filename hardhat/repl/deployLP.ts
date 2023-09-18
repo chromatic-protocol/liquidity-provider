@@ -1,10 +1,9 @@
 import chalk from 'chalk'
 
 import { GELATO_ADDRESSES } from '@gelatonetwork/automate-sdk'
-import { ZeroAddress, type Signer } from 'ethers'
+import { ZeroAddress } from 'ethers'
 
 import { ChromaticMarketFactory, Client } from '@chromatic-protocol/sdk-ethers-v6'
-import { ChromaticLP__factory, type ChromaticLP } from '@chromatic/typechain-types'
 import type { DeployOptions, DeployResult } from 'hardhat-deploy/types'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import type { LPConfig, LPContractMap, MarketInfo } from './types'
@@ -112,8 +111,4 @@ async function getMarketsFromFactory(
     allMarkets.push(...markets)
   }
   return allMarkets
-}
-
-export function connectChromaticLP(lpAddress: string, signer?: Signer): ChromaticLP {
-  return ChromaticLP__factory.connect(lpAddress, signer)
 }

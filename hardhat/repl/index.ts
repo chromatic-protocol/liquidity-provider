@@ -3,9 +3,9 @@ import { lazyFunction, lazyObject } from 'hardhat/plugins'
 
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
-import { type ChromaticLP } from '@chromatic/typechain-types'
 import { type Signer } from 'ethers'
-import { connectChromaticLP, deployLP, getMarkets } from './utils'
+import { Client } from './Client'
+import { deployLP, getMarkets } from './deployLP'
 import { LPConfig, LPContractMap } from './types'
 
 const LP_CONFIG: LPConfig = {
@@ -36,10 +36,10 @@ extendEnvironment((hre: HardhatRuntimeEnvironment) => {
     return await getMarkets(hre)
   })
 
-  hre.connectMarketLP = lazyFunction(
-    () =>
-      (marketAddress: string, signer?: Signer): ChromaticLP => {
-        return connectChromaticLP(LP_DEPLOYED[marketAddress].lpAddress, signer)
-      }
-  )
+  hre.getClient = lazyFunction(() => async (signer?: Signer) => {
+    if (!signer) {
+      signer = (await hre.ethers.getSigners())[0]
+    }
+    return new Client(hre, signer)
+  })
 })
