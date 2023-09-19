@@ -77,7 +77,7 @@ async function deployMarketLP(
   })
 
   console.log(chalk.green(`✨ marketAdress: ${marketAddress}`))
-  console.log(chalk.green(`✨ lpAdress: ${lpAddress}`))
+  console.log(chalk.green(`✨ lpAdress (logicAddress): ${lpAddress} (${logicAddress})`))
   return {
     lpAddress,
     logicAddress

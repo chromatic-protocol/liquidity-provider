@@ -3,10 +3,10 @@ import { lazyFunction, lazyObject } from 'hardhat/plugins'
 
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
+import type { LPConfig, LPDeployedResultMap } from '@chromatic/hardhat/common/DeployTool'
+import { DeployTool } from '@chromatic/hardhat/common/DeployTool'
 import { type Signer } from 'ethers'
 import { Client } from './Client'
-import { deployLP, getMarkets } from './deployLP'
-import { LPConfig, LPContractMap } from './types'
 
 const LP_CONFIG: LPConfig = {
   config: {
@@ -19,21 +19,24 @@ const LP_CONFIG: LPConfig = {
   distributionRates: [2000, 1500, 1000, 500, 500, 1000, 1500, 2000]
 }
 
-const LP_DEPLOYED: LPContractMap = {}
+const LP_DEPLOYED: LPDeployedResultMap = {}
 
 extendEnvironment((hre: HardhatRuntimeEnvironment) => {
-  hre.deployLP = lazyFunction(() => async (): Promise<LPContractMap> => {
-    const result = await deployLP(hre, LP_CONFIG)
+  hre.deployLP = lazyFunction(() => async (): Promise<LPDeployedResultMap> => {
+    const tool = await DeployTool.createAsync(hre, LP_CONFIG)
+    const result = await tool.deployAllLP()
 
-    for (const [marketAddress, value] of Object.entries(result)) {
-      LP_DEPLOYED[marketAddress] = value
-    }
+    // for (const [marketAddress, value] of Object.entries(result)) {
+    //   LP_DEPLOYED[marketAddress] = value
+    // }
     return result
   })
 
   hre.lpAddresses = lazyObject(() => LP_DEPLOYED)
   hre.getMarkets = lazyFunction(() => async () => {
-    return await getMarkets(hre)
+    const tool = await DeployTool.createAsync(hre, LP_CONFIG)
+    const result = await tool.getMarkets()
+    return result
   })
 
   hre.getClient = lazyFunction(() => async (signer?: Signer) => {
@@ -41,5 +44,10 @@ extendEnvironment((hre: HardhatRuntimeEnvironment) => {
       signer = (await hre.ethers.getSigners())[0]
     }
     return new Client(hre, signer)
+  })
+
+  hre.getDeployTool = lazyFunction(() => async () => {
+    const tool = await DeployTool.createAsync(hre, LP_CONFIG)
+    return tool
   })
 })

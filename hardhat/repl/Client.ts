@@ -54,6 +54,14 @@ export class Client {
 
   get lpAddresses(): string[] {
     return Object.values(this.hre.lpAddresses!).map((x) => x.lpAddress)
+
+    // FIXME
+    // if (this.hre.network.name == 'anvil') {
+    //   return Object.values(this.hre.lpAddresses!).map((x) => x.lpAddress)
+    // } else {
+    //   const { deployments } = this.hre
+    //   await deployments.get('ChromaticLP')
+    // }
   }
 
   get lpAddress(): string {
