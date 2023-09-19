@@ -9,7 +9,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "@/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPLogicBase} from "@/lp/ChromaticLPLogicBase.sol";
+import {ChromaticLPLogicBase} from "@/lp/base/ChromaticLPLogicBase.sol";
 
 contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;

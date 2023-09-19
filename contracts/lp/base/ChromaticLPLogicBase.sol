@@ -20,7 +20,7 @@ import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKe
 
 import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "@/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorage} from "@/lp/ChromaticLPStorage.sol";
+import {ChromaticLPStorage} from "@/lp/base/ChromaticLPStorage.sol";
 import {ValueInfo} from "@/lp/interfaces/IChromaticLPLens.sol";
 
 abstract contract ChromaticLPLogicBase is ChromaticLPStorage {

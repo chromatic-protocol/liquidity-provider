@@ -7,7 +7,7 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Recei
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPBase} from "@/lp/ChromaticLPBase.sol";
+import {ChromaticLPBase} from "@/lp/base/ChromaticLPBase.sol";
 import {ChromaticLPLogic} from "@/lp/ChromaticLPLogic.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {ChromaticLPReceipt} from "@/lp/libraries/ChromaticLPReceipt.sol";
