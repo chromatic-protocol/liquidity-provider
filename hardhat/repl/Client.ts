@@ -17,7 +17,6 @@ export class Client {
   }
 
   get marketFactory(): ChromaticMarketFactory {
-    console.log('lpAddresses', this.hre.lpAddresses)
     return this.client.marketFactory()
   }
 
@@ -53,19 +52,13 @@ export class Client {
   }
 
   get lpAddresses(): string[] {
-    return Object.values(this.hre.lpAddresses!).map((x) => x.lpAddress)
-
-    // FIXME
-    // if (this.hre.network.name == 'anvil') {
-    //   return Object.values(this.hre.lpAddresses!).map((x) => x.lpAddress)
-    // } else {
-    //   const { deployments } = this.hre
-    //   await deployments.get('ChromaticLP')
-    // }
+    // FIXME check network
+    return Object.values(this.hre.lpDeployed!).map((x) => x.address)
   }
 
   get lpAddress(): string {
-    return this.hre.lpAddresses![this._marketAddress].lpAddress
+    // FIXME check network
+    return this.hre.lpDeployed![this._marketAddress].address
   }
 
   get market() {

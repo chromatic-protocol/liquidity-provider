@@ -4,7 +4,7 @@ import { lazyFunction, lazyObject } from 'hardhat/plugins'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 import type { LPConfig, LPDeployedResultMap } from '@chromatic/hardhat/common/DeployTool'
-import { DeployTool } from '@chromatic/hardhat/common/DeployTool'
+import { DeployTool, LP_DEPLOYED, REGISTRY_DEPLOYED } from '@chromatic/hardhat/common/DeployTool'
 import { type Signer } from 'ethers'
 import { Client } from './Client'
 
@@ -19,20 +19,12 @@ const LP_CONFIG: LPConfig = {
   distributionRates: [2000, 1500, 1000, 500, 500, 1000, 1500, 2000]
 }
 
-const LP_DEPLOYED: LPDeployedResultMap = {}
-
 extendEnvironment((hre: HardhatRuntimeEnvironment) => {
   hre.deployLP = lazyFunction(() => async (): Promise<LPDeployedResultMap> => {
     const tool = await DeployTool.createAsync(hre, LP_CONFIG)
-    const result = await tool.deployAllLP()
-
-    // for (const [marketAddress, value] of Object.entries(result)) {
-    //   LP_DEPLOYED[marketAddress] = value
-    // }
-    return result
+    return await tool.deployAllLP()
   })
 
-  hre.lpAddresses = lazyObject(() => LP_DEPLOYED)
   hre.getMarkets = lazyFunction(() => async () => {
     const tool = await DeployTool.createAsync(hre, LP_CONFIG)
     const result = await tool.getMarkets()
@@ -50,4 +42,7 @@ extendEnvironment((hre: HardhatRuntimeEnvironment) => {
     const tool = await DeployTool.createAsync(hre, LP_CONFIG)
     return tool
   })
+
+  hre.lpDeployed = lazyObject(() => LP_DEPLOYED)
+  hre.registryDeployed = lazyObject(() => REGISTRY_DEPLOYED)
 })

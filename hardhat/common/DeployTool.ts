@@ -4,10 +4,14 @@ import { ZeroAddress } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 import { Client as ClientSDK } from '@chromatic-protocol/sdk-ethers-v6'
+import { ChromaticLPRegistry, ChromaticLPRegistry__factory } from '@chromatic/typechain-types'
 import { Signer } from 'ethers'
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
-import type { LPConfig, MarketInfo } from './types'
+import type { LPConfig, LPDeployedResultMap, MarketInfo, RegistryDeployedResultMap } from './types'
 export type * from './types'
+
+export const REGISTRY_DEPLOYED: RegistryDeployedResultMap = {}
+export const LP_DEPLOYED: LPDeployedResultMap = {}
 
 export class DeployTool {
   private client: ClientSDK | undefined
@@ -56,10 +60,12 @@ export class DeployTool {
     const factory = this.client!.marketFactory().contracts().marketFactory
     const factoryAddress = await factory.getAddress()
 
-    return await this.deploy('ChromaticLPRegistry', {
+    const res = await this.deploy('ChromaticLPRegistry', {
       from: this.deployer,
       args: [factoryAddress]
     })
+    REGISTRY_DEPLOYED.registry = res
+    return res
   }
 
   get echainId() {
@@ -87,7 +93,7 @@ export class DeployTool {
     const markets = await this.getMarkets()
 
     // FIXME: type and store result
-    const lpDeployed: any = {}
+    const lpDeployed: LPDeployedResultMap = {}
     for (let market of markets) {
       const deployed = await this.deployLP(market.address, config)
       lpDeployed[market.address] = deployed
@@ -115,7 +121,7 @@ export class DeployTool {
       args: [config.automateConfig]
     })
 
-    return await this.deploy('ChromaticLP', {
+    const result = await this.deploy('ChromaticLP', {
       from: this.deployer,
       args: [
         logicAddress,
@@ -128,6 +134,8 @@ export class DeployTool {
         config.automateConfig
       ]
     })
+    LP_DEPLOYED[marketAddress] = result
+    return result
   }
 
   async getMarkets(): Promise<MarketInfo[]> {
@@ -148,7 +156,43 @@ export class DeployTool {
     return allMarkets
   }
 
+  async getRegistry() {
+    const registryDeplyed = await this.getLPRegistryDeployed()
+    if (!registryDeplyed?.address) throw new Error('registry not found')
+    const registry = ChromaticLPRegistry__factory.connect(registryDeplyed!.address, this.signer)
+    return registry
+  }
+
+  async registerLPAll() {
+    const registry = await this.getRegistry()
+
+    if (this.hre.network.name !== 'anvil') throw new Error('anvil network only')
+    for (const deployed of Object.values(LP_DEPLOYED)) {
+      this.registerLP(deployed.address, registry)
+    }
+  }
+
+  async registerLP(lpAddress: string, registry?: ChromaticLPRegistry) {
+    if (!registry) registry = await this.getRegistry()
+    await registry.register(lpAddress)
+  }
+
+  async getLPAddresses() {
+    const registry = await this.getRegistry()
+    const marketInfos = await this.getMarkets()
+    const lpAddresses = []
+    for (const info of marketInfos) {
+      const res = await registry.lpListByMarket(info.address)
+      lpAddresses.push(...res)
+    }
+    return lpAddresses
+  }
+
   async getLPRegistryDeployed() {
-    return await this.hre.deployments.get('ChromaticLPRegistry')
+    if (this.hre.network.name == 'anvil') {
+      return REGISTRY_DEPLOYED.registry
+    } else {
+      return await this.hre.deployments.get('ChromaticLPRegistry')
+    }
   }
 }

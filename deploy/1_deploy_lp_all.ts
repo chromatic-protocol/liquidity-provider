@@ -16,6 +16,7 @@ const LP_CONFIG: LPConfig = {
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tool = await DeployTool.createAsync(hre)
   await tool.deployAllLP(LP_CONFIG)
+  await tool.registerLPAll()
 }
 
 export default func

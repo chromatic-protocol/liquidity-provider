@@ -36,3 +36,8 @@ export interface LPContractMap {
 export interface LPDeployedResultMap {
   [marketAddress: string]: DeployResult
 }
+
+export interface RegistryDeployedResultMap {
+  registry?: DeployResult
+}
+

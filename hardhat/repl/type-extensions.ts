@@ -4,9 +4,9 @@
 import type {
   DeployTool,
   LPDeployedResultMap,
-  MarketInfo
+  MarketInfo,
+  RegistryDeployedResultMap
 } from '@chromatic/hardhat/common/DeployTool'
-import { type ChromaticLP } from '@chromatic/typechain-types'
 import { type Signer } from 'ethers'
 import 'hardhat-deploy'
 import 'hardhat/types/runtime'
@@ -17,8 +17,11 @@ declare module 'hardhat/types/runtime' {
     deployLP?: () => Promise<LPDeployedResultMap>
     deployed?: LPDeployedResultMap
     getMarkets?: () => Promise<Array<MarketInfo>>
-    connectMarketLP?: (marketAddress: string, signer?: Signer) => ChromaticLP
+    // connectMarketLP?: (marketAddress: string, signer?: Signer) => ChromaticLP
     getClient?: (signer?: Signer) => Promise<Client>
     getDeployTool?: () => Promise<DeployTool>
+
+    lpDeployed?: LPDeployedResultMap
+    registryDeployed?: RegistryDeployedResultMap
   }
 }
