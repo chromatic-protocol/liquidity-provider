@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 
 contract ChromaticLPRegistry is Ownable {

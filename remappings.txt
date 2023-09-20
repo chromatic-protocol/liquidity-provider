@@ -1,4 +1,4 @@
-@/=contracts/
+~/=contracts/
 @chainlink/=node_modules/@chainlink/
 @equilibria/=node_modules/@equilibria/
 @openzeppelin/=node_modules/@openzeppelin/

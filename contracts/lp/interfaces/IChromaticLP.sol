@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
-import {ChromaticLPReceipt} from "@/lp/libraries/ChromaticLPReceipt.sol";
+import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 
 interface IChromaticLP is IERC20, IERC1155Receiver {
     function market() external view returns (address);

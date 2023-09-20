@@ -7,9 +7,9 @@ import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import {ChromaticLPReceipt, ChromaticLPAction} from "@/lp/libraries/ChromaticLPReceipt.sol";
-import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPLogicBase} from "@/lp/base/ChromaticLPLogicBase.sol";
+import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
+import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
 
 contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;

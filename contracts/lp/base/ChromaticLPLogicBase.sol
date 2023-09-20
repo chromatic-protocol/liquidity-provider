@@ -18,10 +18,10 @@ import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/I
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 
-import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPReceipt, ChromaticLPAction} from "@/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorage} from "@/lp/base/ChromaticLPStorage.sol";
-import {ValueInfo} from "@/lp/interfaces/IChromaticLPLens.sol";
+import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
+import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
+import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 
 abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
     using Math for uint256;
