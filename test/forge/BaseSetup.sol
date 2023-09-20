@@ -7,11 +7,11 @@ import {IOracleProviderRegistry} from "@chromatic-protocol/contracts/core/interf
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {ICLBToken} from "@chromatic-protocol/contracts/core/interfaces/ICLBToken.sol";
 import {ChromaticMarketFactory} from "@chromatic-protocol/contracts/core/ChromaticMarketFactory.sol";
-import {KeeperFeePayerMock} from "@/mocks/KeeperFeePayerMock.sol";
-import {OracleProviderMock} from "@/mocks/OracleProviderMock.sol";
-import {Token} from "@/mocks/Token.sol";
-import {ChromaticLiquidatorMock} from "@/mocks/ChromaticLiquidatorMock.sol";
-import {ChromaticVaultMock} from "@/mocks/ChromaticVaultMock.sol";
+import {KeeperFeePayerMock} from "~/mocks/KeeperFeePayerMock.sol";
+import {OracleProviderMock} from "~/mocks/OracleProviderMock.sol";
+import {Token} from "~/mocks/Token.sol";
+import {ChromaticLiquidatorMock} from "~/mocks/ChromaticLiquidatorMock.sol";
+import {ChromaticVaultMock} from "~/mocks/ChromaticVaultMock.sol";
 import {DiamondLoupeFacet} from "@chromatic-protocol/contracts/core/facets/DiamondLoupeFacet.sol";
 import {MarketDiamondCutFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketDiamondCutFacet.sol";
 import {MarketStateFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketStateFacet.sol";

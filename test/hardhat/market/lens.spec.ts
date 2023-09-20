@@ -1,11 +1,11 @@
-import {
-  BinMarginStructOutput,
-  LpReceiptStructOutput
-} from '@chromatic/typechain-types/contracts/core/interfaces/IChromaticMarket'
 import { time } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
 import { Result, formatEther, parseEther } from 'ethers'
 import util from 'util'
+import {
+  BinMarginStructOutput,
+  LpReceiptStructOutput
+} from '~/typechain-types/contracts/core/interfaces/IChromaticMarket'
 import { helpers, prepareMarketTest } from './testHelper'
 
 describe('lens', async () => {

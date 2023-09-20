@@ -1,4 +1,4 @@
-import { OracleProviderMock } from '@chromatic/typechain-types'
+import { OracleProviderMock } from '~/typechain-types'
 import { deployContract } from '../utils'
 
 export async function deploy(): Promise<OracleProviderMock> {

@@ -8,8 +8,6 @@ import 'hardhat-deploy'
 import type { HardhatUserConfig } from 'hardhat/config'
 import 'solidity-docgen'
 import 'tsconfig-paths/register'
-// import docgenConfig from './docs/docgen.config'
-// import packageConfig from './hardhat-package.config'
 
 dotenv.config()
 
@@ -49,8 +47,9 @@ const config: HardhatUserConfig = {
         ...common.accounts,
         mnemonic: MNEMONIC_JUNK
       },
-      saveDeployments: false,
-      allowUnlimitedContractSize: true
+      tags: ['local'],
+      allowUnlimitedContractSize: true,
+      saveDeployments: false
     },
     anvil: {
       // localhost anvil
@@ -61,29 +60,16 @@ const config: HardhatUserConfig = {
       },
       url: 'http://127.0.0.1:8545',
       chainId: 31337,
-      tags: ['mockup', 'core'],
-      allowUnlimitedContractSize: true
-    },
-    arbitrum_nova: {
-      // mainnet AnyTrust chain
-      ...common,
-      url: 'https://nova.arbitrum.io/rpc',
-      chainId: 42170,
-      tags: ['core']
+      tags: ['local'],
+      allowUnlimitedContractSize: true,
+      saveDeployments: false
     },
     arbitrum_goerli: {
       // testnet
       ...common,
       url: 'https://goerli-rollup.arbitrum.io/rpc',
       chainId: 421613,
-      tags: ['core']
-    },
-    arbitrum_one: {
-      // mainnet
-      ...common,
-      url: 'https://arb1.arbitrum.io/rpc',
-      chainId: 42161,
-      tags: ['core']
+      tags: ['testnet']
     }
   },
   namedAccounts: {
@@ -100,8 +86,6 @@ const config: HardhatUserConfig = {
     grace: 8,
     heidi: 9
   },
-  // package: packageConfig,
-  // docgen: docgenConfig,
   etherscan: {
     apiKey: {
       arbitrumGoerli: process.env.ARBISCAN_GOERLI_API_KEY!

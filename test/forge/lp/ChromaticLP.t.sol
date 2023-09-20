@@ -4,20 +4,20 @@ pragma solidity >=0.8.0 <0.9.0;
 import {BaseSetup} from "../BaseSetup.sol";
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ChromaticLPReceipt, ChromaticLPAction} from "@/lp/libraries/ChromaticLPReceipt.sol";
+import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {MarketLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLiquidityFacet.sol";
 import {IChromaticRouter} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticRouter.sol";
 import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketTrade.sol";
-import {IChromaticLPLens, ValueInfo} from "@/lp/interfaces/IChromaticLPLens.sol";
-import {ChromaticLPStorage} from "@/lp/ChromaticLPStorage.sol";
+import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {IChromaticAccount} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticAccount.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {CLAIM_USER} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketTrade.sol";
 
-import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLP} from "@/lp/ChromaticLP.sol";
-import {ChromaticLPLogic} from "@/lp/ChromaticLPLogic.sol";
+import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {ChromaticLP} from "~/lp/ChromaticLP.sol";
+import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 
 import {LogUtil, Taker} from "./Helper.sol";
 

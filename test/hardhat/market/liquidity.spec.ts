@@ -1,6 +1,6 @@
-import { CLBToken, IChromaticMarket } from '@chromatic/typechain-types'
 import { expect } from 'chai'
 import { BigNumberish, parseEther } from 'ethers'
+import { CLBToken, IChromaticMarket } from '~/typechain-types'
 import { logLiquidity } from '../log-utils'
 import { helpers, prepareMarketTest } from './testHelper'
 

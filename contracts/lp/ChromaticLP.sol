@@ -6,15 +6,15 @@ import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import {IChromaticLP} from "@/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPBase} from "@/lp/ChromaticLPBase.sol";
-import {ChromaticLPLogic} from "@/lp/ChromaticLPLogic.sol";
+import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {ChromaticLPBase} from "~/lp/base/ChromaticLPBase.sol";
+import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
-import {ChromaticLPReceipt} from "@/lp/libraries/ChromaticLPReceipt.sol";
+import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 
 uint16 constant BPS = 10000;
 
-contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBase, Proxy  {
+contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBase, Proxy {
     // using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
