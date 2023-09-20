@@ -1,12 +1,12 @@
+import { CHAIN_ID, GELATO_ADDRESSES } from '@gelatonetwork/automate-sdk'
+import { Contract, ZeroAddress, parseEther } from 'ethers'
+import { ethers } from 'hardhat'
 import {
   ChromaticLiquidator,
   ChromaticMarketFactory,
   ChromaticVault,
   KeeperFeePayerMock
-} from '@chromatic/typechain-types'
-import { CHAIN_ID, GELATO_ADDRESSES } from '@gelatonetwork/automate-sdk'
-import { Contract, ZeroAddress, parseEther } from 'ethers'
-import { ethers } from 'hardhat'
+} from '~/typechain-types'
 import { deployContract } from '../utils'
 
 export async function deploy() {

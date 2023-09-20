@@ -1,7 +1,7 @@
 import { BigNumberish } from 'ethers'
 
-import type { IOracleProvider } from '@chromatic/typechain-types'
 import { DeployResult } from 'hardhat-deploy/types'
+import type { IOracleProvider } from '~/typechain-types'
 
 export interface LPConfig {
   config: {
@@ -40,4 +40,3 @@ export interface LPDeployedResultMap {
 export interface RegistryDeployedResultMap {
   registry?: DeployResult
 }
-

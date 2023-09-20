@@ -1,8 +1,8 @@
 import { ChromaticMarketFactory, Client as ClientSDK } from '@chromatic-protocol/sdk-ethers-v6'
 import { IERC20__factory } from '@chromatic-protocol/sdk-ethers-v6/contracts'
-import { ChromaticLP__factory, type ChromaticLP, type IERC20 } from '@chromatic/typechain-types'
 import type { Signer } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { ChromaticLP__factory, type ChromaticLP, type IERC20 } from '~/typechain-types'
 
 export class Client {
   public readonly client!: ClientSDK

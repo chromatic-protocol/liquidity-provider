@@ -3,9 +3,9 @@ import { lazyFunction, lazyObject } from 'hardhat/plugins'
 
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
-import type { LPConfig, LPDeployedResultMap } from '@chromatic/hardhat/common/DeployTool'
-import { DeployTool, LP_DEPLOYED, REGISTRY_DEPLOYED } from '@chromatic/hardhat/common/DeployTool'
 import { type Signer } from 'ethers'
+import type { LPConfig, LPDeployedResultMap } from '~/hardhat/common/DeployTool'
+import { DeployTool, LP_DEPLOYED, REGISTRY_DEPLOYED } from '~/hardhat/common/DeployTool'
 import { Client } from './Client'
 
 const LP_CONFIG: LPConfig = {

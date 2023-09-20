@@ -4,9 +4,9 @@ import { ZeroAddress } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 import { Client as ClientSDK } from '@chromatic-protocol/sdk-ethers-v6'
-import { ChromaticLPRegistry, ChromaticLPRegistry__factory } from '@chromatic/typechain-types'
 import { Signer } from 'ethers'
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
+import { ChromaticLPRegistry, ChromaticLPRegistry__factory } from '~/typechain-types'
 import type { LPConfig, LPDeployedResultMap, MarketInfo, RegistryDeployedResultMap } from './types'
 export type * from './types'
 

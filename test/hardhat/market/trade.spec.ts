@@ -1,9 +1,9 @@
-import { PositionStructOutput } from '@chromatic/typechain-types/contracts/core/interfaces/IChromaticMarket'
 import { anyValue } from '@nomicfoundation/hardhat-chai-matchers/withArgs'
 import { time } from '@nomicfoundation/hardhat-network-helpers'
 import bluebird from 'bluebird'
 import { expect } from 'chai'
 import { Result, formatEther, parseEther, parseUnits } from 'ethers'
+import { PositionStructOutput } from '~/typechain-types/contracts/core/interfaces/IChromaticMarket'
 import { helpers, prepareMarketTest } from './testHelper'
 
 describe('position & account test', async function () {

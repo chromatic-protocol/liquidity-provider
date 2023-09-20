@@ -1,8 +1,8 @@
-import { CLBToken__factory } from '@chromatic/typechain-types'
 import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers'
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { MaxUint256, parseEther, parseUnits } from 'ethers'
 import { ethers } from 'hardhat'
+import { CLBToken__factory } from '~/typechain-types'
 import { deploy as marketDeploy } from '../deployMarket'
 
 export const prepareMarketTest = async () => {

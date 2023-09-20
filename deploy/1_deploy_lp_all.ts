@@ -1,6 +1,6 @@
-import { DeployTool, type LPConfig } from '@chromatic/hardhat/common/DeployTool'
 import type { DeployFunction } from 'hardhat-deploy/types'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { DeployTool, type LPConfig } from '~/hardhat/common/DeployTool'
 
 const LP_CONFIG: LPConfig = {
   config: {

@@ -1,6 +1,6 @@
-import { DeployTool } from '@chromatic/hardhat/common/DeployTool'
 import type { DeployFunction } from 'hardhat-deploy/types'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { DeployTool } from '~/hardhat/common/DeployTool'
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tool = await DeployTool.createAsync(hre)
