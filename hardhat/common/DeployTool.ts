@@ -13,6 +13,14 @@ export type * from './types'
 export const REGISTRY_DEPLOYED: RegistryDeployedResultMap = {}
 export const LP_DEPLOYED: LPDeployedResultMap = {}
 
+// verify:verify subtask args
+// type LibraryToAddress = Record<string, string>
+// export interface VerifySubtaskArgs {
+//   address?: string
+//   constructorArguments?: any[]
+//   libraries?: LibraryToAddress
+//   contract?: string
+// }
 export class DeployTool {
   private client: ClientSDK | undefined
   private deployer: string
@@ -59,12 +67,15 @@ export class DeployTool {
   async deployRegistry(): Promise<DeployResult> {
     const factory = this.client!.marketFactory().contracts().marketFactory
     const factoryAddress = await factory.getAddress()
+    console.log(`factoryAddress: ${factoryAddress}`)
 
     const res = await this.deploy('ChromaticLPRegistry', {
       from: this.deployer,
       args: [factoryAddress]
     })
     REGISTRY_DEPLOYED.registry = res
+    await this.verify({ address: res.address, constructorArguments: [factoryAddress] })
+
     return res
   }
 
@@ -120,21 +131,26 @@ export class DeployTool {
       from: this.deployer,
       args: [config.automateConfig]
     })
-
+    const args = [
+      logicAddress,
+      {
+        market: marketAddress,
+        ...config.config
+      },
+      config.feeRates,
+      config.distributionRates,
+      config.automateConfig
+    ]
     const result = await this.deploy('ChromaticLP', {
       from: this.deployer,
-      args: [
-        logicAddress,
-        {
-          market: marketAddress,
-          ...config.config
-        },
-        config.feeRates,
-        config.distributionRates,
-        config.automateConfig
-      ]
+      args: args
     })
+    await this.verify({ address: result.address, constructorArguments: args })
+
     LP_DEPLOYED[marketAddress] = result
+
+    this.registerLP(result.address)
+
     return result
   }
 
@@ -189,10 +205,20 @@ export class DeployTool {
   }
 
   async getLPRegistryDeployed() {
-    if (this.hre.network.name == 'anvil') {
+    if (this.hre.network.tags.local) {
       return REGISTRY_DEPLOYED.registry
     } else {
       return await this.hre.deployments.get('ChromaticLPRegistry')
+    }
+  }
+
+  async verify(options: any) {
+    if (!this.hre.network.tags.local) {
+      try {
+        await this.hre.run('verify:verify', options)
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 }
