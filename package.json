@@ -26,6 +26,7 @@
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=12.0.0",
     "@uniswap/smart-order-router": "^3.13.7",
+    "@wagmi/cli": "^1.5.0",
     "chai": "^4.2.0",
     "dotenv": "^16.0.3",
     "ethers": "^6.4.0",
@@ -43,6 +44,7 @@
     "typescript": ">=4.5.0"
   },
   "scripts": {
-    "repl": "hardhat console --network anvil --config hardhat.repl.config.ts --no-compile"
+    "repl:anvil": "hardhat console --network anvil --config hardhat.repl.config.ts --no-compile",
+    "repl:arbitrum_goerli": "hardhat console --network arbitrum_goerli --config hardhat.repl.config.ts --no-compile"
   }
 }
