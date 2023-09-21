@@ -1,5 +1,5 @@
 {
-  "name": "@chromatic-protocol/liquidity-pool",
+  "name": "@chromatic-protocol/liquidity-provider",
   "version": "0.0.0",
   "license": "MIT",
   "dependencies": {

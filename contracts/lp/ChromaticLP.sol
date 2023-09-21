@@ -20,8 +20,11 @@ contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBa
 
     address public immutable CHROMATIC_LP_LOGIC;
 
+    string _lpName;
+
     constructor(
         ChromaticLPLogic lpLogic,
+        string memory lpName_,
         Config memory config,
         int16[] memory feeRates,
         uint16[] memory distributionRates,
@@ -30,7 +33,7 @@ contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBa
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(config, feeRates, distributionRates);
-
+        _lpName = lpName_;
         _createRebalanceTask();
     }
 
@@ -39,7 +42,7 @@ contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBa
         s_task.rebalanceTaskId = _createTask(
             abi.encodeCall(this.resolveRebalance, ()),
             abi.encodeCall(this.rebalance, ()),
-            s_config.rebalnceCheckingInterval
+            s_config.rebalanceCheckingInterval
         );
     }
 
@@ -91,6 +94,13 @@ contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBa
      */
     function resolveRebalance() external view override(IChromaticLP) returns (bool, bytes memory) {
         return _resolveRebalance(this.rebalance);
+    }
+
+    /**
+     * @inheritdoc IChromaticLP
+     */
+    function lpName() external view override returns (string memory) {
+        return _lpName;
     }
 
     /**

@@ -446,12 +446,16 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
             _burn(address(this), burningAmount);
 
             // transfer left lpTokens
-            uint256 leftLpToken = receipt.amount - burningAmount;
-            if (leftLpToken > 0) {
-                SafeERC20.safeTransfer(IERC20(this), receipt.recipient, leftLpToken);
+            uint256 remainingAmount = receipt.amount - burningAmount;
+            if (remainingAmount > 0) {
+                SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
             }
 
-            emit RemoveLiquiditySettled({receiptId: receipt.id});
+            emit RemoveLiquiditySettled({
+                receiptId: receipt.id,
+                burningAmount: burningAmount,
+                remainingAmount: remainingAmount
+            });
         } else {
             emit RebalanceSettled({receiptId: receipt.id});
         }

@@ -3,10 +3,11 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployTool, type LPConfig } from '~/hardhat/common/DeployTool'
 
 const LP_CONFIG: LPConfig = {
+  lpName: 'normal',
   config: {
     utilizationTargetBPS: 5000,
     rebalanceBPS: 500,
-    rebalnceCheckingInterval: 1 * 60 * 60, // 1 hours
+    rebalanceCheckingInterval: 1 * 60 * 60, // 1 hours
     settleCheckingInterval: 1 * 60 // 1 minutes
   },
   feeRates: [-4, -3, -2, -1, 1, 2, 3, 4],

@@ -4,10 +4,11 @@ import { DeployResult } from 'hardhat-deploy/types'
 import type { IOracleProvider } from '~/typechain-types'
 
 export interface LPConfig {
+  lpName: 'normal'
   config: {
     utilizationTargetBPS: number
     rebalanceBPS: number
-    rebalnceCheckingInterval: BigNumberish
+    rebalanceCheckingInterval: BigNumberish
     settleCheckingInterval: BigNumberish
   }
   feeRates: Array<number>

@@ -46,7 +46,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
             market: config.market,
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
-            rebalnceCheckingInterval: config.rebalnceCheckingInterval,
+            rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval
         });
         _setupState(feeRates, distributionRates);
@@ -103,7 +103,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
      * @inheritdoc ERC20
      */
     function symbol() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("cp", _tokenSymbol(), " - ", _indexName()));
+        return string(abi.encodePacked("CLP", _tokenSymbol(), " - ", _indexName()));
     }
 
     function _tokenSymbol() private view returns (string memory) {
