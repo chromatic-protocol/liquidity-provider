@@ -103,7 +103,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
      * @inheritdoc ERC20
      */
     function symbol() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("cp", _tokenSymbol(), " - ", _indexName()));
+        return string(abi.encodePacked("CLP", _tokenSymbol(), " - ", _indexName()));
     }
 
     function _tokenSymbol() private view returns (string memory) {

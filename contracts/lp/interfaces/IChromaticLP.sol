@@ -6,6 +6,9 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Recei
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 
 interface IChromaticLP is IERC20, IERC1155Receiver {
+
+    function lpName() external view returns (string memory);
+
     function market() external view returns (address);
 
     function settlementToken() external view returns (address);

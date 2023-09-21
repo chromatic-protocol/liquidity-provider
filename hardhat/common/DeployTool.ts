@@ -133,6 +133,7 @@ export class DeployTool {
     })
     const args = [
       logicAddress,
+      config.lpName,
       {
         market: marketAddress,
         ...config.config
@@ -191,6 +192,11 @@ export class DeployTool {
   async registerLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
     await registry.register(lpAddress)
+  }
+
+  async unregisterLP(lpAddress: string, registry?: ChromaticLPRegistry) {
+    if (!registry) registry = await this.getRegistry()
+    await registry.unregister(lpAddress)
   }
 
   async getLPAddresses() {

@@ -86,6 +86,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
 
         lp = new ChromaticLP(
             lpLogic,
+            "lp pool",
             ChromaticLPStorage.Config({
                 market: market,
                 utilizationTargetBPS: 5000,
