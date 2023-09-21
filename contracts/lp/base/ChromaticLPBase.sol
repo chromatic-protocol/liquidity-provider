@@ -46,7 +46,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
             market: config.market,
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
-            rebalnceCheckingInterval: config.rebalnceCheckingInterval,
+            rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval
         });
         _setupState(feeRates, distributionRates);

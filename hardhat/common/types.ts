@@ -7,7 +7,7 @@ export interface LPConfig {
   config: {
     utilizationTargetBPS: number
     rebalanceBPS: number
-    rebalnceCheckingInterval: BigNumberish
+    rebalanceCheckingInterval: BigNumberish
     settleCheckingInterval: BigNumberish
   }
   feeRates: Array<number>

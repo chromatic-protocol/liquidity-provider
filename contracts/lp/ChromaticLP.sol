@@ -39,7 +39,7 @@ contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBa
         s_task.rebalanceTaskId = _createTask(
             abi.encodeCall(this.resolveRebalance, ()),
             abi.encodeCall(this.rebalance, ()),
-            s_config.rebalnceCheckingInterval
+            s_config.rebalanceCheckingInterval
         );
     }
 

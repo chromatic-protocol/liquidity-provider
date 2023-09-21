@@ -46,7 +46,11 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         uint256 lpTokenAmount
     );
 
-    event RemoveLiquiditySettled(uint256 indexed receiptId);
+    event RemoveLiquiditySettled(
+        uint256 indexed receiptId,
+        uint256 burningAmount,
+        uint256 remainingAmount
+    );
 
     event RebalanceLiquidity(uint256 indexed receiptId);
     event RebalanceSettled(uint256 indexed receiptId);
@@ -86,7 +90,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
                 market: market,
                 utilizationTargetBPS: 5000,
                 rebalanceBPS: 500,
-                rebalnceCheckingInterval: 1 hours,
+                rebalanceCheckingInterval: 1 hours,
                 settleCheckingInterval: 1 minutes
             }),
             feeRates,
@@ -168,7 +172,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         oracleProvider.increaseVersion(3 ether);
 
         vm.expectEmit(true, false, false, true, address(lp));
-        emit RemoveLiquiditySettled(receipt.id);
+        emit RemoveLiquiditySettled(receipt.id, receipt.amount, 0);
         assertEq(true, lp.settle(receipt.id));
         uint256 tokenBalanceAfter = usdc.balanceOf(address(this));
         assertEq(tokenBalanceAfter - tokenBalanceBefore, receipt.amount);

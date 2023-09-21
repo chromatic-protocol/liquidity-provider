@@ -29,7 +29,7 @@ abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
         IChromaticMarket market;
         uint16 utilizationTargetBPS;
         uint16 rebalanceBPS;
-        uint256 rebalnceCheckingInterval;
+        uint256 rebalanceCheckingInterval;
         uint256 settleCheckingInterval;
     }
 
@@ -71,7 +71,11 @@ abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
         uint256 lpTokenAmount
     );
 
-    event RemoveLiquiditySettled(uint256 indexed receiptId);
+    event RemoveLiquiditySettled(
+        uint256 indexed receiptId,
+        uint256 burningAmount,
+        uint256 remainingAmount
+    );
 
     event RebalanceLiquidity(uint256 indexed receiptId);
     event RebalanceSettled(uint256 indexed receiptId);
