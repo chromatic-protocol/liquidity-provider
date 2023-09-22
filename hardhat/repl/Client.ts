@@ -2,46 +2,56 @@ import { ChromaticMarketFactory, Client as ClientSDK } from '@chromatic-protocol
 import { IERC20__factory } from '@chromatic-protocol/sdk-ethers-v6/contracts'
 import type { Signer } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { Helper } from '~/hardhat/common/Helper'
 import { ChromaticLP__factory, type ChromaticLP, type IERC20 } from '~/typechain-types'
-
 export class Client {
   public readonly client!: ClientSDK
 
-  private _marketAddress: string
-  private _settlementTokenAddress: string
+  private helper: Helper
+  private _marketAddress: string = ''
+  private _settlementTokenAddress: string = ''
+  private _lpAddresses: string[] = []
 
-  constructor(public readonly hre: HardhatRuntimeEnvironment, public readonly signer: Signer) {
-    this.client = new ClientSDK(this.hre.network.name, this.signer)
-    this._marketAddress = ''
-    this._settlementTokenAddress = ''
+  private constructor(helper: Helper) {
+    this.helper = helper
+  }
+
+  static async createAsync(hre: HardhatRuntimeEnvironment, signerOrAddress: string | Signer) {
+    const helper = await Helper.createAsync(hre, signerOrAddress)
+    const client = new Client(helper)
+    await client.initialize()
+    return client
+  }
+
+  private async initialize() {
+    // this.helper.
   }
 
   get marketFactory(): ChromaticMarketFactory {
-    return this.client.marketFactory()
+    return this.helper.marketFactory
   }
 
-  async getSettlementTokens() {
-    return await this.marketFactory.registeredSettlementTokens()
+  async settlementTokens() {
+    return await this.helper.settlementTokens()
   }
 
-  async getMarkets() {
-    const allMarkets = []
-    const tokens = await this.getSettlementTokens()
-    for (let token of tokens) {
-      const markets = await this.marketFactory.getMarkets(token.address)
-      allMarkets.push(...markets)
-    }
-    return allMarkets
+  async markets() {
+    return await this.helper.markets()
   }
 
-  async setMarket(marketAddress: string) {
+  async setCurrentMarket(marketAddress: string) {
     this._marketAddress = marketAddress
-    const address = await this.market.settlementToken()
-    this._settlementTokenAddress = address
+    this._settlementTokenAddress = await this.market.settlementToken()
   }
 
-  async signerAddress(): Promise<string> {
-    return this.signer.getAddress()
+  async setCurrentLP(lpAddress: string) {
+    const lp = ChromaticLP__factory.connect(lpAddress, this.signer)
+    this._marketAddress = await lp.market()
+    this._settlementTokenAddress = await this.market.settlementToken()
+  }
+
+  get signer(): Signer {
+    return this.helper.signer
   }
 
   get marketAddress(): string {
@@ -51,14 +61,8 @@ export class Client {
     return this._settlementTokenAddress
   }
 
-  get lpAddresses(): string[] {
-    // FIXME check network
-    return Object.values(this.hre.lpDeployed!).map((x) => x.address)
-  }
-
   get lpAddress(): string {
-    // FIXME check network
-    return this.hre.lpDeployed![this._marketAddress].address
+    return this.helper.deployed.lpOfMarket(this._marketAddress)
   }
 
   get market() {
@@ -71,6 +75,10 @@ export class Client {
 
   get lp(): ChromaticLP {
     return ChromaticLP__factory.connect(this.lpAddress, this.signer)
+  }
+
+  get lpAddresses(): string[] {
+    return this.helper.deployed.lpAddresses
   }
 
   public toString = (): string => {
