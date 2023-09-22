@@ -150,7 +150,6 @@ export class DeployTool {
 
     LP_DEPLOYED[marketAddress] = result
 
-    this.registerLP(result.address)
 
     return result
   }
@@ -191,6 +190,7 @@ export class DeployTool {
 
   async registerLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
+    console.log(chalk.green(`✨ registering lpAddress to registry: ${lpAddress}`))
     await registry.register(lpAddress)
   }
 
