@@ -4,24 +4,18 @@
 import { type Signer } from 'ethers'
 import 'hardhat-deploy'
 import 'hardhat/types/runtime'
-import type {
-  DeployTool,
-  LPDeployedResultMap,
-  MarketInfo,
-  RegistryDeployedResultMap
-} from '~/hardhat/common/DeployTool'
+import { DeployTool, DeployedStore, Helper } from '~/hardhat/common'
+import type { MarketInfo } from '~/hardhat/common/DeployTool'
+
 import { Client } from './Client'
 
 declare module 'hardhat/types/runtime' {
   interface HardhatRuntimeEnvironment {
-    deployLP?: () => Promise<LPDeployedResultMap>
-    deployed?: LPDeployedResultMap
     getMarkets?: () => Promise<Array<MarketInfo>>
-    // connectMarketLP?: (marketAddress: string, signer?: Signer) => ChromaticLP
     getClient?: (signer?: Signer) => Promise<Client>
+    getHelper?: (signer?: Signer) => Promise<Helper>
     getDeployTool?: () => Promise<DeployTool>
 
-    lpDeployed?: LPDeployedResultMap
-    registryDeployed?: RegistryDeployedResultMap
+    lpDeployed?: DeployedStore
   }
 }

@@ -3,48 +3,38 @@ import chalk from 'chalk'
 import { ZeroAddress } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
-import { Client as ClientSDK } from '@chromatic-protocol/sdk-ethers-v6'
-import { Signer } from 'ethers'
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
-import { ChromaticLPRegistry, ChromaticLPRegistry__factory } from '~/typechain-types'
-import type { LPConfig, LPDeployedResultMap, MarketInfo, RegistryDeployedResultMap } from './types'
+import { DEPLOYED } from '~/hardhat/common/DeployedStore'
+import { Helper } from '~/hardhat/common/Helper'
+import { ChromaticLPRegistry } from '~/typechain-types'
+
+import type { LPConfig, LPDeployedResultMap, MarketInfo } from './types'
 export type * from './types'
 
-export const REGISTRY_DEPLOYED: RegistryDeployedResultMap = {}
-export const LP_DEPLOYED: LPDeployedResultMap = {}
-
-// verify:verify subtask args
-// type LibraryToAddress = Record<string, string>
-// export interface VerifySubtaskArgs {
-//   address?: string
-//   constructorArguments?: any[]
-//   libraries?: LibraryToAddress
-//   contract?: string
-// }
 export class DeployTool {
-  private client: ClientSDK | undefined
-  private deployer: string
-  public signer: Signer | undefined
-
   constructor(
     public readonly hre: HardhatRuntimeEnvironment,
+    public readonly helper: Helper,
     public readonly defaultLPConfig?: LPConfig
-  ) {
-    this.client = undefined
-    this.signer = undefined
-    this.deployer = ''
-  }
-  async initialize() {
-    const { deployer: deployerAddress } = await this.hre.getNamedAccounts()
-    const signers = await this.hre.ethers.getSigners()
-    this.signer = signers.find((s) => s.address === deployerAddress)!
-    this.deployer = deployerAddress
-    this.client = new ClientSDK(this.hre.network.name, this.signer)
-  }
+  ) {}
+  async initialize() {}
+
   static async createAsync(hre: HardhatRuntimeEnvironment, defaultLPConfig?: LPConfig) {
-    const tool = new DeployTool(hre, defaultLPConfig)
+    const { deployer } = await hre.getNamedAccounts()
+    const helper = await Helper.createAsync(hre, deployer)
+    const tool = new DeployTool(hre, helper, defaultLPConfig)
     await tool.initialize()
     return tool
+  }
+
+  get deployer() {
+    return this.helper.signerAddress
+  }
+  get signer() {
+    return this.helper.signer
+  }
+  get sdk() {
+    return this.helper.sdk
   }
 
   private get _deploy() {
@@ -56,16 +46,18 @@ export class DeployTool {
 
     console.log(chalk.yellow(`✨ Deploying... ${name}`))
     const deployResult = await this._deploy(name, options)
+
     if (deployResult.newlyDeployed) {
       console.log(chalk.yellow(`✨ newly deployed ${name}: ${deployResult.address}\n`))
     } else {
       console.log(chalk.green(`✨ previously deployed ${name}: ${deployResult.address}\n`))
     }
+
     return deployResult
   }
 
   async deployRegistry(): Promise<DeployResult> {
-    const factory = this.client!.marketFactory().contracts().marketFactory
+    const factory = this.helper.marketFactory.contracts().marketFactory
     const factoryAddress = await factory.getAddress()
     console.log(`factoryAddress: ${factoryAddress}`)
 
@@ -73,7 +65,8 @@ export class DeployTool {
       from: this.deployer,
       args: [factoryAddress]
     })
-    REGISTRY_DEPLOYED.registry = res
+
+    DEPLOYED.saveRegistry(res.address)
     await this.verify({ address: res.address, constructorArguments: [factoryAddress] })
 
     return res
@@ -103,10 +96,10 @@ export class DeployTool {
 
     const markets = await this.getMarkets()
 
-    // FIXME: type and store result
     const lpDeployed: LPDeployedResultMap = {}
     for (let market of markets) {
       const deployed = await this.deployLP(market.address, config)
+
       lpDeployed[market.address] = deployed
     }
     return lpDeployed
@@ -148,15 +141,13 @@ export class DeployTool {
     })
     await this.verify({ address: result.address, constructorArguments: args })
 
-    LP_DEPLOYED[marketAddress] = result
-
-    this.registerLP(result.address)
+    DEPLOYED.saveLP(result.address, marketAddress)
 
     return result
   }
 
   async getMarkets(): Promise<MarketInfo[]> {
-    const marketFactory = this.client!.marketFactory()
+    const marketFactory = this.sdk.marketFactory()
 
     const allMarkets = []
     const tokens = await marketFactory.registeredSettlementTokens()
@@ -174,48 +165,29 @@ export class DeployTool {
   }
 
   async getRegistry() {
-    const registryDeplyed = await this.getLPRegistryDeployed()
-    if (!registryDeplyed?.address) throw new Error('registry not found')
-    const registry = ChromaticLPRegistry__factory.connect(registryDeplyed!.address, this.signer)
-    return registry
+    const registryDeployed = this.helper.deployed.registryAddress
+    if (!registryDeployed) throw new Error('registry not found')
+    return this.helper.registry
   }
 
   async registerLPAll() {
     const registry = await this.getRegistry()
 
     if (this.hre.network.name !== 'anvil') throw new Error('anvil network only')
-    for (const deployed of Object.values(LP_DEPLOYED)) {
-      this.registerLP(deployed.address, registry)
+    for (const lpAddress of DEPLOYED.lpAddresses) {
+      this.registerLP(lpAddress, registry)
     }
   }
 
   async registerLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
+    console.log(chalk.green(`✨ registering lpAddress to registry: ${lpAddress}`))
     await registry.register(lpAddress)
   }
 
   async unregisterLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
     await registry.unregister(lpAddress)
-  }
-
-  async getLPAddresses() {
-    const registry = await this.getRegistry()
-    const marketInfos = await this.getMarkets()
-    const lpAddresses = []
-    for (const info of marketInfos) {
-      const res = await registry.lpListByMarket(info.address)
-      lpAddresses.push(...res)
-    }
-    return lpAddresses
-  }
-
-  async getLPRegistryDeployed() {
-    if (this.hre.network.tags.local) {
-      return REGISTRY_DEPLOYED.registry
-    } else {
-      return await this.hre.deployments.get('ChromaticLPRegistry')
-    }
   }
 
   async verify(options: any) {

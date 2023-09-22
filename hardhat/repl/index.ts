@@ -4,8 +4,8 @@ import { lazyFunction, lazyObject } from 'hardhat/plugins'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 import { type Signer } from 'ethers'
-import type { LPConfig, LPDeployedResultMap } from '~/hardhat/common/DeployTool'
-import { DeployTool, LP_DEPLOYED, REGISTRY_DEPLOYED } from '~/hardhat/common/DeployTool'
+import { DEPLOYED, DeployTool, Helper } from '~/hardhat/common'
+import type { LPConfig } from '~/hardhat/common/DeployTool'
 import { Client } from './Client'
 
 const LP_CONFIG: LPConfig = {
@@ -20,22 +20,23 @@ const LP_CONFIG: LPConfig = {
 }
 
 extendEnvironment((hre: HardhatRuntimeEnvironment) => {
-  hre.deployLP = lazyFunction(() => async (): Promise<LPDeployedResultMap> => {
-    const tool = await DeployTool.createAsync(hre, LP_CONFIG)
-    return await tool.deployAllLP()
-  })
-
   hre.getMarkets = lazyFunction(() => async () => {
-    const tool = await DeployTool.createAsync(hre, LP_CONFIG)
-    const result = await tool.getMarkets()
-    return result
+    const helper = await Helper.createAsync(hre, (await hre.ethers.getSigners())[0])
+    return await helper.markets()
   })
 
   hre.getClient = lazyFunction(() => async (signer?: Signer) => {
     if (!signer) {
       signer = (await hre.ethers.getSigners())[0]
     }
-    return new Client(hre, signer)
+    return await Client.createAsync(hre, signer)
+  })
+
+  hre.getHelper = lazyFunction(() => async (signer?: Signer) => {
+    if (!signer) {
+      signer = (await hre.ethers.getSigners())[0]
+    }
+    return await Helper.createAsync(hre, signer)
   })
 
   hre.getDeployTool = lazyFunction(() => async () => {
@@ -43,6 +44,5 @@ extendEnvironment((hre: HardhatRuntimeEnvironment) => {
     return tool
   })
 
-  hre.lpDeployed = lazyObject(() => LP_DEPLOYED)
-  hre.registryDeployed = lazyObject(() => REGISTRY_DEPLOYED)
+  hre.lpDeployed = lazyObject(() => DEPLOYED)
 })

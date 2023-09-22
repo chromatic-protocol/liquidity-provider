@@ -4,7 +4,7 @@ import { DeployResult } from 'hardhat-deploy/types'
 import type { IOracleProvider } from '~/typechain-types'
 
 export interface LPConfig {
-  lpName: 'normal'
+  lpName?: string
   config: {
     utilizationTargetBPS: number
     rebalanceBPS: number
