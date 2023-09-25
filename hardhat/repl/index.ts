@@ -9,6 +9,7 @@ import type { LPConfig } from '~/hardhat/common/DeployTool'
 import { Client } from './Client'
 
 const LP_CONFIG: LPConfig = {
+  lpName: 'normal',
   config: {
     utilizationTargetBPS: 5000,
     rebalanceBPS: 500,
