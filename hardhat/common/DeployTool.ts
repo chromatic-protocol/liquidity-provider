@@ -41,7 +41,7 @@ export class DeployTool {
     return this.hre.deployments.deploy
   }
 
-  async deploy(name: string, options: DeployOptions): Promise<DeployResult> {
+  private async deploy(name: string, options: DeployOptions): Promise<DeployResult> {
     if (!this.deployer) throw new Error('not initialized')
 
     console.log(chalk.yellow(`✨ Deploying... ${name}`))
@@ -54,6 +54,14 @@ export class DeployTool {
     }
 
     return deployResult
+  }
+
+  async deployAll() {
+    await this.deployRegistry()
+    const result = await this.deployAllLP(this.defaultLPConfig)
+    for (let deployed of Object.values(result)) {
+      await this.registerLP(deployed.address)
+    }
   }
 
   async deployRegistry(): Promise<DeployResult> {
@@ -107,11 +115,14 @@ export class DeployTool {
 
   getLPConfig(lpConfig?: LPConfig): LPConfig {
     let config: LPConfig
-    if (lpConfig == undefined && this.defaultLPConfig != undefined) {
-      config = { ...this.defaultLPConfig }
+    if (lpConfig == undefined) {
+      if (this.defaultLPConfig != undefined) {
+        config = { ...this.defaultLPConfig }
+      } else {
+        throw new Error('undefined LPConfig')
+      }
     } else {
-      if (lpConfig == undefined) throw new Error('undefined LPConfig')
-      config = { ...lpConfig }
+      config = lpConfig
     }
     config.automateConfig = this.getAutomateConfig()
     return config
@@ -120,6 +131,8 @@ export class DeployTool {
   async deployLP(marketAddress: string, lpConfig?: LPConfig): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying LP for market: ${marketAddress}`))
     const config = this.getLPConfig(lpConfig)
+    if (!config.lpName) throw new Error('lpName not found')
+
     const { address: logicAddress } = await this.deploy('ChromaticLPLogic', {
       from: this.deployer,
       args: [config.automateConfig]
@@ -171,7 +184,7 @@ export class DeployTool {
   }
 
   async registerLPAll() {
-    const registry = await this.getRegistry()
+    let registry = await this.getRegistry()
 
     if (this.hre.network.name !== 'anvil') throw new Error('anvil network only')
     for (const lpAddress of DEPLOYED.lpAddresses) {
@@ -181,6 +194,7 @@ export class DeployTool {
 
   async registerLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
+
     console.log(chalk.green(`✨ registering lpAddress to registry: ${lpAddress}`))
     await registry.register(lpAddress)
   }

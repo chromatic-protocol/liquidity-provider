@@ -7,6 +7,7 @@ import {
   ChromaticLP__factory
 } from '~/typechain-types'
 import { DEPLOYED, DeployedStore } from './DeployedStore'
+import { MarketInfo } from './types'
 
 export class Helper {
   sdk: ClientSDK
@@ -64,11 +65,13 @@ export class Helper {
 
   get registry(): ChromaticLPRegistry {
     const address = this.deployed.registry
+    if (!address) throw new Error('deployed registry not exist')
     return ChromaticLPRegistry__factory.connect(address, this.signer)
   }
 
   lpOfMarket(marketAddress: string) {
     const address = this.deployed.lpOfMarket(marketAddress)
+    if (!address) throw new Error('no address')
     return ChromaticLP__factory.connect(address, this.signer)
   }
 
@@ -76,7 +79,7 @@ export class Helper {
     return await this.marketFactory.registeredSettlementTokens()
   }
 
-  async markets() {
+  async markets(): Promise<MarketInfo[]> {
     const allMarkets = []
     const tokens = await this.settlementTokens()
     for (let token of tokens) {
@@ -84,5 +87,10 @@ export class Helper {
       allMarkets.push(...markets)
     }
     return allMarkets
+  }
+
+  async marketAddresses(): Promise<string[]> {
+    const infos = await this.markets()
+    return infos.map((x) => x.address)
   }
 }
