@@ -8,10 +8,10 @@ import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBToken
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
+import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 
-abstract contract ChromaticLPBase is ChromaticLPStorage {
+abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -29,7 +29,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
     error NotKeeperCalled();
     error AlreadyRebalanceTaskExist();
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
+    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
 
     function _initialize(
         Config memory config,

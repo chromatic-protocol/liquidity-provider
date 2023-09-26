@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/base/gelato/Types.sol";
-import {ChromaticLiquidator} from "@chromatic-protocol/contracts/core/ChromaticLiquidator.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
+import {GelatoLiquidator} from "@chromatic-protocol/contracts/core/automation/GelatoLiquidator.sol";
+import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {IMarketLiquidate} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketLiquidate.sol";
 
-contract ChromaticLiquidatorMock is ChromaticLiquidator {
+contract GelatoLiquidatorMock is GelatoLiquidator {
     constructor(
         IChromaticMarketFactory _factory,
         address _automate,
         address opsProxyFactory
-    ) ChromaticLiquidator(_factory, _automate, opsProxyFactory) {}
+    ) GelatoLiquidator(_factory, _automate, opsProxyFactory) {}
 
+    // for test
     function liquidate(address market, uint256 positionId, uint256 fee) external {
-        _liquidate(market, positionId, fee);
+        IMarketLiquidate(market).liquidate(positionId, automate.gelato(), fee);
     }
 }

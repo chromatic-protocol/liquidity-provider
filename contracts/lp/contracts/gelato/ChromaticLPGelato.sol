@@ -7,14 +7,19 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Recei
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPBase} from "~/lp/base/ChromaticLPBase.sol";
-import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
+import {ChromaticLPBaseGelato} from "~/lp/base/gelato/ChromaticLPBaseGelato.sol";
+import {ChromaticLPLogicGelato} from "~/lp/contracts/gelato/ChromaticLPLogicGelato.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 
 uint16 constant BPS = 10000;
 
-contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBase, Proxy {
+contract ChromaticLPGelato is
+    IChromaticLP,
+    IChromaticLiquidityCallback,
+    ChromaticLPBaseGelato,
+    Proxy
+{
     // using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -23,16 +28,16 @@ contract ChromaticLP is IChromaticLP, IChromaticLiquidityCallback, ChromaticLPBa
     string _lpName;
 
     constructor(
-        ChromaticLPLogic lpLogic,
+        ChromaticLPLogicGelato lpLogic,
         string memory lpName_,
         Config memory config,
-        int16[] memory feeRates,
+        int16[] memory _feeRates,
         uint16[] memory distributionRates,
         AutomateParam memory automateParam
-    ) ChromaticLPBase(automateParam) {
+    ) ChromaticLPBaseGelato(automateParam) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
-        _initialize(config, feeRates, distributionRates);
+        _initialize(config, _feeRates, distributionRates);
         _lpName = lpName_;
         _createRebalanceTask();
     }

@@ -12,18 +12,18 @@ import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IC
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/base/gelato/Types.sol";
-import {AutomateReady} from "@chromatic-protocol/contracts/core/base/gelato/AutomateReady.sol";
+import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
+import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 
-abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
+abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -61,7 +61,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
+    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
 
     function nextReceiptId() internal returns (uint256 id) {
         id = ++s_state.receiptId;
