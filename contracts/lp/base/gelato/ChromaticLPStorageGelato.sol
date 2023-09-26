@@ -40,4 +40,9 @@ abstract contract ChromaticLPStorageGelato is ChromaticLPStorage, AutomateReady 
 
         return automate.createTask(address(this), execSelector, moduleData, ETH);
     }
+
+    function _getFeeInfo() internal view override returns (uint256 fee, address feePayee) {
+        (fee, ) = _getFeeDetails();
+        feePayee = automate.gelato();
+    }
 }

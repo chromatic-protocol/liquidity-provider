@@ -17,4 +17,10 @@ abstract contract ChromaticLPStorageMate2 is ChromaticLPStorage {
     constructor(IMate2AutomationRegistry _automate) ChromaticLPStorage() {
         automate = _automate;
     }
+
+    function _getFeeInfo() internal view override returns (uint256 fee, address feePayee) {
+        fee = automate.getPerformUpkeepFee();
+        feePayee = address(automate);
+    }
+
 }

@@ -91,16 +91,16 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         }
     }
 
-    function settleTask(uint256 receiptId) external onlyKeeper {
+    function settleTask(uint256 receiptId) external {
         if (_settle(receiptId)) {
             _payKeeperFee();
         }
     }
 
     function _payKeeperFee() internal virtual {
-        (uint256 fee, ) = _getFeeDetails();
+        (uint256 fee, address feePayee) = _getFeeInfo();
         IKeeperFeePayer payer = IKeeperFeePayer(s_config.market.factory().keeperFeePayer());
-        payer.payKeeperFee(address(s_config.market.settlementToken()), fee, automate.gelato());
+        payer.payKeeperFee(address(s_config.market.settlementToken()), fee, feePayee);
     }
 
     function _settle(uint256 receiptId) internal returns (bool) {
