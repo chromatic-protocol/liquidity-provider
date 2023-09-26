@@ -231,11 +231,11 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
     }
 
     function _decreasePendingClb(
-        int16[] calldata feeRates,
+        int16[] calldata _feeRates,
         uint256[] calldata burnedCLBTokenAmounts
     ) internal {
-        for (uint256 i; i < feeRates.length; ) {
-            s_state.pendingRemoveClbAmounts[feeRates[i]] -= burnedCLBTokenAmounts[i];
+        for (uint256 i; i < _feeRates.length; ) {
+            s_state.pendingRemoveClbAmounts[_feeRates[i]] -= burnedCLBTokenAmounts[i];
             unchecked {
                 i++;
             }
@@ -377,7 +377,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
      */
     function removeLiquidityBatchCallback(
         address clbToken,
-        uint256[] calldata clbTokenIds,
+        uint256[] calldata _clbTokenIds,
         bytes calldata data
     ) external {
         RemoveLiquidityBatchCallbackData memory callbackData = abi.decode(
@@ -387,7 +387,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         IERC1155(clbToken).safeBatchTransferFrom(
             address(this),
             msg.sender, // market
-            clbTokenIds,
+            _clbTokenIds,
             callbackData.clbTokenAmounts,
             bytes("")
         );
@@ -407,14 +407,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
      */
     function withdrawLiquidityBatchCallback(
         uint256[] calldata receiptIds,
-        int16[] calldata feeRates,
+        int16[] calldata _feeRates,
         uint256[] calldata withdrawnAmounts,
         uint256[] calldata burnedCLBTokenAmounts,
         bytes calldata data
     ) external verifyCallback {
         ChromaticLPReceipt memory receipt = abi.decode(data, (ChromaticLPReceipt));
 
-        _decreasePendingClb(feeRates, burnedCLBTokenAmounts);
+        _decreasePendingClb(_feeRates, burnedCLBTokenAmounts);
         // burn and transfer settlementToken
 
         if (receipt.recipient != address(this)) {

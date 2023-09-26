@@ -33,13 +33,13 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
 
     function _initialize(
         Config memory config,
-        int16[] memory feeRates,
+        int16[] memory _feeRates,
         uint16[] memory distributionRates
     ) internal {
         _validateConfig(
             config.utilizationTargetBPS,
             config.rebalanceBPS,
-            feeRates,
+            _feeRates,
             distributionRates
         );
         s_config = Config({
@@ -49,26 +49,26 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval
         });
-        _setupState(feeRates, distributionRates);
+        _setupState(_feeRates, distributionRates);
     }
 
     function _validateConfig(
         uint16 utilizationTargetBPS,
         uint16 rebalanceBPS,
-        int16[] memory feeRates,
+        int16[] memory _feeRates,
         uint16[] memory distributionRates
     ) private pure {
         if (utilizationTargetBPS > BPS) revert InvalidUtilizationTarget(utilizationTargetBPS);
-        if (feeRates.length != distributionRates.length)
-            revert NotMatchDistributionLength(feeRates.length, distributionRates.length);
+        if (_feeRates.length != distributionRates.length)
+            revert NotMatchDistributionLength(_feeRates.length, distributionRates.length);
 
         if (utilizationTargetBPS <= rebalanceBPS) revert InvalidRebalanceBPS();
     }
 
-    function _setupState(int16[] memory feeRates, uint16[] memory distributionRates) private {
+    function _setupState(int16[] memory _feeRates, uint16[] memory distributionRates) private {
         uint16 totalRate;
         for (uint256 i; i < distributionRates.length; ) {
-            s_state.distributionRates[feeRates[i]] = distributionRates[i];
+            s_state.distributionRates[_feeRates[i]] = distributionRates[i];
             totalRate += distributionRates[i];
 
             unchecked {
@@ -76,15 +76,15 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
             }
         }
         if (totalRate != BPS) revert InvalidDistributionSum();
-        s_state.feeRates = feeRates;
+        s_state.feeRates = _feeRates;
 
-        _setupClbTokenIds(feeRates);
+        _setupClbTokenIds(_feeRates);
     }
 
-    function _setupClbTokenIds(int16[] memory feeRates) private {
-        s_state.clbTokenIds = new uint256[](feeRates.length);
-        for (uint256 i; i < feeRates.length; ) {
-            s_state.clbTokenIds[i] = CLBTokenLib.encodeId(feeRates[i]);
+    function _setupClbTokenIds(int16[] memory _feeRates) private {
+        s_state.clbTokenIds = new uint256[](_feeRates.length);
+        for (uint256 i; i < _feeRates.length; ) {
+            s_state.clbTokenIds[i] = CLBTokenLib.encodeId(_feeRates[i]);
 
             unchecked {
                 i++;
