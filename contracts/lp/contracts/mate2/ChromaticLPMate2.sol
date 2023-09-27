@@ -7,18 +7,21 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Recei
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPBaseGelato} from "~/lp/base/gelato/ChromaticLPBaseGelato.sol";
-import {ChromaticLPLogicGelato} from "~/lp/contracts/gelato/ChromaticLPLogicGelato.sol";
+import {ChromaticLPBaseMate2} from "~/lp/base/mate2/ChromaticLPBaseMate2.sol";
+import {ChromaticLPLogicMate2} from "~/lp/contracts/mate2/ChromaticLPLogicMate2.sol";
+import {ChromaticLPStorageMate2} from "~/lp/base/mate2/ChromaticLPStorageMate2.sol";
+
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
+import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
 
 uint16 constant BPS = 10000;
 
-contract ChromaticLPGelato is
+contract ChromaticLPMate2 is
     IChromaticLP,
     IChromaticLiquidityCallback,
     IERC1155Receiver,
-    ChromaticLPBaseGelato,
+    ChromaticLPBaseMate2,
     Proxy
 {
     // using Math for uint256;
@@ -27,15 +30,16 @@ contract ChromaticLPGelato is
     address public immutable CHROMATIC_LP_LOGIC;
 
     string _lpName;
+    error NotImplementedInProxyContract();
 
     constructor(
-        ChromaticLPLogicGelato lpLogic,
+        ChromaticLPLogicMate2 lpLogic,
         string memory lpName_,
         Config memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates,
-        AutomateParam memory automateParam
-    ) ChromaticLPBaseGelato(automateParam) {
+        IMate2AutomationRegistry _automate
+    ) ChromaticLPBaseMate2(_automate) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(config, _feeRates, distributionRates);
@@ -45,10 +49,10 @@ contract ChromaticLPGelato is
 
     function _createRebalanceTask() internal {
         if (s_task.rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
-        s_task.rebalanceTaskId = _createTask(
-            abi.encodeCall(this.resolveRebalance, ()),
-            abi.encodeCall(this.rebalance, ()),
-            s_config.rebalanceCheckingInterval
+        s_task.rebalanceTaskId = _registerUpkeep(
+            UpkeepType.Rebalance,
+            0,
+            false // is not singleExec
         );
     }
 
@@ -79,19 +83,37 @@ contract ChromaticLPGelato is
         _fallback();
     }
 
+    function rebalance() internal pure override {
+        revert NotImplementedInProxyContract();
+    }
+
     /**
      * @inheritdoc IChromaticLP
      */
-    function settle(uint256 /* receiptId */) external override returns (bool) {
+    function settle(
+        uint256 /* receiptId */
+    ) public override(IChromaticLP, ChromaticLPStorageMate2) returns (bool) {
         _fallback();
     }
 
-    function resolveSettle(uint256 receiptId) external view returns (bool, bytes memory) {
-        return _resolveSettle(receiptId, this.settleTask);
+    // function resolveSettle(
+    //     uint256 receiptId
+    // ) public view override returns (bool upkeepNeeded, bytes memory performData) {}
+
+    // function resolveRebalance()
+    //     public
+    //     view
+    //     virtual
+    //     override
+    //     returns (bool upkeepNeeded, bytes memory performData)
+    // {}
+
+    function resolveSettle(uint256 receiptId) public view override returns (bool, bytes memory) {
+        return _resolveSettle(receiptId);
     }
 
-    function resolveRebalance() external view returns (bool, bytes memory) {
-        return _resolveRebalance(this.rebalance);
+    function resolveRebalance() public view override returns (bool, bytes memory) {
+        return _resolveRebalance();
     }
 
     /**
@@ -273,19 +295,5 @@ contract ChromaticLPGelato is
         return
             interfaceID == this.supportsInterface.selector || // ERC165
             interfaceID == this.onERC1155Received.selector ^ this.onERC1155BatchReceived.selector; // IERC1155Receiver
-    }
-
-    /**
-     * @dev called by keeper only
-     */
-    function rebalance() external {
-        _fallback();
-    }
-
-    /**
-     * @dev called by Keeper only
-     */
-    function settleTask(uint256 /* receiptId */) external {
-        _fallback();
     }
 }

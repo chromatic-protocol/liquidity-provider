@@ -115,9 +115,7 @@ abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
         return s_config.market.oracleProvider().description();
     }
 
-    function _resolveRebalance(
-        function() external _rebalance
-    ) internal view returns (bool, bytes memory) {
+    function _resolveRebalance() internal view returns (bool, bytes memory) {
         ValueInfo memory value = valueInfo();
 
         if (value.total == 0) return (false, bytes(""));
@@ -128,19 +126,16 @@ abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
         );
 
         if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
-            return (true, abi.encodeCall(_rebalance, ()));
+            return (true, abi.encode(UpkeepType.Rebalance, 0));
         } else if (
             uint256(s_config.utilizationTargetBPS - s_config.rebalanceBPS) > currentUtility
         ) {
-            return (true, abi.encodeCall(_rebalance, ()));
+            return (true, abi.encode(UpkeepType.Rebalance, 0));
         }
         return (false, bytes(""));
     }
 
-    function _resolveSettle(
-        uint256 receiptId,
-        function(uint256) external settleTask
-    ) internal view returns (bool, bytes memory) {
+    function _resolveSettle(uint256 receiptId) internal view returns (bool, bytes memory) {
         IOracleProvider.OracleVersion memory currentOracle = s_config
             .market
             .oracleProvider()
@@ -148,7 +143,7 @@ abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
 
         ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
         if (receipt.id > 0 && receipt.oracleVersion < currentOracle.version) {
-            return (true, abi.encodeCall(settleTask, (receiptId)));
+            return (true, abi.encode(UpkeepType.Settle, receiptId));
         }
 
         // for pending add/remove by user and by self

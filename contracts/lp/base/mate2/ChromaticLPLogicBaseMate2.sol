@@ -20,10 +20,11 @@ import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKe
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
+import {ChromaticLPStorageMate2} from "~/lp/base/mate2/ChromaticLPStorageMate2.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
 
-abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
+abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -39,6 +40,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     error NotOwner();
     error AlreadySwapRouterConfigured();
     error NotAutomationCalled();
+    error NotImplementedInLogicContract();
 
     struct AddLiquidityBatchCallbackData {
         address provider;
@@ -56,12 +58,13 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         if (address(s_config.market) != msg.sender) revert NotMarket();
         _;
     }
+
     modifier onlyAutomation() virtual {
-        if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
+        if (msg.sender != address(automate)) revert NotAutomationCalled();
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
+    constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {}
 
     function nextReceiptId() internal returns (uint256 id) {
         id = ++s_state.receiptId;
@@ -69,24 +72,20 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
 
     function cancelRebalanceTask() internal {
         if (s_task.rebalanceTaskId != 0) {
-            automate.cancelTask(s_task.rebalanceTaskId);
+            automate.cancelUpkeep(s_task.rebalanceTaskId);
             s_task.rebalanceTaskId = 0;
         }
     }
 
     function createSettleTask(uint256 receiptId) internal {
         if (s_task.settleTasks[receiptId] == 0) {
-            s_task.settleTasks[receiptId] = _createTask(
-                abi.encodeCall(this.resolveSettle, (receiptId)),
-                abi.encodeCall(this.settleTask, (receiptId)),
-                s_config.settleCheckingInterval
-            );
+            s_task.settleTasks[receiptId] = _registerUpkeep(UpkeepType.Settle, receiptId, true);
         }
     }
 
     function cancelSettleTask(uint256 receiptId) internal {
         if (s_task.settleTasks[receiptId] != 0) {
-            automate.cancelTask(s_task.settleTasks[receiptId]);
+            automate.cancelUpkeep(s_task.settleTasks[receiptId]);
             delete s_task.settleTasks[receiptId];
         }
     }
@@ -241,12 +240,6 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             }
         }
     }
-
-    function resolveRebalance() external view virtual returns (bool, bytes memory) {}
-
-    function resolveSettle(uint256 receiptId) external view virtual returns (bool, bytes memory) {}
-
-    function rebalance() external virtual {}
 
     function _addLiquidity(
         uint256 amount,
@@ -493,4 +486,22 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         }
         return 0;
     }
+
+    function resolveSettle(
+        uint256 /* receiptId */
+    ) public pure override returns (bool, bytes memory) {
+        revert NotImplementedInLogicContract();
+    }
+
+    function resolveRebalance() public pure override returns (bool, bytes memory) {
+        revert NotImplementedInLogicContract();
+    }
+
+    // function rebalance() public pure override {
+    //     revert NotImplementedInLogicContract();
+    // }
+
+    // function settle(uint256 /* receiptId */) public pure override {
+    //     revert NotImplementedInLogicContract();
+    // }
 }

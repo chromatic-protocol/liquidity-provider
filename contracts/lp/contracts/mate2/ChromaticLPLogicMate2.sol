@@ -9,21 +9,13 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPLogicBaseGelato} from "~/lp/base/gelato/ChromaticLPLogicBaseGelato.sol";
+import {ChromaticLPLogicBaseMate2} from "~/lp/base/mate2/ChromaticLPLogicBaseMate2.sol";
+import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
 
-contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
+contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
     using Math for uint256;
 
-    constructor(
-        AutomateParam memory automateParam
-    )
-        ChromaticLPLogicBaseGelato(
-            AutomateParam({
-                automate: automateParam.automate,
-                opsProxyFactory: automateParam.opsProxyFactory
-            })
-        )
-    {}
+    constructor(IMate2AutomationRegistry _automate) ChromaticLPLogicBaseMate2(_automate) {}
 
     /**
      * @dev implementation of IChromaticLP
@@ -62,14 +54,14 @@ contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
     /**
      * @dev implementation of IChromaticLP
      */
-    function settle(uint256 receiptId) external returns (bool) {
+    function settle(uint256 receiptId) public override returns (bool) {
         return _settle(receiptId);
     }
 
     /**
      * @dev implementation of IChromaticLP
      */
-    function rebalance() external override onlyAutomation {
+    function rebalance() internal override onlyAutomation {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
             emit RebalanceLiquidity({receiptId: receiptId});
