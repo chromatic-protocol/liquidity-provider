@@ -130,7 +130,7 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         assertEq(receipt.id, receiptIds[0]);
         assertEq(receipt.amount, amount);
 
-        // logReceipt(receipt);
+        logInfo(receipt);
         logInfo(lp);
 
         assertEq(false, lp.settle(receipt.id));
@@ -145,6 +145,8 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         uint256 tokenBalanceAfter = lp.balanceOf(address(this));
         assertEq(tokenBalanceBefore, 0);
         assertEq(tokenBalanceAfter - tokenBalanceBefore, receipt.amount);
+        console.log("totalSupply:", lp.totalSupply());
+        assertEq(lp.totalSupply(), receipt.amount);
 
         receiptIds = lp.getReceiptIdsOf(address(this));
         assertEq(0, receiptIds.length);
