@@ -165,4 +165,6 @@ abstract contract ChromaticLPStorage is ERC20, IChromaticLPLens {
             s_state.clbTokenIds
         );
     }
+
+    function _getFeeInfo() internal view virtual returns (uint256 fee, address feePayee);
 }
