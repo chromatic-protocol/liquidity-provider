@@ -2,21 +2,22 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {Test} from "forge-std/Test.sol";
-import {IAutomate, IOpsProxyFactory} from "@chromatic-protocol/contracts/core/base/gelato/Types.sol";
+import {IAutomate, IOpsProxyFactory} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IOracleProviderRegistry} from "@chromatic-protocol/contracts/core/interfaces/factory/IOracleProviderRegistry.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
+import {IVaultEarningDistributor} from "@chromatic-protocol/contracts/core/interfaces/IVaultEarningDistributor.sol";
 import {ICLBToken} from "@chromatic-protocol/contracts/core/interfaces/ICLBToken.sol";
 import {ChromaticMarketFactory} from "@chromatic-protocol/contracts/core/ChromaticMarketFactory.sol";
 import {KeeperFeePayerMock} from "~/mocks/KeeperFeePayerMock.sol";
 import {OracleProviderMock} from "~/mocks/OracleProviderMock.sol";
 import {Token} from "~/mocks/Token.sol";
-import {ChromaticLiquidatorMock} from "~/mocks/ChromaticLiquidatorMock.sol";
+import {GelatoLiquidatorMock} from "~/mocks/GelatoLiquidatorMock.sol";
 import {ChromaticVaultMock} from "~/mocks/ChromaticVaultMock.sol";
 import {DiamondLoupeFacet} from "@chromatic-protocol/contracts/core/facets/DiamondLoupeFacet.sol";
 import {MarketDiamondCutFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketDiamondCutFacet.sol";
 import {MarketStateFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketStateFacet.sol";
 import {MarketLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLiquidityFacet.sol";
-import {MarketLiquidityLensFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLiquidityLensFacet.sol";
+import {MarketLensFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLensFacet.sol";
 import {MarketTradeFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketTradeFacet.sol";
 import {MarketLiquidateFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLiquidateFacet.sol";
 import {MarketSettleFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketSettleFacet.sol";
@@ -28,7 +29,7 @@ abstract contract BaseSetup is Test {
     Token usdc;
     ChromaticMarketFactory factory;
     ChromaticVaultMock vault;
-    ChromaticLiquidatorMock liquidator;
+    GelatoLiquidatorMock liquidator;
     IChromaticMarket market;
     ICLBToken clbToken;
     ChromaticRouter router;
@@ -74,7 +75,7 @@ abstract contract BaseSetup is Test {
             address(new DiamondLoupeFacet()),
             address(new MarketStateFacet()),
             address(new MarketLiquidityFacet()),
-            address(new MarketLiquidityLensFacet()),
+            address(new MarketLensFacet()),
             address(new MarketTradeFacet()),
             address(new MarketLiquidateFacet()),
             address(new MarketSettleFacet())
@@ -83,10 +84,10 @@ abstract contract BaseSetup is Test {
         keeperFeePayer = new KeeperFeePayerMock(factory);
         factory.setKeeperFeePayer(address(keeperFeePayer));
 
-        vault = new ChromaticVaultMock(factory, address(_automate), address(_opf));
+        vault = new ChromaticVaultMock(factory, IVaultEarningDistributor(address(this)));
         factory.setVault(address(vault));
 
-        liquidator = new ChromaticLiquidatorMock(factory, address(_automate), address(_opf));
+        liquidator = new GelatoLiquidatorMock(factory, address(_automate), address(_opf));
         factory.setLiquidator(address(liquidator));
 
         factory.registerOracleProvider(
