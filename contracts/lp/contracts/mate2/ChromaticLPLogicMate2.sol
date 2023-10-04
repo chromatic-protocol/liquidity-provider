@@ -65,7 +65,8 @@ contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
             emit RebalanceLiquidity({receiptId: receiptId});
-            _payKeeperFee();
+            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            _payKeeperFee(balance);
         }
     }
 }

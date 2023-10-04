@@ -17,7 +17,6 @@ import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelat
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
-
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {ChromaticLPStorageMate2} from "~/lp/base/mate2/ChromaticLPStorageMate2.sol";
@@ -91,14 +90,32 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
     }
 
     function settleTask(uint256 receiptId) external {
-        if (_settle(receiptId)) {
-            _payKeeperFee();
+        if (s_task.settleTasks[receiptId] != 0) {
+            if (_settle(receiptId)) {
+                _payKeeperFee(_getMaxPayableFeeInSettlement(receiptId));
+            }
+        } // TODO else revert
+    }
+
+    function _getMaxPayableFeeInSettlement(
+        uint256 receiptId
+    ) internal view returns (uint256 maxFee) {
+        ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
+        if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
+            maxFee = receipt.amount - receipt.amount.mulDiv(s_config.utilizationTargetBPS, BPS);
+        } else {
+            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            maxFee = balance.mulDiv(receipt.amount, totalSupply());
         }
     }
 
-    function _payKeeperFee() internal virtual {
+    function _payKeeperFee(uint256 maxFeeInSettlementToken) internal virtual {
         (uint256 fee, address feePayee) = _getFeeInfo();
         IKeeperFeePayer payer = IKeeperFeePayer(s_config.market.factory().keeperFeePayer());
+
+        address token = address(s_config.market.settlementToken());
+        SafeERC20.safeTransfer(IERC20(token), address(payer), maxFeeInSettlementToken);
+
         payer.payKeeperFee(address(s_config.market.settlementToken()), fee, feePayee);
     }
 
