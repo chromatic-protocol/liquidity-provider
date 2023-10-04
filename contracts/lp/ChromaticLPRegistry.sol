@@ -15,8 +15,8 @@ contract ChromaticLPRegistry is Ownable {
     mapping(address => EnumerableSet.AddressSet) _lpsByMarket;
     mapping(address => EnumerableSet.AddressSet) _lpsBySettlementToken;
 
-    event ChromaticLPRegistered(address indexed lp);
-    event ChromaticLPUnregistered(address indexed lp);
+    event ChromaticLPRegistered(address indexed market, address indexed lp);
+    event ChromaticLPUnregistered(address indexed market, address indexed lp);
 
     error OnlyAccessableByOwner();
 
@@ -34,7 +34,7 @@ contract ChromaticLPRegistry is Ownable {
 
         _lpsBySettlementToken[lp.settlementToken()].add(address(lp));
 
-        emit ChromaticLPRegistered(address(lp));
+        emit ChromaticLPRegistered(market, address(lp));
     }
 
     function unregister(IChromaticLP lp) external onlyOwner {
@@ -43,7 +43,7 @@ contract ChromaticLPRegistry is Ownable {
 
         _lpsBySettlementToken[lp.settlementToken()].remove(address(lp));
 
-        emit ChromaticLPUnregistered(address(lp));
+        emit ChromaticLPUnregistered(market, address(lp));
     }
 
     function lpListByMarket(address market) external view returns (address[] memory) {
