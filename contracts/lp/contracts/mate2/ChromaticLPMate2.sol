@@ -29,12 +29,11 @@ contract ChromaticLPMate2 is
 
     address public immutable CHROMATIC_LP_LOGIC;
 
-    string _lpName;
     error NotImplementedInProxyContract();
 
     constructor(
         ChromaticLPLogicMate2 lpLogic,
-        string memory lpName_,
+        LPMeta memory lpMeta,
         Config memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates,
@@ -42,8 +41,7 @@ contract ChromaticLPMate2 is
     ) ChromaticLPBaseMate2(_automate) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
-        _initialize(config, _feeRates, distributionRates);
-        _lpName = lpName_;
+        _initialize(lpMeta, config, _feeRates, distributionRates);
         _createRebalanceTask();
     }
 
@@ -120,7 +118,7 @@ contract ChromaticLPMate2 is
      * @inheritdoc IChromaticLP
      */
     function lpName() external view override returns (string memory) {
-        return _lpName;
+        return string(abi.encodePacked(s_meta.lpName));
     }
 
     /**

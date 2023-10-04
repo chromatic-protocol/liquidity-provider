@@ -131,15 +131,15 @@ export class DeployTool {
   async deployLP(marketAddress: string, lpConfig?: LPConfig): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying LP for market: ${marketAddress}`))
     const config = this.getLPConfig(lpConfig)
-    if (!config.lpName) throw new Error('lpName not found')
+    if (!config.meta?.lpName) throw new Error('lpName not found')
 
-    const { address: logicAddress } = await this.deploy('ChromaticLPLogic', {
+    const { address: logicAddress } = await this.deploy('ChromaticLPLogicGelato', {
       from: this.deployer,
       args: [config.automateConfig]
     })
     const args = [
       logicAddress,
-      config.lpName,
+      config.meta,
       {
         market: marketAddress,
         ...config.config
@@ -148,7 +148,7 @@ export class DeployTool {
       config.distributionRates,
       config.automateConfig
     ]
-    const result = await this.deploy('ChromaticLP', {
+    const result = await this.deploy('ChromaticLPGelato', {
       from: this.deployer,
       args: args
     })

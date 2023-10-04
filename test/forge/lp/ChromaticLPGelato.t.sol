@@ -29,7 +29,6 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
 
     ChromaticLPGelato lp;
     ChromaticLPLogicGelato lpLogic;
-    LogUtil util;
 
     event AddLiquidity(
         uint256 indexed receiptId,
@@ -92,7 +91,7 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
 
         lp = new ChromaticLPGelato(
             lpLogic,
-            "lp pool",
+            ChromaticLPStorage.LPMeta({lpName: "lp pool", tag: "N"}),
             ChromaticLPStorage.Config({
                 market: market,
                 utilizationTargetBPS: 5000,
@@ -107,7 +106,6 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
                 opsProxyFactory: address(opf)
             })
         );
-        util = new LogUtil();
         console.log("LP address: ", address(lp));
         console.log("LP logic address: ", address(lpLogic));
     }

@@ -11,6 +11,7 @@ import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPR
 import {ChromaticLPStorageMate2} from "~/lp/base/mate2/ChromaticLPStorageMate2.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
+import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
 abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
     using Math for uint256;
@@ -33,6 +34,7 @@ abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
     constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {}
 
     function _initialize(
+        LPMeta memory meta,
         Config memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates
@@ -43,6 +45,7 @@ abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
             _feeRates,
             distributionRates
         );
+        s_meta = LPMeta({lpName: meta.lpName, tag: meta.tag});
         s_config = Config({
             market: config.market,
             utilizationTargetBPS: config.utilizationTargetBPS,
@@ -104,7 +107,15 @@ abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
      * @inheritdoc ERC20
      */
     function symbol() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("CLP", _tokenSymbol(), " - ", _indexName()));
+        return
+            string(
+                abi.encodePacked(
+                    "CLP-",
+                    TrimAddress.trimAddress(address(s_config.market), 4),
+                    "-",
+                    bytes(s_meta.tag)[0]
+                )
+            );
     }
 
     function _tokenSymbol() private view returns (string memory) {

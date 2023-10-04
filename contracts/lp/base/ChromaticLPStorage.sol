@@ -17,6 +17,12 @@ abstract contract ChromaticLPStorage is ERC20, IChromaticLPLens {
     using EnumerableSet for EnumerableSet.UintSet;
 
     uint16 constant BPS = 10000;
+
+    struct LPMeta {
+        string lpName;
+        string tag;
+    }
+
     struct Config {
         IChromaticMarket market;
         uint16 utilizationTargetBPS;
@@ -38,6 +44,7 @@ abstract contract ChromaticLPStorage is ERC20, IChromaticLPLens {
         uint256 receiptId;
     }
 
+    LPMeta internal s_meta;
     Config internal s_config;
     State internal s_state;
 

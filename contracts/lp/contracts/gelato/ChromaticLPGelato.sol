@@ -5,7 +5,6 @@ import {Proxy} from "@openzeppelin/contracts/proxy/Proxy.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPBaseGelato} from "~/lp/base/gelato/ChromaticLPBaseGelato.sol";
 import {ChromaticLPLogicGelato} from "~/lp/contracts/gelato/ChromaticLPLogicGelato.sol";
@@ -26,11 +25,9 @@ contract ChromaticLPGelato is
 
     address public immutable CHROMATIC_LP_LOGIC;
 
-    string _lpName;
-
     constructor(
         ChromaticLPLogicGelato lpLogic,
-        string memory lpName_,
+        LPMeta memory lpMeta,
         Config memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates,
@@ -38,8 +35,7 @@ contract ChromaticLPGelato is
     ) ChromaticLPBaseGelato(automateParam) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
-        _initialize(config, _feeRates, distributionRates);
-        _lpName = lpName_;
+        _initialize(lpMeta, config, _feeRates, distributionRates);
         _createRebalanceTask();
     }
 
@@ -98,7 +94,7 @@ contract ChromaticLPGelato is
      * @inheritdoc IChromaticLP
      */
     function lpName() external view override returns (string memory) {
-        return _lpName;
+        return string(abi.encodePacked(s_meta.lpName));
     }
 
     /**

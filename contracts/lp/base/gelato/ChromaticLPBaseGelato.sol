@@ -10,6 +10,7 @@ import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/I
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
 abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
@@ -32,6 +33,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
     constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
 
     function _initialize(
+        LPMeta memory meta,
         Config memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates
@@ -42,6 +44,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
             _feeRates,
             distributionRates
         );
+        s_meta = LPMeta({lpName: meta.lpName, tag: meta.tag});
         s_config = Config({
             market: config.market,
             utilizationTargetBPS: config.utilizationTargetBPS,
@@ -103,14 +106,22 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
      * @inheritdoc ERC20
      */
     function symbol() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("CLP", _tokenSymbol(), " - ", _indexName()));
+        return
+            string(
+                abi.encodePacked(
+                    "CLP-",
+                    TrimAddress.trimAddress(address(s_config.market), 4),
+                    "-",
+                    bytes(s_meta.tag)[0]
+                )
+            );
     }
 
-    function _tokenSymbol() private view returns (string memory) {
+    function _tokenSymbol() internal view returns (string memory) {
         return s_config.market.settlementToken().symbol();
     }
 
-    function _indexName() private view returns (string memory) {
+    function _indexName() internal view returns (string memory) {
         return s_config.market.oracleProvider().description();
     }
 
