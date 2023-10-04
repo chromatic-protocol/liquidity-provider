@@ -43,14 +43,20 @@ export class Helper {
 
   private async initialize() {
     if (!this.hre.network.tags.local) {
-      const deployed = await this.hre.deployments.get('ChromaticLPRegistry')
-      this.deployed.saveRegistry(deployed.address)
+      try {
+        const deployed = await this.hre.deployments.get('ChromaticLPRegistry')
+        if (deployed?.address) {
+          this.deployed.saveRegistry(deployed.address)
 
-      const registry = this.registry
-      const markets = await this.markets()
-      for (const market of markets) {
-        const lpAddresses = await registry.lpListByMarket(market.address)
-        lpAddresses.map((x) => this.deployed.saveLP(x, market.address))
+          const registry = this.registry
+          const markets = await this.markets()
+          for (const market of markets) {
+            const lpAddresses = await registry.lpListByMarket(market.address)
+            lpAddresses.map((x) => this.deployed.saveLP(x, market.address))
+          }
+        }
+      } catch {
+        // pass
       }
     }
   }
