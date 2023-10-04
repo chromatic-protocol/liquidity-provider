@@ -38,7 +38,11 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         uint256 amount
     );
 
-    event AddLiquiditySettled(uint256 indexed receiptId, uint256 lpTokenAmount);
+    event AddLiquiditySettled(
+        uint256 indexed receiptId,
+        uint256 settlementAdded,
+        uint256 lpTokenAmount
+    );
 
     event RemoveLiquidity(
         uint256 indexed receiptId,
@@ -139,7 +143,7 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         oracleProvider.increaseVersion(3 ether);
 
         vm.expectEmit(true, false, false, true, address(lp));
-        emit AddLiquiditySettled(receipt.id, receipt.amount);
+        emit AddLiquiditySettled(receipt.id, receipt.amount, receipt.amount);
         assertEq(true, lp.settle(receipt.id));
 
         uint256 tokenBalanceAfter = lp.balanceOf(address(this));

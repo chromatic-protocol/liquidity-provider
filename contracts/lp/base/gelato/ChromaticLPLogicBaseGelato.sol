@@ -385,7 +385,11 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
                 ? receipt.amount
                 : receipt.amount.mulDiv(totalSupply(), total - receipt.amount);
             _mint(receipt.recipient, lpTokenMint);
-            emit AddLiquiditySettled({receiptId: receipt.id, lpTokenAmount: lpTokenMint});
+            emit AddLiquiditySettled({
+                receiptId: receipt.id,
+                settlementAdded: receipt.amount,
+                lpTokenAmount: lpTokenMint
+            });
         } else {
             emit RebalanceSettled({receiptId: receipt.id});
         }

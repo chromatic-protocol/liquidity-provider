@@ -48,7 +48,11 @@ abstract contract ChromaticLPStorage is ERC20, IChromaticLPLens {
         uint256 amount
     );
 
-    event AddLiquiditySettled(uint256 indexed receiptId, uint256 lpTokenAmount);
+    event AddLiquiditySettled(
+        uint256 indexed receiptId,
+        uint256 settlementAdded,
+        uint256 lpTokenAmount
+    );
 
     event RemoveLiquidity(
         uint256 indexed receiptId,
