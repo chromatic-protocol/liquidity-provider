@@ -355,7 +355,7 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
         if (receipt.recipient != address(this)) {
             uint256 total = totalValue();
 
-            uint256 lpTokenMint = total == receipt.amount
+            uint256 lpTokenMint = totalSupply() == 0
                 ? receipt.amount
                 : receipt.amount.mulDiv(totalSupply(), total - receipt.amount);
             _mint(receipt.recipient, lpTokenMint);

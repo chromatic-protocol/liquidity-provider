@@ -121,8 +121,9 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             // finally remove settle task
             cancelSettleTask(receiptId);
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     function _settleAddLiquidity(ChromaticLPReceipt memory receipt) internal {
@@ -362,7 +363,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         if (receipt.recipient != address(this)) {
             uint256 total = totalValue();
 
-            uint256 lpTokenMint = total == receipt.amount
+            uint256 lpTokenMint = totalSupply() == 0
                 ? receipt.amount
                 : receipt.amount.mulDiv(totalSupply(), total - receipt.amount);
             _mint(receipt.recipient, lpTokenMint);
