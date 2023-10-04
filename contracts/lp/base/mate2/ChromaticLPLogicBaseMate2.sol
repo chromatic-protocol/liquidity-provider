@@ -468,7 +468,8 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
             emit RemoveLiquiditySettled({
                 receiptId: receipt.id,
                 burningAmount: burningAmount,
-                remainingAmount: remainingAmount
+                witdrawnSettlementAmount: withdrawAmount,
+                refundedAmount: remainingAmount
             });
         } else {
             emit RebalanceSettled({receiptId: receipt.id});

@@ -477,7 +477,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             emit RemoveLiquiditySettled({
                 receiptId: receipt.id,
                 burningAmount: burningAmount,
-                remainingAmount: remainingAmount
+                witdrawnSettlementAmount: withdrawAmount,
+                refundedAmount: remainingAmount
             });
         } else {
             emit RebalanceSettled({receiptId: receipt.id});
