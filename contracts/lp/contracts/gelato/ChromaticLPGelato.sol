@@ -94,7 +94,7 @@ contract ChromaticLPGelato is
      * @inheritdoc IChromaticLP
      */
     function lpName() external view override returns (string memory) {
-        return string(abi.encodePacked(s_meta.lpName));
+        return s_meta.lpName;
     }
 
     /**
