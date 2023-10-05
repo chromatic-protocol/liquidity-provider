@@ -4,13 +4,13 @@
   "license": "MIT",
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
-    "@chromatic-protocol/contracts": "^0.0.1-rc.241",
+    "@chromatic-protocol/contracts": "^0.0.1-rc.245",
     "@openzeppelin/contracts": "^4.9.3",
     "@uniswap/v3-periphery": "^1.4.3"
   },
   "devDependencies": {
     "@chromatic-protocol/hardhat-package": "^0.0.1-dev.18",
-    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.141",
+    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.152",
     "@gelatonetwork/automate-sdk": "^2.14.0",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.1",
     "@nomicfoundation/hardhat-ethers": "^3.0.4",
