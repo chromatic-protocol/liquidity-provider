@@ -58,10 +58,10 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.249":
-  version "0.0.1-rc.249"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.249.tgz#a0b448a34d056fb69c55238fd2a7764dc34ff8f2"
-  integrity sha512-8EQVlZNdRko5QlpZdWe/CefdWSeF8jflLcU1Q2SqbeXFGy5Lhi/eHCcCClcx1AiDRPE3GTSXCgyoVeDvoj8Vfg==
+"@chromatic-protocol/contracts@^0.0.1-rc.252":
+  version "0.0.1-rc.252"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.252.tgz#17858dc1b0971d21bb32d1dc7a09e6c13dea0fa2"
+  integrity sha512-2MVtEFPUPAUoZeEI/NayGQuTztVxS1l9snRWH0J2I/9lGf1ikPIouLbiZgOTsi9od+Ug7Rn3Ba/4a9kNdmE9Kw==
   dependencies:
     "@chainlink/contracts" "^0.6.1"
     "@openzeppelin/contracts" "^4.9.3"
@@ -77,10 +77,10 @@
     minimatch "^9.0.0"
     solidity-docgen "^0.6.0-beta.35"
 
-"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.154":
-  version "0.1.0-rc.154"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.154.tgz#dc272bc1dd0fa9a355341a041bbccf7a055a5ffa"
-  integrity sha512-EOkaveOpueUTAet4EgRU747C/mrCOWZ9aes0DIp9B4xnihfrWuHxB5FNrwYw5o6v3QlNRO35shFrmAR58IbMbA==
+"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.155":
+  version "0.1.0-rc.155"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.155.tgz#6e626fbe14711893c717615cb75754e4cdac15e6"
+  integrity sha512-ZR8KUUq9YinFBQCDMjYarRbNuHUwWImd+7C+WXdlrQnDsONUQOkFbrUD8vDRqO5cgxED09TkZUfs7LAwydPAfw==
 
 "@colors/colors@1.5.0":
   version "1.5.0"

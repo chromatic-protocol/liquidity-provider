@@ -4,13 +4,13 @@
   "license": "MIT",
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
-    "@chromatic-protocol/contracts": "^0.0.1-rc.249",
+    "@chromatic-protocol/contracts": "^0.0.1-rc.252",
     "@openzeppelin/contracts": "^4.9.3",
     "@uniswap/v3-periphery": "^1.4.3"
   },
   "devDependencies": {
     "@chromatic-protocol/hardhat-package": "^0.0.1-dev.18",
-    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.154",
+    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.155",
     "@gelatonetwork/automate-sdk": "^2.14.0",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.1",
     "@nomicfoundation/hardhat-ethers": "^3.0.4",
@@ -44,6 +44,7 @@
     "typescript": ">=4.5.0"
   },
   "scripts": {
+    "repl": "hardhat console --config hardhat.repl.config.ts --no-compile",
     "repl:anvil:arbitrum": "hardhat console --network anvil_arbitrum --config hardhat.repl.config.ts --no-compile",
     "repl:anvil:mantle": "hardhat console --network anvil_mantle --config hardhat.repl.config.ts --no-compile",
     "repl:arbitrum_goerli": "hardhat console --network arbitrum_goerli --config hardhat.repl.config.ts --no-compile"
