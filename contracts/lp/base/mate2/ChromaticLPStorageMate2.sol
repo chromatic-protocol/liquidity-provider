@@ -36,7 +36,7 @@ abstract contract ChromaticLPStorageMate2 is ChromaticLPStorage, IMate2Automatio
     ) internal returns (uint256 upkeepId) {
         upkeepId = automate.registerUpkeep(
             address(this), // target
-            1e6, //uint32 gasLimit,
+            2e8, //uint32 gasLimit,
             address(this), // address admin,
             false, // bool useTreasury,
             singleExec, // bool singleExec,

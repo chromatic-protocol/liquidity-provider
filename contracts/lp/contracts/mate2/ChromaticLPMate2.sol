@@ -42,10 +42,9 @@ contract ChromaticLPMate2 is
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(lpMeta, config, _feeRates, distributionRates);
-        _createRebalanceTask();
     }
 
-    function _createRebalanceTask() internal {
+    function createRebalanceTask() public {
         if (s_task.rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
         s_task.rebalanceTaskId = _registerUpkeep(
             UpkeepType.Rebalance,
