@@ -44,7 +44,7 @@ export class DeployTool {
   private async deploy(name: string, options: DeployOptions): Promise<DeployResult> {
     if (!this.deployer) throw new Error('not initialized')
 
-    console.log(chalk.yellow(`✨ Deploying... ${name}`))
+    console.log(chalk.yellow(`✨ Deploying... ${name}\n deployOptions: ${JSON.stringify(options)}`))
     const deployResult = await this._deploy(name, options)
 
     if (deployResult.newlyDeployed) {
@@ -175,14 +175,12 @@ export class DeployTool {
     if (tokens.length == 0) {
       throw new Error('settlementToken not found')
     }
-      
+
     for (let token of tokens) {
       console.log(
-        chalk.green(
-          `✨ registered token of marketFactory: ${token.name}, ${token.address}`
-        )
+        chalk.green(`✨ registered token of marketFactory: ${token.name}, ${token.address}`)
       )
-        const markets = await marketFactory.getMarkets(token.address)
+      const markets = await marketFactory.getMarkets(token.address)
       allMarkets.push(...markets)
     }
 
