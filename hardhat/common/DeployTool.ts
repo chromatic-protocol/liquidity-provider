@@ -262,10 +262,21 @@ export class DeployTool {
       await this.addWhitelistedRegistrar(lpAddress)
     }
   }
+  async unregisterAutomationAllLP() {
+    for (let lpAddress of this.helper.lpAddresses) {
+      await this.removeWhitelistedRegistrar(lpAddress)
+    }
+  }
 
   async addWhitelistedRegistrar(lpAddress: string) {
     const mate2Registry = this.helper.automationRegistry
     console.log(chalk.yellow(`🔧 addWhitelistedRegistrar...: ${lpAddress}`))
     await (await mate2Registry.addWhitelistedRegistrar(lpAddress)).wait()
+  }
+
+  async removeWhitelistedRegistrar(lpAddress: string) {
+    const mate2Registry = this.helper.automationRegistry
+    console.log(chalk.yellow(`🔧 removeWhitelistedRegistrar...: ${lpAddress}`))
+    await (await mate2Registry.removeWhitelistedRegistrar(lpAddress)).wait()
   }
 }

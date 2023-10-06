@@ -6,6 +6,8 @@ import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
+import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {ChromaticLPBaseGelato} from "~/lp/base/gelato/ChromaticLPBaseGelato.sol";
 import {ChromaticLPLogicGelato} from "~/lp/contracts/gelato/ChromaticLPLogicGelato.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
@@ -52,7 +54,6 @@ contract ChromaticLPGelato is
         _fallback();
     }
 
-
     /**
      * @dev This is the address to which proxy functions are delegated to
      */
@@ -61,7 +62,7 @@ contract ChromaticLPGelato is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function addLiquidity(
         uint256 /* amount */,
@@ -71,7 +72,7 @@ contract ChromaticLPGelato is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function removeLiquidity(
         uint256 /* lpTokenAmount */,
@@ -81,7 +82,7 @@ contract ChromaticLPGelato is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function settle(uint256 /* receiptId */) external override returns (bool) {
         _fallback();
@@ -96,7 +97,7 @@ contract ChromaticLPGelato is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPMeta
      */
     function lpName() external view override returns (string memory) {
         return s_meta.lpName;
@@ -124,7 +125,7 @@ contract ChromaticLPGelato is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function getReceiptIdsOf(
         address owner
@@ -133,7 +134,7 @@ contract ChromaticLPGelato is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function getReceipt(
         uint256 receiptId

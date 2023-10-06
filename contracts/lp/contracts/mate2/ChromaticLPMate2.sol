@@ -7,6 +7,8 @@ import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Recei
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
+import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {ChromaticLPBaseMate2} from "~/lp/base/mate2/ChromaticLPBaseMate2.sol";
 import {ChromaticLPLogicMate2} from "~/lp/contracts/mate2/ChromaticLPLogicMate2.sol";
 import {ChromaticLPStorageMate2} from "~/lp/base/mate2/ChromaticLPStorageMate2.sol";
@@ -65,7 +67,7 @@ contract ChromaticLPMate2 is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function addLiquidity(
         uint256 /* amount */,
@@ -75,7 +77,7 @@ contract ChromaticLPMate2 is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function removeLiquidity(
         uint256 /* lpTokenAmount */,
@@ -89,11 +91,11 @@ contract ChromaticLPMate2 is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function settle(
         uint256 /* receiptId */
-    ) public override(IChromaticLP, ChromaticLPStorageMate2) returns (bool) {
+    ) public override(IChromaticLPLiquidity, ChromaticLPStorageMate2) returns (bool) {
         _fallback();
     }
 
@@ -118,7 +120,7 @@ contract ChromaticLPMate2 is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPMeta
      */
     function lpName() external view override returns (string memory) {
         return s_meta.lpName;
@@ -146,7 +148,7 @@ contract ChromaticLPMate2 is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function getReceiptIdsOf(
         address owner
@@ -155,7 +157,7 @@ contract ChromaticLPMate2 is
     }
 
     /**
-     * @inheritdoc IChromaticLP
+     * @inheritdoc IChromaticLPLiquidity
      */
     function getReceipt(
         uint256 receiptId
