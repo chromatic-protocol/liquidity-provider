@@ -48,7 +48,7 @@ export class DeployTool {
     const deployResult = await this._deploy(name, options)
 
     if (deployResult.newlyDeployed) {
-      console.log(chalk.yellow(`✨ newly deployed ${name}: ${deployResult.address}\n`))
+      console.log(chalk.blue(`✨ newly deployed ${name}: ${deployResult.address}\n`))
     } else {
       console.log(chalk.green(`✨ previously deployed ${name}: ${deployResult.address}\n`))
     }
