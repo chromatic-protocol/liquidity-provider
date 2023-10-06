@@ -15,7 +15,6 @@ import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
 abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
     using Math for uint256;
-    using EnumerableSet for EnumerableSet.UintSet;
 
     address _owner;
     modifier onlyOwner() virtual {

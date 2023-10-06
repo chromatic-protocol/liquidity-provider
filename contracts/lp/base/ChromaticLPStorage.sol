@@ -21,7 +21,6 @@ abstract contract ChromaticLPStorage is
     IChromaticLPErrors
 {
     using Math for uint256;
-    using EnumerableSet for EnumerableSet.UintSet;
 
     uint16 constant BPS = 10000;
 

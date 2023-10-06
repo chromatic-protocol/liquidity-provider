@@ -14,7 +14,6 @@ import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
 abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
-    using EnumerableSet for EnumerableSet.UintSet;
 
     address _owner;
     modifier onlyOwner() virtual {
