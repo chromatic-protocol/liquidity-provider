@@ -27,4 +27,8 @@ interface IChromaticLP {
     function getReceiptIdsOf(address owner) external view returns (uint256[] memory);
 
     function getReceipt(uint256 id) external view returns (ChromaticLPReceipt memory);
+
+    function createRebalanceTask() external;
+
+    function cancelRebalanceTask() external;
 }
