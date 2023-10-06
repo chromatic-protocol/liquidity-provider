@@ -26,6 +26,17 @@ const common = {
   }
 }
 
+const localCommon = {
+  ...common,
+  accounts: {
+    ...common.accounts,
+    mnemonic: MNEMONIC_JUNK
+  },
+  allowUnlimitedContractSize: true,
+  saveDeployments: false,
+  timeout: 100_000 // TransactionExecutionError: Headers Timeout Error
+}
+
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -43,46 +54,37 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
-      // localhost anvil
+      ...localCommon,
       forking: {
         url: `https://arb-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
         blockNumber: 19474553
       },
-      ...common,
-      accounts: {
-        ...common.accounts,
-        mnemonic: MNEMONIC_JUNK
-      },
-      tags: ['local'],
-      allowUnlimitedContractSize: true,
-      saveDeployments: false
+      tags: ['local', 'arbitrum', 'gelato']
     },
-    anvil: {
-      // localhost anvil
-      ...common,
-      accounts: {
-        ...common.accounts,
-        mnemonic: MNEMONIC_JUNK
-      },
+    anvil_arbitrum: {
+      ...localCommon,
       url: 'http://127.0.0.1:8545',
       chainId: 31337,
-      tags: ['local'],
-      allowUnlimitedContractSize: true,
-      saveDeployments: false,
-      timeout: 100_000 // TransactionExecutionError: Headers Timeout Error
+      tags: ['local', 'arbitrum', 'gelato']
+    },
+    anvil_mantle: {
+      ...localCommon,
+      url: 'http://127.0.0.1:8545',
+      chainId: 31338,
+      tags: ['local', 'mantle', 'mate2']
     },
     arbitrum_goerli: {
       // testnet
       ...common,
       url: `https://arb-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
       chainId: 421613,
-      tags: ['testnet', 'arbitrum']
+      tags: ['testnet', 'arbitrum', 'gelato']
     },
     mantle_testnet: {
       ...common,
       url: `https://lb.drpc.org/ogrpc?network=mantle-testnet&dkey=${process.env.DRPC_KEY}`,
       chainId: 5001,
-      tags: ['testnet', 'mantle']
+      tags: ['testnet', 'mantle', 'mate2']
     }
   },
   namedAccounts: {

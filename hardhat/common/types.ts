@@ -3,6 +3,15 @@ import { BigNumberish } from 'ethers'
 import { DeployResult } from 'hardhat-deploy/types'
 import type { IOracleProvider } from '~/typechain-types'
 
+export type AddressType = `0x${string}`
+
+export type AutomateConfig =
+  | {
+      automate: AddressType
+      opsProxyFactory: AddressType
+    }
+  | AddressType
+
 export interface LPConfig {
   meta: {
     lpName?: string
@@ -16,29 +25,26 @@ export interface LPConfig {
   }
   feeRates: Array<number>
   distributionRates: Array<number>
-  automateConfig?: {
-    automate: string
-    opsProxyFactory: string
-  }
+  automateConfig?: AutomateConfig
 }
 
 export interface MarketInfo {
-  address: string
+  address: AddressType
   oracleValue: IOracleProvider.OracleVersionStructOutput
   description: string
 }
 
 export interface LPContractAddress {
-  lpAddress: string
-  logicAddress: string
+  lpAddress: AddressType
+  logicAddress: AddressType
 }
 
 export interface LPContractMap {
-  [marketAddress: string]: LPContractAddress
+  [marketAddress: AddressType]: LPContractAddress
 }
 
 export interface LPDeployedResultMap {
-  [marketAddress: string]: DeployResult
+  [marketAddress: AddressType]: DeployResult
 }
 
 export interface RegistryDeployedResultMap {

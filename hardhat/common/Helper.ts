@@ -21,7 +21,7 @@ export class Helper {
     } else {
       signer = signerOrAddress as Signer
     }
-    console.log('signer:', signer)
+    // console.log('signer:', signer)
     const helper = new Helper(hre, signer, await signer.getAddress())
     await helper.initialize()
     return helper
@@ -32,12 +32,20 @@ export class Helper {
     public readonly signer: Signer,
     public readonly signerAddress: string
   ) {
-    this.sdk = new ClientSDK(this.hre.network.name, this.signer)
+    this.sdk = new ClientSDK(this.networkName, this.signer)
 
     if (this.hre.network.tags.local) {
       this.deployed = DEPLOYED
     } else {
       this.deployed = new DeployedStore()
+    }
+  }
+
+  get networkName() {
+    if (this.hre.network.name == 'anvil_arbitrum') {
+      return 'anvil'
+    } else {
+      return this.hre.network.name
     }
   }
 
