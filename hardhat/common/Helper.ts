@@ -4,11 +4,13 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import {
   ChromaticLPRegistry,
   ChromaticLPRegistry__factory,
-  ChromaticLP__factory
+  IChromaticLP__factory,
+  IMate2AutomationRegistry__factory,
+  type IMate2AutomationRegistry
 } from '~/typechain-types'
 import { DEPLOYED, DeployedStore } from './DeployedStore'
+import { getAutomateAddress } from './getAutomateConfig'
 import { MarketInfo } from './types'
-
 export class Helper {
   sdk: ClientSDK
   deployed: DeployedStore
@@ -86,7 +88,11 @@ export class Helper {
   lpOfMarket(marketAddress: string) {
     const address = this.deployed.lpOfMarket(marketAddress)
     if (!address) throw new Error('no address')
-    return ChromaticLP__factory.connect(address, this.signer)
+    return IChromaticLP__factory.connect(address, this.signer)
+  }
+
+  lp(lpAddress: string) {
+    return IChromaticLP__factory.connect(lpAddress, this.signer)
   }
 
   async settlementTokens() {
@@ -100,11 +106,19 @@ export class Helper {
       const markets = await this.marketFactory.getMarkets(token.address)
       allMarkets.push(...markets)
     }
-    return allMarkets
+    return allMarkets as MarketInfo[]
   }
 
   async marketAddresses(): Promise<string[]> {
     const infos = await this.markets()
     return infos.map((x) => x.address)
+  }
+
+  get automationRegistry(): IMate2AutomationRegistry {
+    return IMate2AutomationRegistry__factory.connect(getAutomateAddress(this.hre), this.signer)
+  }
+
+  get lpAddresses(): string[] {
+    return this.deployed.lpAddresses
   }
 }

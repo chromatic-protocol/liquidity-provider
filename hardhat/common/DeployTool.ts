@@ -193,12 +193,21 @@ export class DeployTool {
     return this.helper.registry
   }
 
-  async registerLPAll() {
+  async registerAllLP() {
     let registry = await this.getRegistry()
 
     if (!this.hre.network.name.startsWith('anvil')) throw new Error('local network only')
-    for (const lpAddress of DEPLOYED.lpAddresses) {
-      this.registerLP(lpAddress, registry)
+    for (const lpAddress of this.helper.lpAddresses) {
+      await this.registerLP(lpAddress, registry)
+    }
+  }
+
+  async unregisterAllLP() {
+    let registry = await this.getRegistry()
+
+    for (const lpAddress of this.helper.lpAddresses) {
+      await this.unregisterLP(lpAddress, registry)
+      await this.cancelRebalanceTask(lpAddress)
     }
   }
 
@@ -206,21 +215,52 @@ export class DeployTool {
     if (!registry) registry = await this.getRegistry()
 
     console.log(chalk.green(`✨ registering lpAddress to registry: ${lpAddress}`))
-    await registry.register(lpAddress)
+    await (await registry.register(lpAddress)).wait()
   }
 
   async unregisterLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
-    await registry.unregister(lpAddress)
+    await (await registry.unregister(lpAddress)).wait()
   }
 
   async verify(options: any) {
-    if (!this.hre.network.tags.local) {
+    // FIXME
+    if (!this.hre.network.tags.local && !this.hre.network.tags.mantle) {
       try {
         await this.hre.run('verify:verify', options)
       } catch (e) {
         console.error(e)
       }
     }
+  }
+
+  async createRebalanceTaskAll() {
+    for (let lpAddress of this.helper.lpAddresses) {
+      await this.createRebalanceTask(lpAddress)
+    }
+  }
+
+  async createRebalanceTask(lpAddress: string) {
+    const lp = this.helper.lp(lpAddress)
+    console.log(chalk.yellow(`🔧 createRebalanceTask...: ${lpAddress}`))
+    await (await lp.createRebalanceTask()).wait()
+  }
+
+  async cancelRebalanceTask(lpAddress: string) {
+    const lp = this.helper.lp(lpAddress)
+    console.log(chalk.yellow(`🔧 cancelRebalanceTask...: ${lpAddress}`))
+    await (await lp.cancelRebalanceTask()).wait()
+  }
+
+  async registerAutomationAllLP() {
+    for (let lpAddress of this.helper.lpAddresses) {
+      await this.addWhitelistedRegistrar(lpAddress)
+    }
+  }
+
+  async addWhitelistedRegistrar(lpAddress: string) {
+    const mate2Registry = this.helper.automationRegistry
+    console.log(chalk.yellow(`🔧 addWhitelistedRegistrar...: ${lpAddress}`))
+    await (await mate2Registry.addWhitelistedRegistrar(lpAddress)).wait()
   }
 }

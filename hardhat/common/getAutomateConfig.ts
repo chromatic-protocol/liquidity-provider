@@ -8,7 +8,7 @@ export const MATE2_AUTOMATION_ADDRESS: { [key: number]: AddressType } = {
   5001: '0xF4564c2310680c4F19f2625842E3875A98c110A3' // mantle_testnet
 }
 
-function getAutomateAddress(hre: HardhatRuntimeEnvironment): AddressType {
+export function getAutomateAddress(hre: HardhatRuntimeEnvironment): AddressType {
   if (hre.network.tags.gelato) {
     if (hre.network.tags.testnet || hre.network.tags.local) {
       return GELATO_ADDRESSES[CHAIN_ID.ARBITRUM_GOERLI].automate as AddressType

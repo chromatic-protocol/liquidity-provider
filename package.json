@@ -47,6 +47,7 @@
     "repl": "hardhat console --config hardhat.repl.config.ts --no-compile",
     "repl:anvil:arbitrum": "hardhat console --network anvil_arbitrum --config hardhat.repl.config.ts --no-compile",
     "repl:anvil:mantle": "hardhat console --network anvil_mantle --config hardhat.repl.config.ts --no-compile",
-    "repl:arbitrum_goerli": "hardhat console --network arbitrum_goerli --config hardhat.repl.config.ts --no-compile"
+    "repl:arbitrum_goerli": "hardhat console --network arbitrum_goerli --config hardhat.repl.config.ts --no-compile",
+    "repl:mantle_testnet": "hardhat console --network mantle_testnet --config hardhat.repl.config.ts --no-compile"
   }
 }
