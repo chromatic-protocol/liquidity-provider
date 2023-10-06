@@ -36,10 +36,10 @@ contract ChromaticLPGelato is
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(lpMeta, config, _feeRates, distributionRates);
-        _createRebalanceTask();
+        createRebalanceTask();
     }
 
-    function _createRebalanceTask() internal {
+    function createRebalanceTask() public onlyOwner {
         if (s_task.rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
         s_task.rebalanceTaskId = _createTask(
             abi.encodeCall(this.resolveRebalance, ()),
@@ -47,6 +47,11 @@ contract ChromaticLPGelato is
             s_config.rebalanceCheckingInterval
         );
     }
+
+    function cancelRebalanceTask() external onlyOwner {
+        _fallback();
+    }
+
 
     /**
      * @dev This is the address to which proxy functions are delegated to

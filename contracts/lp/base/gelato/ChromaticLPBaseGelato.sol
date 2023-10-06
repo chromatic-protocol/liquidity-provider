@@ -29,8 +29,17 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
     error AlreadySwapRouterConfigured();
     error NotKeeperCalled();
     error AlreadyRebalanceTaskExist();
+    error OnlyAccessableByOwner();
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
+    address _owner;
+    modifier onlyOwner() virtual {
+        if (msg.sender != _owner) revert OnlyAccessableByOwner();
+        _;
+    }
+
+    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {
+        _owner = msg.sender;
+    }
 
     function _initialize(
         LPMeta memory meta,

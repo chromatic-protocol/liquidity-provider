@@ -40,7 +40,6 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
     error AlreadySwapRouterConfigured();
     error NotAutomationCalled();
     error NotImplementedInLogicContract();
-
     struct AddLiquidityBatchCallbackData {
         address provider;
         uint256 liquidityAmount;
@@ -63,13 +62,14 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
         _;
     }
 
-    constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {}
+    constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {
+    }
 
     function nextReceiptId() internal returns (uint256 id) {
         id = ++s_state.receiptId;
     }
 
-    function cancelRebalanceTask() internal {
+    function cancelRebalanceTask() external {
         if (s_task.rebalanceTaskId != 0) {
             automate.cancelUpkeep(s_task.rebalanceTaskId);
             s_task.rebalanceTaskId = 0;

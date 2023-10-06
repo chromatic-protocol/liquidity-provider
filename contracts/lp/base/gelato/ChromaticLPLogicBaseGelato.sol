@@ -39,6 +39,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     error NotOwner();
     error AlreadySwapRouterConfigured();
     error NotAutomationCalled();
+    error OnlyAccessableByOwner();
 
     struct AddLiquidityBatchCallbackData {
         address provider;
@@ -67,7 +68,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         id = ++s_state.receiptId;
     }
 
-    function cancelRebalanceTask() internal {
+    function cancelRebalanceTask() external {
         if (s_task.rebalanceTaskId != 0) {
             automate.cancelTask(s_task.rebalanceTaskId);
             s_task.rebalanceTaskId = 0;

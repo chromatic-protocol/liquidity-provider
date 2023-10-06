@@ -30,8 +30,17 @@ abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
     error AlreadySwapRouterConfigured();
     error NotKeeperCalled();
     error AlreadyRebalanceTaskExist();
+    error OnlyAccessableByOwner();
 
-    constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {}
+    address _owner;
+    modifier onlyOwner() virtual {
+        if (msg.sender != _owner) revert OnlyAccessableByOwner();
+        _;
+    }
+    
+    constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {
+        _owner = msg.sender;
+    }
 
     function _initialize(
         LPMeta memory meta,

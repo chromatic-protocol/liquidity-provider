@@ -44,13 +44,17 @@ contract ChromaticLPMate2 is
         _initialize(lpMeta, config, _feeRates, distributionRates);
     }
 
-    function createRebalanceTask() public {
+    function createRebalanceTask() external onlyOwner {
         if (s_task.rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
         s_task.rebalanceTaskId = _registerUpkeep(
             UpkeepType.Rebalance,
             0,
             false // is not singleExec
         );
+    }
+
+    function cancelRebalanceTask() external onlyOwner {
+        _fallback();
     }
 
     /**
