@@ -207,6 +207,11 @@ export class DeployTool {
 
     for (const lpAddress of this.helper.lpAddresses) {
       await this.unregisterLP(lpAddress, registry)
+    }
+  }
+
+  async cancelRebalanceTaskAll() {
+    for (const lpAddress of this.helper.lpAddresses) {
       await this.cancelRebalanceTask(lpAddress)
     }
   }
