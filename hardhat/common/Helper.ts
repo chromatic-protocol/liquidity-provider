@@ -4,11 +4,13 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import {
   ChromaticLPRegistry,
   ChromaticLPRegistry__factory,
-  ChromaticLP__factory
+  IChromaticLP__factory,
+  IMate2AutomationRegistry__factory,
+  type IMate2AutomationRegistry
 } from '~/typechain-types'
 import { DEPLOYED, DeployedStore } from './DeployedStore'
+import { getAutomateAddress } from './getAutomateConfig'
 import { MarketInfo } from './types'
-
 export class Helper {
   sdk: ClientSDK
   deployed: DeployedStore
@@ -21,7 +23,7 @@ export class Helper {
     } else {
       signer = signerOrAddress as Signer
     }
-    console.log('signer:', signer)
+    // console.log('signer:', signer)
     const helper = new Helper(hre, signer, await signer.getAddress())
     await helper.initialize()
     return helper
@@ -32,7 +34,7 @@ export class Helper {
     public readonly signer: Signer,
     public readonly signerAddress: string
   ) {
-    this.sdk = new ClientSDK(this.hre.network.name, this.signer)
+    this.sdk = new ClientSDK(this.networkName, this.signer)
 
     if (this.hre.network.tags.local) {
       this.deployed = DEPLOYED
@@ -41,16 +43,30 @@ export class Helper {
     }
   }
 
+  get networkName() {
+    if (this.hre.network.name == 'anvil_arbitrum') {
+      return 'anvil'
+    } else {
+      return this.hre.network.name
+    }
+  }
+
   private async initialize() {
     if (!this.hre.network.tags.local) {
-      const deployed = await this.hre.deployments.get('ChromaticLPRegistry')
-      this.deployed.saveRegistry(deployed.address)
+      try {
+        const deployed = await this.hre.deployments.get('ChromaticLPRegistry')
+        if (deployed?.address) {
+          this.deployed.saveRegistry(deployed.address)
 
-      const registry = this.registry
-      const markets = await this.markets()
-      for (const market of markets) {
-        const lpAddresses = await registry.lpListByMarket(market.address)
-        lpAddresses.map((x) => this.deployed.saveLP(x, market.address))
+          const registry = this.registry
+          const markets = await this.markets()
+          for (const market of markets) {
+            const lpAddresses = await registry.lpListByMarket(market.address)
+            lpAddresses.map((x) => this.deployed.saveLP(x, market.address))
+          }
+        }
+      } catch {
+        // pass
       }
     }
   }
@@ -72,7 +88,11 @@ export class Helper {
   lpOfMarket(marketAddress: string) {
     const address = this.deployed.lpOfMarket(marketAddress)
     if (!address) throw new Error('no address')
-    return ChromaticLP__factory.connect(address, this.signer)
+    return IChromaticLP__factory.connect(address, this.signer)
+  }
+
+  lp(lpAddress: string) {
+    return IChromaticLP__factory.connect(lpAddress, this.signer)
   }
 
   async settlementTokens() {
@@ -86,11 +106,19 @@ export class Helper {
       const markets = await this.marketFactory.getMarkets(token.address)
       allMarkets.push(...markets)
     }
-    return allMarkets
+    return allMarkets as MarketInfo[]
   }
 
   async marketAddresses(): Promise<string[]> {
     const infos = await this.markets()
     return infos.map((x) => x.address)
+  }
+
+  get automationRegistry(): IMate2AutomationRegistry {
+    return IMate2AutomationRegistry__factory.connect(getAutomateAddress(this.hre), this.signer)
+  }
+
+  get lpAddresses(): string[] {
+    return this.deployed.lpAddresses
   }
 }

@@ -1,6 +1,4 @@
-import { GELATO_ADDRESSES } from '@gelatonetwork/automate-sdk'
 import chalk from 'chalk'
-import { ZeroAddress } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
@@ -8,9 +6,11 @@ import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
 import { ChromaticLPRegistry } from '~/typechain-types'
 
-import type { LPConfig, LPDeployedResultMap, MarketInfo } from './types'
-export type * from './types'
+import { getAutomateConfig } from './getAutomateConfig'
+import type { AutomateConfig, LPConfig, LPDeployedResultMap, MarketInfo } from './types'
 
+export type * from './types'
+export type AutomateType = 'gelato' | 'mate2'
 export class DeployTool {
   constructor(
     public readonly hre: HardhatRuntimeEnvironment,
@@ -44,11 +44,11 @@ export class DeployTool {
   private async deploy(name: string, options: DeployOptions): Promise<DeployResult> {
     if (!this.deployer) throw new Error('not initialized')
 
-    console.log(chalk.yellow(`✨ Deploying... ${name}`))
+    console.log(chalk.yellow(`✨ Deploying... ${name}\n deployOptions: ${JSON.stringify(options)}`))
     const deployResult = await this._deploy(name, options)
 
     if (deployResult.newlyDeployed) {
-      console.log(chalk.yellow(`✨ newly deployed ${name}: ${deployResult.address}\n`))
+      console.log(chalk.blue(`✨ newly deployed ${name}: ${deployResult.address}\n`))
     } else {
       console.log(chalk.green(`✨ previously deployed ${name}: ${deployResult.address}\n`))
     }
@@ -80,23 +80,30 @@ export class DeployTool {
     return res
   }
 
-  get echainId() {
-    const { config, network } = this.hre
-    const echainId =
-      network.name === 'anvil' ? config.networks.arbitrum_goerli.chainId! : network.config.chainId!
-    return echainId
+  get automateType(): AutomateType | undefined {
+    if (this.hre.network.tags.gelato) return 'gelato'
+    else if (this.hre.network.tags.mate2) return 'mate2'
+    else return undefined
   }
 
-  getAutomateConfig(): {
-    automate: string
-    opsProxyFactory: string
-  } {
-    const automateAddress = GELATO_ADDRESSES[this.echainId].automate
-    const automateConfig = {
-      automate: automateAddress,
-      opsProxyFactory: ZeroAddress
+  get automateConfig(): AutomateConfig {
+    return getAutomateConfig(this.hre)
+  }
+
+  get lpLogicContractName() {
+    if (this.automateType == 'gelato') return 'ChromaticLPLogicGelato'
+    else if (this.automateType == 'mate2') return 'ChromaticLPLogicMate2'
+    else {
+      throw new Error('unknown automateType')
     }
-    return automateConfig
+  }
+
+  get lpContractName() {
+    if (this.automateType == 'gelato') return 'ChromaticLPGelato'
+    else if (this.automateType == 'mate2') return 'ChromaticLPMate2'
+    else {
+      throw new Error('unknown automateType')
+    }
   }
 
   async deployAllLP(lpConfig?: LPConfig) {
@@ -124,22 +131,22 @@ export class DeployTool {
     } else {
       config = lpConfig
     }
-    config.automateConfig = this.getAutomateConfig()
+    config.automateConfig = this.automateConfig
     return config
   }
 
   async deployLP(marketAddress: string, lpConfig?: LPConfig): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying LP for market: ${marketAddress}`))
     const config = this.getLPConfig(lpConfig)
-    if (!config.lpName) throw new Error('lpName not found')
+    if (!config.meta?.lpName) throw new Error('lpName not found')
 
-    const { address: logicAddress } = await this.deploy('ChromaticLPLogic', {
+    const { address: logicAddress } = await this.deploy(this.lpLogicContractName, {
       from: this.deployer,
       args: [config.automateConfig]
     })
     const args = [
       logicAddress,
-      config.lpName,
+      config.meta,
       {
         market: marketAddress,
         ...config.config
@@ -148,7 +155,7 @@ export class DeployTool {
       config.distributionRates,
       config.automateConfig
     ]
-    const result = await this.deploy('ChromaticLP', {
+    const result = await this.deploy(this.lpContractName, {
       from: this.deployer,
       args: args
     })
@@ -164,17 +171,20 @@ export class DeployTool {
 
     const allMarkets = []
     const tokens = await marketFactory.registeredSettlementTokens()
-    console.log(
-      chalk.green(
-        `✨ registered tokens of marketFactory: ${tokens.length}, ${tokens[0].name}, ${tokens[0].address}`
-      )
-    )
+    // console.log(chalk.green(`✨ registered tokens of marketFactory: ${tokens}`))
+    if (tokens.length == 0) {
+      throw new Error('settlementToken not found')
+    }
+
     for (let token of tokens) {
+      console.log(
+        chalk.green(`✨ registered token of marketFactory: ${token.name}, ${token.address}`)
+      )
       const markets = await marketFactory.getMarkets(token.address)
       allMarkets.push(...markets)
     }
 
-    return allMarkets
+    return allMarkets as MarketInfo[]
   }
 
   async getRegistry() {
@@ -183,12 +193,26 @@ export class DeployTool {
     return this.helper.registry
   }
 
-  async registerLPAll() {
+  async registerAllLP() {
     let registry = await this.getRegistry()
 
-    if (this.hre.network.name !== 'anvil') throw new Error('anvil network only')
-    for (const lpAddress of DEPLOYED.lpAddresses) {
-      this.registerLP(lpAddress, registry)
+    if (!this.hre.network.name.startsWith('anvil')) throw new Error('local network only')
+    for (const lpAddress of this.helper.lpAddresses) {
+      await this.registerLP(lpAddress, registry)
+    }
+  }
+
+  async unregisterAllLP() {
+    let registry = await this.getRegistry()
+
+    for (const lpAddress of this.helper.lpAddresses) {
+      await this.unregisterLP(lpAddress, registry)
+    }
+  }
+
+  async cancelRebalanceTaskAll() {
+    for (const lpAddress of this.helper.lpAddresses) {
+      await this.cancelRebalanceTask(lpAddress)
     }
   }
 
@@ -196,21 +220,52 @@ export class DeployTool {
     if (!registry) registry = await this.getRegistry()
 
     console.log(chalk.green(`✨ registering lpAddress to registry: ${lpAddress}`))
-    await registry.register(lpAddress)
+    await (await registry.register(lpAddress)).wait()
   }
 
   async unregisterLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
-    await registry.unregister(lpAddress)
+    await (await registry.unregister(lpAddress)).wait()
   }
 
   async verify(options: any) {
-    if (!this.hre.network.tags.local) {
+    // FIXME
+    if (!this.hre.network.tags.local && !this.hre.network.tags.mantle) {
       try {
         await this.hre.run('verify:verify', options)
       } catch (e) {
         console.error(e)
       }
     }
+  }
+
+  async createRebalanceTaskAll() {
+    for (let lpAddress of this.helper.lpAddresses) {
+      await this.createRebalanceTask(lpAddress)
+    }
+  }
+
+  async createRebalanceTask(lpAddress: string) {
+    const lp = this.helper.lp(lpAddress)
+    console.log(chalk.yellow(`🔧 createRebalanceTask...: ${lpAddress}`))
+    await (await lp.createRebalanceTask()).wait()
+  }
+
+  async cancelRebalanceTask(lpAddress: string) {
+    const lp = this.helper.lp(lpAddress)
+    console.log(chalk.yellow(`🔧 cancelRebalanceTask...: ${lpAddress}`))
+    await (await lp.cancelRebalanceTask()).wait()
+  }
+
+  async registerAutomationAllLP() {
+    for (let lpAddress of this.helper.lpAddresses) {
+      await this.addWhitelistedRegistrar(lpAddress)
+    }
+  }
+
+  async addWhitelistedRegistrar(lpAddress: string) {
+    const mate2Registry = this.helper.automationRegistry
+    console.log(chalk.yellow(`🔧 addWhitelistedRegistrar...: ${lpAddress}`))
+    await (await mate2Registry.addWhitelistedRegistrar(lpAddress)).wait()
   }
 }

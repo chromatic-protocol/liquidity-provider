@@ -1,9 +1,11 @@
 import type { DeployFunction } from 'hardhat-deploy/types'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployTool, type LPConfig } from '~/hardhat/common/DeployTool'
-
 const LP_CONFIG: LPConfig = {
-  lpName: 'normal',
+  meta: {
+    lpName: 'normal',
+    tag: 'N'
+  },
   config: {
     utilizationTargetBPS: 5000,
     rebalanceBPS: 500,

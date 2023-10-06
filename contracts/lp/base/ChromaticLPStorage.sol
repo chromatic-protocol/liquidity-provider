@@ -5,24 +5,22 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 
-import {AutomateReady} from "@chromatic-protocol/contracts/core/base/gelato/AutomateReady.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/base/gelato/Types.sol";
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 
-abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
+abstract contract ChromaticLPStorage is ERC20, IChromaticLPLens {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
     uint16 constant BPS = 10000;
 
-    struct AutomateParam {
-        address automate;
-        address opsProxyFactory;
+    struct LPMeta {
+        string lpName;
+        string tag;
     }
 
     struct Config {
@@ -31,11 +29,6 @@ abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
         uint16 rebalanceBPS;
         uint256 rebalanceCheckingInterval;
         uint256 settleCheckingInterval;
-    }
-
-    struct Tasks {
-        bytes32 rebalanceTaskId;
-        mapping(uint256 => bytes32) settleTasks;
     }
 
     struct State {
@@ -51,8 +44,8 @@ abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
         uint256 receiptId;
     }
 
+    LPMeta internal s_meta;
     Config internal s_config;
-    Tasks internal s_task;
     State internal s_state;
 
     event AddLiquidity(
@@ -62,7 +55,11 @@ abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
         uint256 amount
     );
 
-    event AddLiquiditySettled(uint256 indexed receiptId, uint256 lpTokenAmount);
+    event AddLiquiditySettled(
+        uint256 indexed receiptId,
+        uint256 settlementAdded,
+        uint256 lpTokenAmount
+    );
 
     event RemoveLiquidity(
         uint256 indexed receiptId,
@@ -74,34 +71,14 @@ abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
     event RemoveLiquiditySettled(
         uint256 indexed receiptId,
         uint256 burningAmount,
-        uint256 remainingAmount
+        uint256 witdrawnSettlementAmount,
+        uint256 refundedAmount
     );
 
     event RebalanceLiquidity(uint256 indexed receiptId);
     event RebalanceSettled(uint256 indexed receiptId);
 
-    constructor(
-        AutomateParam memory automateParam
-    )
-        ERC20("", "")
-        AutomateReady(automateParam.automate, address(this), automateParam.opsProxyFactory)
-    {}
-
-    function _createTask(
-        bytes memory resolver,
-        bytes memory execSelector,
-        uint256 interval
-    ) internal returns (bytes32) {
-        ModuleData memory moduleData = ModuleData({modules: new Module[](3), args: new bytes[](3)});
-        moduleData.modules[0] = Module.RESOLVER;
-        moduleData.modules[1] = Module.TIME;
-        moduleData.modules[2] = Module.PROXY;
-        moduleData.args[0] = abi.encode(address(this), resolver); // abi.encodeCall(this.resolveRebalance, ()));
-        moduleData.args[1] = abi.encode(uint128(block.timestamp + interval), uint128(interval));
-        moduleData.args[2] = bytes("");
-
-        return automate.createTask(address(this), execSelector, moduleData, ETH);
-    }
+    constructor() ERC20("", "") {}
 
     function utilization() public view override returns (uint16 currentUtility) {
         ValueInfo memory value = valueInfo();
@@ -200,4 +177,6 @@ abstract contract ChromaticLPStorage is ERC20, AutomateReady, IChromaticLPLens {
             s_state.clbTokenIds
         );
     }
+
+    function _getFeeInfo() internal view virtual returns (uint256 fee, address feePayee);
 }

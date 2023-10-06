@@ -3,6 +3,12 @@ import '@nomicfoundation/hardhat-ethers'
 import '@nomicfoundation/hardhat-foundry'
 import '@nomicfoundation/hardhat-toolbox'
 import * as dotenv from 'dotenv'
+
+import { JsonRpcProvider, Network } from 'ethers'
+import { extendProvider } from 'hardhat/config'
+import { ProviderWrapper } from 'hardhat/plugins'
+import { EIP1193Provider, HttpNetworkConfig, RequestArguments } from 'hardhat/types'
+
 import 'hardhat-contract-sizer'
 import 'hardhat-deploy'
 import type { HardhatUserConfig } from 'hardhat/config'
@@ -18,6 +24,17 @@ const common = {
     mnemonic: process.env.MNEMONIC || MNEMONIC_JUNK,
     count: 10
   }
+}
+
+const localCommon = {
+  ...common,
+  accounts: {
+    ...common.accounts,
+    mnemonic: MNEMONIC_JUNK
+  },
+  allowUnlimitedContractSize: true,
+  saveDeployments: false,
+  timeout: 100_000 // TransactionExecutionError: Headers Timeout Error
 }
 
 const config: HardhatUserConfig = {
@@ -37,39 +54,37 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {
-      // localhost anvil
+      ...localCommon,
       forking: {
         url: `https://arb-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
-        blockNumber: 18064747
+        blockNumber: 19474553
       },
-      ...common,
-      accounts: {
-        ...common.accounts,
-        mnemonic: MNEMONIC_JUNK
-      },
-      tags: ['local'],
-      allowUnlimitedContractSize: true,
-      saveDeployments: false
+      tags: ['local', 'arbitrum', 'gelato']
     },
-    anvil: {
-      // localhost anvil
-      ...common,
-      accounts: {
-        ...common.accounts,
-        mnemonic: MNEMONIC_JUNK
-      },
+    anvil_arbitrum: {
+      ...localCommon,
       url: 'http://127.0.0.1:8545',
       chainId: 31337,
-      tags: ['local'],
-      allowUnlimitedContractSize: true,
-      saveDeployments: false
+      tags: ['local', 'arbitrum', 'gelato']
+    },
+    anvil_mantle: {
+      ...localCommon,
+      url: 'http://127.0.0.1:8545',
+      chainId: 31338,
+      tags: ['local', 'mantle', 'mate2']
     },
     arbitrum_goerli: {
       // testnet
       ...common,
-      url: 'https://goerli-rollup.arbitrum.io/rpc',
+      url: `https://arb-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
       chainId: 421613,
-      tags: ['testnet']
+      tags: ['testnet', 'arbitrum', 'gelato']
+    },
+    mantle_testnet: {
+      ...common,
+      url: `https://lb.drpc.org/ogrpc?network=mantle-testnet&dkey=${process.env.DRPC_KEY}`,
+      chainId: 5001,
+      tags: ['testnet', 'mantle', 'mate2']
     }
   },
   namedAccounts: {
@@ -88,9 +103,45 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      arbitrumGoerli: process.env.ARBISCAN_GOERLI_API_KEY!
-    }
+      arbitrumGoerli: process.env.ARBISCAN_GOERLI_API_KEY!,
+      mantleTestnet: 'test' // prevent MissingApiKeyError
+    },
+    customChains: [
+      {
+        network: 'mantleTestnet',
+        chainId: 5001,
+        urls: {
+          apiURL: 'https://explorer.testnet.mantle.xyz/api',
+          browserURL: 'https://explorer.testnet.mantle.xyz/'
+        }
+      }
+    ]
   }
 }
+
+class MantleProvider extends ProviderWrapper {
+  private _jsonRpcProvider: JsonRpcProvider
+
+  constructor(network: string, config: HttpNetworkConfig, _wrappedProvider: EIP1193Provider) {
+    super(_wrappedProvider)
+    this._jsonRpcProvider = new JsonRpcProvider(config.url, config.chainId, {
+      staticNetwork: new Network(network, config.chainId!)
+    })
+  }
+
+  public async request(args: RequestArguments) {
+    if (args.method === 'eth_estimateGas') {
+      return this._jsonRpcProvider.send(args.method, [(args.params as unknown[])[0]])
+    }
+
+    return this._wrappedProvider.request(args)
+  }
+}
+
+extendProvider(async (provider, config, network) => {
+  return network.startsWith('mantle')
+    ? new MantleProvider(network, config.networks[network] as HttpNetworkConfig, provider)
+    : provider
+})
 
 export default config

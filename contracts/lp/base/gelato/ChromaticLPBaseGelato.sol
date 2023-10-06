@@ -8,10 +8,11 @@ import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBToken
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
+import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
-abstract contract ChromaticLPBase is ChromaticLPStorage {
+abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -28,20 +29,31 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
     error AlreadySwapRouterConfigured();
     error NotKeeperCalled();
     error AlreadyRebalanceTaskExist();
+    error OnlyAccessableByOwner();
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
+    address _owner;
+    modifier onlyOwner() virtual {
+        if (msg.sender != _owner) revert OnlyAccessableByOwner();
+        _;
+    }
+
+    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {
+        _owner = msg.sender;
+    }
 
     function _initialize(
+        LPMeta memory meta,
         Config memory config,
-        int16[] memory feeRates,
+        int16[] memory _feeRates,
         uint16[] memory distributionRates
     ) internal {
         _validateConfig(
             config.utilizationTargetBPS,
             config.rebalanceBPS,
-            feeRates,
+            _feeRates,
             distributionRates
         );
+        s_meta = LPMeta({lpName: meta.lpName, tag: meta.tag});
         s_config = Config({
             market: config.market,
             utilizationTargetBPS: config.utilizationTargetBPS,
@@ -49,26 +61,26 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval
         });
-        _setupState(feeRates, distributionRates);
+        _setupState(_feeRates, distributionRates);
     }
 
     function _validateConfig(
         uint16 utilizationTargetBPS,
         uint16 rebalanceBPS,
-        int16[] memory feeRates,
+        int16[] memory _feeRates,
         uint16[] memory distributionRates
     ) private pure {
         if (utilizationTargetBPS > BPS) revert InvalidUtilizationTarget(utilizationTargetBPS);
-        if (feeRates.length != distributionRates.length)
-            revert NotMatchDistributionLength(feeRates.length, distributionRates.length);
+        if (_feeRates.length != distributionRates.length)
+            revert NotMatchDistributionLength(_feeRates.length, distributionRates.length);
 
         if (utilizationTargetBPS <= rebalanceBPS) revert InvalidRebalanceBPS();
     }
 
-    function _setupState(int16[] memory feeRates, uint16[] memory distributionRates) private {
+    function _setupState(int16[] memory _feeRates, uint16[] memory distributionRates) private {
         uint16 totalRate;
         for (uint256 i; i < distributionRates.length; ) {
-            s_state.distributionRates[feeRates[i]] = distributionRates[i];
+            s_state.distributionRates[_feeRates[i]] = distributionRates[i];
             totalRate += distributionRates[i];
 
             unchecked {
@@ -76,15 +88,15 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
             }
         }
         if (totalRate != BPS) revert InvalidDistributionSum();
-        s_state.feeRates = feeRates;
+        s_state.feeRates = _feeRates;
 
-        _setupClbTokenIds(feeRates);
+        _setupClbTokenIds(_feeRates);
     }
 
-    function _setupClbTokenIds(int16[] memory feeRates) private {
-        s_state.clbTokenIds = new uint256[](feeRates.length);
-        for (uint256 i; i < feeRates.length; ) {
-            s_state.clbTokenIds[i] = CLBTokenLib.encodeId(feeRates[i]);
+    function _setupClbTokenIds(int16[] memory _feeRates) private {
+        s_state.clbTokenIds = new uint256[](_feeRates.length);
+        for (uint256 i; i < _feeRates.length; ) {
+            s_state.clbTokenIds[i] = CLBTokenLib.encodeId(_feeRates[i]);
 
             unchecked {
                 i++;
@@ -103,14 +115,22 @@ abstract contract ChromaticLPBase is ChromaticLPStorage {
      * @inheritdoc ERC20
      */
     function symbol() public view virtual override returns (string memory) {
-        return string(abi.encodePacked("CLP", _tokenSymbol(), " - ", _indexName()));
+        return
+            string(
+                abi.encodePacked(
+                    "CLP-",
+                    TrimAddress.trimAddress(address(s_config.market), 4),
+                    "-",
+                    bytes(s_meta.tag)[0]
+                )
+            );
     }
 
-    function _tokenSymbol() private view returns (string memory) {
+    function _tokenSymbol() internal view returns (string memory) {
         return s_config.market.settlementToken().symbol();
     }
 
-    function _indexName() private view returns (string memory) {
+    function _indexName() internal view returns (string memory) {
         return s_config.market.oracleProvider().description();
     }
 

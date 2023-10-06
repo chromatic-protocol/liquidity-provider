@@ -57,7 +57,7 @@ contract OracleProviderMock is IOracleProvider {
         }
     }
 
-    function oracleProviderName() external pure returns (string memory) {
-        return "mock";
+    function oracleProviderName() external pure override returns (string memory) {
+        return "chainlink";
     }
 }

@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     hardhat({
       project: '.',
-      include: ['**/ChromaticLPRegistry.sol/**/*.json', '**/ChromaticLP.sol/**/*.json'],
+      include: ['ChromaticLPRegistry', 'ChromaticLP*', 'IERC20Metadata'],
       deployments: {
         ChromaticLPRegistry: {
           421613: registryAddress as `0x${string}`
