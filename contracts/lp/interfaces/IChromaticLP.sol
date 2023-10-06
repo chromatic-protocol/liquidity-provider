@@ -5,12 +5,17 @@ import {IChromaticLPLiquidity} from "./IChromaticLPLiquidity.sol";
 import {IChromaticLPAdmin} from "./IChromaticLPAdmin.sol";
 import {IChromaticLPLens} from "./IChromaticLPLens.sol";
 import {IChromaticLPMeta} from "./IChromaticLPMeta.sol";
+import {IChromaticLPEvents} from "./IChromaticLPEvents.sol";
+
+import {IChromaticLPErrors} from "./IChromaticLPErrors.sol";
 
 interface IChromaticLP is
     IChromaticLPLiquidity,
     IChromaticLPLens,
     IChromaticLPMeta,
-    IChromaticLPAdmin
+    IChromaticLPAdmin,
+    IChromaticLPEvents,
+    IChromaticLPErrors
 {
     function market() external view returns (address);
 

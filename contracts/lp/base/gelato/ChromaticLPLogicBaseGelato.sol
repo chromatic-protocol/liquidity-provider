@@ -27,20 +27,6 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    error InvalidUtilizationTarget(uint16 targetBPS);
-    error InvalidRebalanceBPS();
-    error NotMatchDistributionLength(uint256 feeLength, uint256 distributionLength);
-    error InvalidDistributionSum();
-
-    error NotMarket();
-    error OnlyBatchCall();
-
-    error UnknownLPAction();
-    error NotOwner();
-    error AlreadySwapRouterConfigured();
-    error NotAutomationCalled();
-    error OnlyAccessableByOwner();
-
     struct AddLiquidityBatchCallbackData {
         address provider;
         uint256 liquidityAmount;

@@ -15,29 +15,13 @@ import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
 abstract contract ChromaticLPBaseMate2 is ChromaticLPStorageMate2 {
     using Math for uint256;
-    using EnumerableSet for EnumerableSet.UintSet;
-
-    error InvalidUtilizationTarget(uint16 targetBPS);
-    error InvalidRebalanceBPS();
-    error NotMatchDistributionLength(uint256 feeLength, uint256 distributionLength);
-    error InvalidDistributionSum();
-
-    error NotMarket();
-    error OnlyBatchCall();
-
-    error UnknownLPAction();
-    error NotOwner();
-    error AlreadySwapRouterConfigured();
-    error NotKeeperCalled();
-    error AlreadyRebalanceTaskExist();
-    error OnlyAccessableByOwner();
 
     address _owner;
     modifier onlyOwner() virtual {
         if (msg.sender != _owner) revert OnlyAccessableByOwner();
         _;
     }
-    
+
     constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {
         _owner = msg.sender;
     }

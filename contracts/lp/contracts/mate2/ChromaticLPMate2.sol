@@ -26,7 +26,6 @@ contract ChromaticLPMate2 is
     ChromaticLPBaseMate2,
     Proxy
 {
-    // using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
     address public immutable CHROMATIC_LP_LOGIC;
