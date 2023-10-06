@@ -27,19 +27,6 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    error InvalidUtilizationTarget(uint16 targetBPS);
-    error InvalidRebalanceBPS();
-    error NotMatchDistributionLength(uint256 feeLength, uint256 distributionLength);
-    error InvalidDistributionSum();
-
-    error NotMarket();
-    error OnlyBatchCall();
-
-    error UnknownLPAction();
-    error NotOwner();
-    error AlreadySwapRouterConfigured();
-    error NotAutomationCalled();
-    error NotImplementedInLogicContract();
     struct AddLiquidityBatchCallbackData {
         address provider;
         uint256 liquidityAmount;
@@ -62,8 +49,7 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
         _;
     }
 
-    constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {
-    }
+    constructor(IMate2AutomationRegistry _automate) ChromaticLPStorageMate2(_automate) {}
 
     function nextReceiptId() internal returns (uint256 id) {
         id = ++s_state.receiptId;

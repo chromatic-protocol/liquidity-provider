@@ -11,8 +11,15 @@ import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IC
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
+import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 
-abstract contract ChromaticLPStorage is ERC20, IChromaticLPLens {
+abstract contract ChromaticLPStorage is
+    ERC20,
+    IChromaticLPLens,
+    IChromaticLPEvents,
+    IChromaticLPErrors
+{
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -47,36 +54,6 @@ abstract contract ChromaticLPStorage is ERC20, IChromaticLPLens {
     LPMeta internal s_meta;
     Config internal s_config;
     State internal s_state;
-
-    event AddLiquidity(
-        uint256 indexed receiptId,
-        address indexed recipient,
-        uint256 oracleVersion,
-        uint256 amount
-    );
-
-    event AddLiquiditySettled(
-        uint256 indexed receiptId,
-        uint256 settlementAdded,
-        uint256 lpTokenAmount
-    );
-
-    event RemoveLiquidity(
-        uint256 indexed receiptId,
-        address indexed recipient,
-        uint256 oracleVersion,
-        uint256 lpTokenAmount
-    );
-
-    event RemoveLiquiditySettled(
-        uint256 indexed receiptId,
-        uint256 burningAmount,
-        uint256 witdrawnSettlementAmount,
-        uint256 refundedAmount
-    );
-
-    event RebalanceLiquidity(uint256 indexed receiptId);
-    event RebalanceSettled(uint256 indexed receiptId);
 
     constructor() ERC20("", "") {}
 

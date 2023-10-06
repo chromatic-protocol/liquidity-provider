@@ -16,21 +16,6 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    error InvalidUtilizationTarget(uint16 targetBPS);
-    error InvalidRebalanceBPS();
-    error NotMatchDistributionLength(uint256 feeLength, uint256 distributionLength);
-    error InvalidDistributionSum();
-
-    error NotMarket();
-    error OnlyBatchCall();
-
-    error UnknownLPAction();
-    error NotOwner();
-    error AlreadySwapRouterConfigured();
-    error NotKeeperCalled();
-    error AlreadyRebalanceTaskExist();
-    error OnlyAccessableByOwner();
-
     address _owner;
     modifier onlyOwner() virtual {
         if (msg.sender != _owner) revert OnlyAccessableByOwner();
