@@ -1,0 +1,24 @@
+{
+  "name": "chromatic-lp",
+  "license": "UNLICENSED",
+  "scripts": {
+    "manifest": "node scripts/prepare.mjs",
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ chromatic-lp",
+    "create-local": "graph create --node http://localhost:8020/ chromatic-lp",
+    "remove-local": "graph remove --node http://localhost:8020/ chromatic-lp",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 chromatic-lp",
+    "create-testnet": "graph create chromatic-lp --node https://graph.testnet.mantle.xyz/deploy/",
+    "remove-testnet": "graph remove chromatic-lp --node https://graph.testnet.mantle.xyz/deploy/",
+    "deploy-testnet": "graph deploy chromatic-lp --ipfs https://ipfs.testnet.mantle.xyz --node https://graph.testnet.mantle.xyz/deploy",
+    "test": "graph test"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "0.58.0",
+    "@graphprotocol/graph-ts": "0.30.0",
+    "@types/mustache": "^4.2.3",
+    "matchstick-as": "0.5.0",
+    "mustache": "^4.2.0"
+  }
+}

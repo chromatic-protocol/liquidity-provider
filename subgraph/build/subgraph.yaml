@@ -1,0 +1,46 @@
+specVersion: 0.0.5
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: ChromaticLPRegistry
+    network: testnet
+    source:
+      address: "0xD1A749646cFD5AB74e7dD7D987d51E91600A973d"
+      abi: ChromaticLPRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ChromaticLPRegistered
+      abis:
+        - name: ChromaticLPRegistry
+          file: ChromaticLPRegistry/abis/ChromaticLPRegistry.json
+      eventHandlers:
+        - event: ChromaticLPRegistered(indexed address,indexed address)
+          handler: handleChromaticLPRegistered
+      file: ChromaticLPRegistry/ChromaticLPRegistry.wasm
+templates:
+  - kind: ethereum/contract
+    name: IChromaticLP
+    network: testnet
+    source:
+      abi: IChromaticLP
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AddLiquiditySettled
+        - RemoveLiquiditySettled
+      abis:
+        - name: IChromaticLP
+          file: IChromaticLP/abis/IChromaticLP.json
+      eventHandlers:
+        - event: AddLiquiditySettled(indexed uint256,uint256,uint256)
+          handler: handleAddLiquiditySettled
+        - event: RemoveLiquiditySettled(indexed uint256,uint256,uint256,uint256)
+          handler: handleRemoveLiquiditySettled
+      file: templates/IChromaticLP/IChromaticLP.wasm

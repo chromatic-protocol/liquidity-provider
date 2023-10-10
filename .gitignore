@@ -37,3 +37,4 @@ docs/out
 
 deployments/anvil
 wagmi/
+subgraph/subgraph.yaml
