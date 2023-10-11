@@ -8,7 +8,7 @@ interface IChromaticLPAdmin {
 
     function resolveSettle(
         uint256 receiptId
-    ) external returns (bool upkeepNeeded, bytes memory performData);
+    ) external view returns (bool upkeepNeeded, bytes memory performData);
 
-    function resolveRebalance() external returns (bool upkeepNeeded, bytes memory performData);
+    function resolveRebalance() external view returns (bool upkeepNeeded, bytes memory performData);
 }
