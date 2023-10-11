@@ -1,0 +1,31 @@
+type ChromaticLPRegistered @entity(immutable: true) {
+  id: Bytes!
+  market: Bytes! # address
+  lp: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type AddLiquiditySettled @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  receiptId: BigInt!
+  settlementAdded: BigInt!
+  lpTokenAmount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RemoveLiquiditySettled @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  receiptId: BigInt!
+  burningAmount: BigInt!
+  witdrawnSettlementAmount: BigInt!
+  refundedAmount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
