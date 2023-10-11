@@ -43,10 +43,6 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         if (address(s_config.market) != msg.sender) revert NotMarket();
         _;
     }
-    modifier onlyAutomation() virtual {
-        if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
-        _;
-    }
 
     constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
 
@@ -78,7 +74,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         }
     }
 
-    function settleTask(uint256 receiptId) external onlyAutomation {
+    function settleTask(uint256 receiptId) external /* onlyAutomation */ {
         if (s_task.settleTasks[receiptId] != 0) {
             uint256 feeMax = _getMaxPayableFeeInSettlement(receiptId);
             if (_settle(receiptId)) {

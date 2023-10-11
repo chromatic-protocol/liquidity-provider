@@ -294,7 +294,7 @@ contract ChromaticLPGelato is
     /**
      * @dev called by Keeper only
      */
-    function settleTask(uint256 /* receiptId */) external {
+    function settleTask(uint256 /* receiptId */) external onlyAutomation {
         _fallback();
     }
 }
