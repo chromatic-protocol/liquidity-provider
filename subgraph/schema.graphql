@@ -7,11 +7,35 @@ type ChromaticLPRegistered @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type AddLiquidity @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  receiptId: BigInt!
+  recipient: Bytes! # address
+  oracleVersion: BigInt!
+  amount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
 type AddLiquiditySettled @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address
   receiptId: BigInt!
   settlementAdded: BigInt!
+  lpTokenAmount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RemoveLiquidity @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  receiptId: BigInt!
+  recipient: Bytes! # address
+  oracleVersion: BigInt!
   lpTokenAmount: BigInt!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
