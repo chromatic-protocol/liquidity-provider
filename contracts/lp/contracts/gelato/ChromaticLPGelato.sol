@@ -6,6 +6,7 @@ import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPAdmin} from "~/lp/interfaces/IChromaticLPAdmin.sol";
 import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {ChromaticLPBaseGelato} from "~/lp/base/gelato/ChromaticLPBaseGelato.sol";
@@ -87,11 +88,18 @@ contract ChromaticLPGelato is
         _fallback();
     }
 
-    function resolveSettle(uint256 receiptId) external view returns (bool, bytes memory) {
+    function resolveSettle(
+        uint256 receiptId
+    ) external view override(IChromaticLPAdmin) returns (bool, bytes memory) {
         return _resolveSettle(receiptId, this.settleTask);
     }
 
-    function resolveRebalance() external view returns (bool, bytes memory) {
+    function resolveRebalance()
+        external
+        view
+        override(IChromaticLPAdmin)
+        returns (bool, bytes memory)
+    {
         return _resolveRebalance(this.rebalance);
     }
 

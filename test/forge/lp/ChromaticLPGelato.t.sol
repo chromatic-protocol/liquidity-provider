@@ -139,7 +139,14 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         assertEq(false, lp.settle(receipt.id));
 
         uint256 tokenBalanceBefore = lp.balanceOf(address(this));
+
+        (bool canExec, ) = lp.resolveSettle(receipt.id);
+        assertEq(false, canExec);
+
         oracleProvider.increaseVersion(3 ether);
+
+        (canExec, ) = lp.resolveSettle(receipt.id);
+        assertEq(true, canExec);
 
         vm.expectEmit(true, false, false, true, address(lp));
         emit AddLiquiditySettled(receipt.id, receipt.amount, receipt.amount);
