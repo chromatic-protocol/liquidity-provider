@@ -9,9 +9,12 @@
     "create-local": "graph create --node http://localhost:8020/ chromatic-lp",
     "remove-local": "graph remove --node http://localhost:8020/ chromatic-lp",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 chromatic-lp",
-    "create-testnet": "graph create chromatic-lp --node https://graph.testnet.mantle.xyz/deploy/",
-    "remove-testnet": "graph remove chromatic-lp --node https://graph.testnet.mantle.xyz/deploy/",
-    "deploy-testnet": "graph deploy chromatic-lp --ipfs https://ipfs.testnet.mantle.xyz --node https://graph.testnet.mantle.xyz/deploy",
+    "create-arbitrum-goerli": "graph create chromatic-lp --node http://localhost:8020/",
+    "remove-arbitrum-goerli": "graph remove chromatic-lp --node http://localhost:8020/",
+    "deploy-arbitrum-goerli": "graph deploy chromatic-lp --ipfs https://ipfs.testnet.mantle.xyz --node http://localhost:8020/",
+    "create-mantle-testnet": "graph create chromatic-lp --node https://graph.testnet.mantle.xyz/deploy/",
+    "remove-mantle-testnet": "graph remove chromatic-lp --node https://graph.testnet.mantle.xyz/deploy/",
+    "deploy-mantle-testnet": "graph deploy chromatic-lp --ipfs https://ipfs.testnet.mantle.xyz --node https://graph.testnet.mantle.xyz/deploy",
     "test": "graph test"
   },
   "devDependencies": {
