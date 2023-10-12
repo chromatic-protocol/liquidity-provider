@@ -77,8 +77,9 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
 
     function settleTask(uint256 receiptId) external {
         if (s_task.settleTasks[receiptId] != 0) {
+            uint256 feeMax = _getMaxPayableFeeInSettlement(receiptId);
             if (_settle(receiptId)) {
-                _payKeeperFee(_getMaxPayableFeeInSettlement(receiptId));
+                _payKeeperFee(feeMax);
             }
         } // TODO else revert
     }
@@ -505,11 +506,4 @@ abstract contract ChromaticLPLogicBaseMate2 is ChromaticLPStorageMate2 {
         revert NotImplementedInLogicContract();
     }
 
-    // function rebalance() public pure override {
-    //     revert NotImplementedInLogicContract();
-    // }
-
-    // function settle(uint256 /* receiptId */) public pure override {
-    //     revert NotImplementedInLogicContract();
-    // }
 }

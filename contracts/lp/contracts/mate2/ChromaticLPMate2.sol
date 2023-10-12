@@ -9,6 +9,7 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
+import {IChromaticLPAdmin} from "~/lp/interfaces/IChromaticLPAdmin.sol";
 import {ChromaticLPBaseMate2} from "~/lp/base/mate2/ChromaticLPBaseMate2.sol";
 import {ChromaticLPLogicMate2} from "~/lp/contracts/mate2/ChromaticLPLogicMate2.sol";
 import {ChromaticLPStorageMate2} from "~/lp/base/mate2/ChromaticLPStorageMate2.sol";
@@ -98,23 +99,23 @@ contract ChromaticLPMate2 is
         _fallback();
     }
 
-    // function resolveSettle(
-    //     uint256 receiptId
-    // ) public view override returns (bool upkeepNeeded, bytes memory performData) {}
-
-    // function resolveRebalance()
-    //     public
-    //     view
-    //     virtual
-    //     override
-    //     returns (bool upkeepNeeded, bytes memory performData)
-    // {}
-
-    function resolveSettle(uint256 receiptId) public view override returns (bool, bytes memory) {
+    function resolveSettle(
+        uint256 receiptId
+    )
+        public
+        view
+        override(ChromaticLPStorageMate2, IChromaticLPAdmin)
+        returns (bool, bytes memory)
+    {
         return _resolveSettle(receiptId);
     }
 
-    function resolveRebalance() public view override returns (bool, bytes memory) {
+    function resolveRebalance()
+        public
+        view
+        override(ChromaticLPStorageMate2, IChromaticLPAdmin)
+        returns (bool, bytes memory)
+    {
         return _resolveRebalance();
     }
 

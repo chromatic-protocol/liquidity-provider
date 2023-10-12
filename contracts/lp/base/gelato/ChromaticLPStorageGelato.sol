@@ -16,6 +16,11 @@ abstract contract ChromaticLPStorageGelato is ChromaticLPStorage, AutomateReady 
         mapping(uint256 => bytes32) settleTasks;
     }
 
+    modifier onlyAutomation() virtual {
+        if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
+        _;
+    }
+
     Tasks internal s_task;
 
     constructor(
