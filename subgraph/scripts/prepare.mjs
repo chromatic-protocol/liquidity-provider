@@ -29,6 +29,7 @@ async function main() {
   const template = fs.readFileSync(templateFile).toString()
   const output = Mustache.render(template, {
     network: network === 'mantle_testnet' ? 'testnet' : network,
+    blocknumber: registry.receipt.blockNumber,
     ChromaticLPRegistry: registry.address
   })
   fs.writeFileSync(outputFile, output)

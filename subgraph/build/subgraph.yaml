@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: ChromaticLPRegistry
-    network: testnet
+    network: arbitrum_goerli
     source:
-      address: "0xD1A749646cFD5AB74e7dD7D987d51E91600A973d"
+      address: "0x8e4aB74BB858b3B35Bde3dfED4A118b060116821"
       abi: ChromaticLPRegistry
-      startBlock: 0
+      startBlock: 45775455
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -25,7 +25,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: IChromaticLP
-    network: testnet
+    network: arbitrum_goerli
     source:
       abi: IChromaticLP
     mapping:

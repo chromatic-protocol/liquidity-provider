@@ -9,7 +9,7 @@ dataSources:
     source:
       address: '{{ChromaticLPRegistry}}'
       abi: ChromaticLPRegistry
-      startBlock: 0
+      startBlock: {{blocknumber}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
