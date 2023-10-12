@@ -38,3 +38,6 @@ docs/out
 deployments/anvil
 wagmi/
 subgraph/subgraph.yaml
+
+# ignore lp contract
+deployments/arbitrum_goerli/ChromaticLPGelato.json
