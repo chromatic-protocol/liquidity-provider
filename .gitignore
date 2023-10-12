@@ -41,3 +41,6 @@ subgraph/subgraph.yaml
 
 # ignore lp contract
 deployments/arbitrum_goerli/ChromaticLPGelato.json
+
+subgraph/build
+subgraph/generated
