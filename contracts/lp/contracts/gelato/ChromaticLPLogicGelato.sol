@@ -69,7 +69,7 @@ contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
     /**
      * @dev implementation of IChromaticLP
      */
-    function rebalance() external override onlyAutomation {
+    function rebalance() external override {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
             emit RebalanceLiquidity({receiptId: receiptId});

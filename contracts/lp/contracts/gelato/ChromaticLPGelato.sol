@@ -287,7 +287,7 @@ contract ChromaticLPGelato is
     /**
      * @dev called by keeper only
      */
-    function rebalance() external {
+    function rebalance() external onlyAutomation {
         _fallback();
     }
 
