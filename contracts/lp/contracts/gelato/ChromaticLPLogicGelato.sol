@@ -74,7 +74,7 @@ contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
     function rebalance() external override {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
-            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = IERC20(s_state.market.settlementToken()).balanceOf(address(this));
             _payKeeperFee(balance);
         }
     }

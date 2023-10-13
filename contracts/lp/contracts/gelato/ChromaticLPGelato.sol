@@ -113,14 +113,14 @@ contract ChromaticLPGelato is
      * @inheritdoc IChromaticLP
      */
     function market() external view override returns (address) {
-        return address(s_config.market);
+        return address(s_state.market);
     }
 
     /**
      * @inheritdoc IChromaticLP
      */
     function settlementToken() external view override returns (address) {
-        return address(s_config.market.settlementToken());
+        return address(s_state.market.settlementToken());
     }
 
     /**

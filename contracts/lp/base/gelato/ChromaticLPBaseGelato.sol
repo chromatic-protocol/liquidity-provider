@@ -42,8 +42,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
             distributionRates
         );
         s_meta = LPMeta({lpName: meta.lpName, tag: meta.tag});
-        s_config = Config({
-            market: config.market,
+        s_config = LPConfig({
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
@@ -108,7 +107,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
             string(
                 abi.encodePacked(
                     "CLP-",
-                    TrimAddress.trimAddress(address(s_config.market), 4),
+                    TrimAddress.trimAddress(address(s_state.market), 4),
                     "-",
                     bytes(s_meta.tag)[0]
                 )
@@ -116,11 +115,11 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
     }
 
     function _tokenSymbol() internal view returns (string memory) {
-        return s_config.market.settlementToken().symbol();
+        return s_state.market.settlementToken().symbol();
     }
 
     function _indexName() internal view returns (string memory) {
-        return s_config.market.oracleProvider().description();
+        return s_state.market.oracleProvider().description();
     }
 
     function _resolveRebalance(
@@ -149,7 +148,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
         uint256 receiptId,
         function(uint256) external settleTask
     ) internal view returns (bool, bytes memory) {
-        IOracleProvider.OracleVersion memory currentOracle = s_config
+        IOracleProvider.OracleVersion memory currentOracle = s_state
             .market
             .oracleProvider()
             .currentVersion();

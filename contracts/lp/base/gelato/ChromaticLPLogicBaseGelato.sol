@@ -43,7 +43,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     }
 
     modifier verifyCallback() virtual {
-        if (address(s_config.market) != msg.sender) revert NotMarket();
+        if (address(s_state.market) != msg.sender) revert NotMarket();
         _;
     }
 
@@ -93,24 +93,24 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
             maxFee = receipt.amount - receipt.amount.mulDiv(s_config.utilizationTargetBPS, BPS);
         } else {
-            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = IERC20(s_state.market.settlementToken()).balanceOf(address(this));
             maxFee = balance.mulDiv(receipt.amount, totalSupply());
         }
     }
 
     function _payKeeperFee(uint256 maxFeeInSettlementToken) internal virtual {
         (uint256 fee, address feePayee) = _getFeeInfo();
-        IKeeperFeePayer payer = IKeeperFeePayer(s_config.market.factory().keeperFeePayer());
+        IKeeperFeePayer payer = IKeeperFeePayer(s_state.market.factory().keeperFeePayer());
 
-        address token = address(s_config.market.settlementToken());
+        address token = address(s_state.market.settlementToken());
         SafeERC20.safeTransfer(IERC20(token), address(payer), maxFeeInSettlementToken);
 
-        payer.payKeeperFee(address(s_config.market.settlementToken()), fee, feePayee);
+        payer.payKeeperFee(address(s_state.market.settlementToken()), fee, feePayee);
     }
 
     function _settle(uint256 receiptId) internal returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
-        IOracleProvider.OracleVersion memory currentOracle = s_config
+        IOracleProvider.OracleVersion memory currentOracle = s_state
             .market
             .oracleProvider()
             .currentVersion();
@@ -134,7 +134,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     function _settleAddLiquidity(ChromaticLPReceipt memory receipt) internal {
         // pass ChromaticLPReceipt as calldata
         // mint and transfer lp pool token to provider in callback
-        s_config.market.claimLiquidityBatch(
+        s_state.market.claimLiquidityBatch(
             s_state.lpReceiptMap[receipt.id].values(),
             abi.encode(receipt)
         );
@@ -145,7 +145,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     function _settleRemoveLiquidity(ChromaticLPReceipt memory receipt) internal {
         // do claim
         // pass ChromaticLPReceipt as calldata
-        s_config.market.withdrawLiquidityBatch(
+        s_state.market.withdrawLiquidityBatch(
             s_state.lpReceiptMap[receipt.id].values(),
             abi.encode(receipt)
         );
@@ -208,7 +208,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
                 ++i;
             }
         }
-        uint256[] memory _clbTokenBalances = IERC1155(s_config.market.clbToken()).balanceOfBatch(
+        uint256[] memory _clbTokenBalances = IERC1155(s_state.market.clbToken()).balanceOfBatch(
             _owners,
             s_state.clbTokenIds
         );
@@ -268,7 +268,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             amount.mulDiv(s_config.utilizationTargetBPS, BPS)
         );
 
-        LpReceipt[] memory lpReceipts = s_config.market.addLiquidityBatch(
+        LpReceipt[] memory lpReceipts = s_state.market.addLiquidityBatch(
             address(this),
             s_state.feeRates,
             amounts,
@@ -302,7 +302,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         uint256 lpTokenAmount,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
-        LpReceipt[] memory lpReceipts = s_config.market.removeLiquidityBatch(
+        LpReceipt[] memory lpReceipts = s_state.market.removeLiquidityBatch(
             address(this),
             s_state.feeRates,
             clbTokenAmounts,
@@ -448,14 +448,14 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
                 }
             }
             // (tokenBalance - withdrawn) * (burningLP /totalSupplyLP) + withdrawn
-            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = IERC20(s_state.market.settlementToken()).balanceOf(address(this));
             uint256 withdrawAmount = (balance - withdrawnAmount).mulDiv(
                 receipt.amount,
                 totalSupply()
             ) + withdrawnAmount;
 
             SafeERC20.safeTransfer(
-                s_config.market.settlementToken(),
+                s_state.market.settlementToken(),
                 receipt.recipient,
                 withdrawAmount
             );

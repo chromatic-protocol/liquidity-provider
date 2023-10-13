@@ -30,9 +30,15 @@ abstract contract ChromaticLPStorage is ERC20, IChromaticLPEvents, IChromaticLPE
         uint256 rebalanceCheckingInterval;
         uint256 settleCheckingInterval;
     }
+    struct LPConfig {
+        uint16 utilizationTargetBPS;
+        uint16 rebalanceBPS;
+        uint256 rebalanceCheckingInterval;
+        uint256 settleCheckingInterval;
+    }
 
     LPMeta internal s_meta;
-    Config internal s_config;
+    LPConfig internal s_config;
     LPState internal s_state;
 
     constructor() ERC20("", "") {}
