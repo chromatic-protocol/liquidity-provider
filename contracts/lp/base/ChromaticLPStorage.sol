@@ -38,6 +38,7 @@ abstract contract ChromaticLPStorage is
     }
 
     struct State {
+        IChromaticMarket market;
         int16[] feeRates;
         mapping(int16 => uint16) distributionRates;
         uint256[] clbTokenIds;

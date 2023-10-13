@@ -45,6 +45,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval
         });
+        s_state.market = config.market;
         _setupState(_feeRates, distributionRates);
     }
 
