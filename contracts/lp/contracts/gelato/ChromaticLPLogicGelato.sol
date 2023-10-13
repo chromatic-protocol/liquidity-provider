@@ -10,9 +10,12 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPLogicBaseGelato} from "~/lp/base/gelato/ChromaticLPLogicBaseGelato.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
 contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
     using Math for uint256;
+    using LPStateViewLib for LPState;
 
     constructor(
         AutomateParam memory automateParam
@@ -74,7 +77,7 @@ contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
     function rebalance() external override {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
-            uint256 balance = IERC20(s_state.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = s_state.settlementToken().balanceOf(address(this));
             _payKeeperFee(balance);
         }
     }

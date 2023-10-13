@@ -24,11 +24,13 @@ import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelat
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
 abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
     using LPStateValueLib for LPState;
+    using LPStateViewLib for LPState;
 
     struct AddLiquidityBatchCallbackData {
         address provider;
@@ -93,7 +95,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
             maxFee = receipt.amount - receipt.amount.mulDiv(s_config.utilizationTargetBPS, BPS);
         } else {
-            uint256 balance = IERC20(s_state.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = s_state.settlementToken().balanceOf(address(this));
             maxFee = balance.mulDiv(receipt.amount, totalSupply());
         }
     }
@@ -102,10 +104,10 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         (uint256 fee, address feePayee) = _getFeeInfo();
         IKeeperFeePayer payer = IKeeperFeePayer(s_state.market.factory().keeperFeePayer());
 
-        address token = address(s_state.market.settlementToken());
-        SafeERC20.safeTransfer(IERC20(token), address(payer), maxFeeInSettlementToken);
+        IERC20 token = s_state.settlementToken();
+        SafeERC20.safeTransfer(token, address(payer), maxFeeInSettlementToken);
 
-        payer.payKeeperFee(address(s_state.market.settlementToken()), fee, feePayee);
+        payer.payKeeperFee(address(token), fee, feePayee);
     }
 
     function _settle(uint256 receiptId) internal returns (bool) {
@@ -448,17 +450,13 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
                 }
             }
             // (tokenBalance - withdrawn) * (burningLP /totalSupplyLP) + withdrawn
-            uint256 balance = IERC20(s_state.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = s_state.settlementToken().balanceOf(address(this));
             uint256 withdrawAmount = (balance - withdrawnAmount).mulDiv(
                 receipt.amount,
                 totalSupply()
             ) + withdrawnAmount;
 
-            SafeERC20.safeTransfer(
-                s_state.market.settlementToken(),
-                receipt.recipient,
-                withdrawAmount
-            );
+            SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawAmount);
             // burningLP: withdrawAmount = totalSupply: totalValue
             // burningLP = withdrawAmount * totalSupply / totalValue
             // burn LPToken requested

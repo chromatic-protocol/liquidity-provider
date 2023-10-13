@@ -12,11 +12,14 @@ import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelat
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
-import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
 abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticLP {
     using Math for uint256;
+    using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;
 
     address _owner;

@@ -7,9 +7,12 @@ import {BPS} from "~/lp/libraries/Constants.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
 library LPStateValueLib {
     using LPStateValueLib for LPState;
+    using LPStateViewLib for LPState;
+
     using Math for uint256;
 
     function utilization(LPState storage s_state) internal view returns (uint16 currentUtility) {
@@ -36,7 +39,7 @@ library LPStateValueLib {
     }
 
     function holdingValue(LPState storage s_state) internal view returns (uint256) {
-        return IERC20(s_state.market.settlementToken()).balanceOf(address(this));
+        return s_state.settlementToken().balanceOf(address(this));
     }
 
     function pendingValue(LPState storage s_state) internal view returns (uint256) {
