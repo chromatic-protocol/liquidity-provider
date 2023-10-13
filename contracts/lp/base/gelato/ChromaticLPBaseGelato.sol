@@ -206,4 +206,8 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
     function clbTokenBalances() public view override returns (uint256[] memory _clbTokenBalances) {
         return s_state.clbTokenBalances();
     }
+
+    function pendingRemoveClbBalances() public view override returns (uint256[] memory) {
+        return s_state.pendingRemoveClbBalances();
+    }
 }

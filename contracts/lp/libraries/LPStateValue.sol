@@ -104,4 +104,13 @@ library LPStateValueLib {
         );
     }
 
+    function pendingRemoveClbBalances(
+        LPState storage s_state
+    ) internal view returns (uint256[] memory pendingBalances) {
+        uint256 length = s_state.feeRates.length;
+        pendingBalances = new uint256[](length);
+        for (uint256 i; i < length; ) {
+            pendingBalances[i] = s_state.pendingRemoveClbAmounts[s_state.feeRates[i]];
+        }
+    }
 }

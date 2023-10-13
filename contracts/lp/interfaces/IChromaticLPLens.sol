@@ -31,4 +31,6 @@ interface IChromaticLPLens {
     function clbTokenIds() external view returns (uint256[] memory tokenIds);
 
     function clbTokenBalances() external view returns (uint256[] memory balances);
+
+    function pendingRemoveClbBalances() external view returns (uint256[] memory pendingBalances);
 }
