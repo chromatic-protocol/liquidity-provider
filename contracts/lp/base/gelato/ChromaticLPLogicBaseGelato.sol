@@ -22,10 +22,13 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 
 abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
+    using LPStateValueLib for LPState;
 
     struct AddLiquidityBatchCallbackData {
         address provider;
@@ -371,7 +374,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         s_state.pendingAddAmount -= receipt.pendingLiquidity;
 
         if (receipt.recipient != address(this)) {
-            uint256 total = totalValue();
+            uint256 total = s_state.totalValue();
 
             uint256 lpTokenMint = totalSupply() == 0
                 ? receipt.amount
@@ -435,7 +438,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         // burn and transfer settlementToken
 
         if (receipt.recipient != address(this)) {
-            uint256 value = totalValue();
+            uint256 value = s_state.totalValue();
 
             uint256 withdrawnAmount;
             for (uint256 i; i < receiptIds.length; ) {
@@ -483,7 +486,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
 
     function _rebalance() internal returns (uint256) {
         // (uint256 total, uint256 clbValue, ) = _poolValue();
-        ValueInfo memory value = valueInfo();
+        ValueInfo memory value = s_state.valueInfo();
 
         if (value.total == 0) return 0;
 
@@ -492,7 +495,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             value.total
         );
         if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
-            uint256[] memory _clbTokenBalances = clbTokenBalances();
+            uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
             uint256[] memory clbTokenAmounts = new uint256[](s_state.feeRates.length);
             for (uint256 i; i < s_state.feeRates.length; i++) {
                 clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(

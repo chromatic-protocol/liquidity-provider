@@ -11,9 +11,13 @@ import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPR
 import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
+import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 
-abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
+abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticLP {
     using Math for uint256;
+    using LPStateValueLib for LPState;
 
     address _owner;
     modifier onlyOwner() virtual {
@@ -69,7 +73,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
             totalRate += distributionRates[i];
 
             unchecked {
-                i++;
+                ++i;
             }
         }
         if (totalRate != BPS) revert InvalidDistributionSum();
@@ -84,7 +88,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
             s_state.clbTokenIds[i] = CLBTokenLib.encodeId(_feeRates[i]);
 
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -157,5 +161,49 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato {
 
         // for pending add/remove by user and by self
         return (false, bytes(""));
+    }
+
+    function utilization() public view override returns (uint16 currentUtility) {
+        return s_state.utilization();
+    }
+
+    function totalValue() public view override returns (uint256 value) {
+        value = (holdingValue() + pendingValue() + totalClbValue());
+    }
+
+    function valueInfo() public view override returns (ValueInfo memory info) {
+        return s_state.valueInfo();
+    }
+
+    function holdingValue() public view override returns (uint256) {
+        return s_state.holdingValue();
+    }
+
+    function pendingValue() public view override returns (uint256) {
+        return s_state.pendingValue();
+    }
+
+    function holdingClbValue() public view override returns (uint256 value) {
+        return s_state.holdingClbValue();
+    }
+
+    function pendingClbValue() public view override returns (uint256 value) {
+        return s_state.pendingClbValue();
+    }
+
+    function totalClbValue() public view override returns (uint256 value) {
+        return s_state.totalClbValue();
+    }
+
+    function feeRates() external view override returns (int16[] memory) {
+        return s_state.feeRates;
+    }
+
+    function clbTokenIds() external view override returns (uint256[] memory) {
+        return s_state.clbTokenIds;
+    }
+
+    function clbTokenBalances() public view override returns (uint256[] memory _clbTokenBalances) {
+        return s_state.clbTokenBalances();
     }
 }

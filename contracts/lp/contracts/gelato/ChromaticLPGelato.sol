@@ -17,7 +17,6 @@ import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 uint16 constant BPS = 10000;
 
 contract ChromaticLPGelato is
-    IChromaticLP,
     IChromaticLiquidityCallback,
     IERC1155Receiver,
     ChromaticLPBaseGelato,
