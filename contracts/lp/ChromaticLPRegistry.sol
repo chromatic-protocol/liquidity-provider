@@ -14,6 +14,7 @@ contract ChromaticLPRegistry is Ownable {
 
     mapping(address => EnumerableSet.AddressSet) _lpsByMarket;
     mapping(address => EnumerableSet.AddressSet) _lpsBySettlementToken;
+    EnumerableSet.AddressSet _lpsAll;
 
     event ChromaticLPRegistered(address indexed market, address indexed lp);
     event ChromaticLPUnregistered(address indexed market, address indexed lp);
@@ -31,8 +32,8 @@ contract ChromaticLPRegistry is Ownable {
     function register(IChromaticLP lp) external onlyOwner {
         address market = lp.market();
         _lpsByMarket[market].add(address(lp));
-
         _lpsBySettlementToken[lp.settlementToken()].add(address(lp));
+        _lpsAll.add(address(lp));
 
         emit ChromaticLPRegistered(market, address(lp));
     }
@@ -40,10 +41,14 @@ contract ChromaticLPRegistry is Ownable {
     function unregister(IChromaticLP lp) external onlyOwner {
         address market = lp.market();
         _lpsByMarket[market].remove(address(lp));
-
         _lpsBySettlementToken[lp.settlementToken()].remove(address(lp));
+        _lpsAll.remove(address(lp));
 
         emit ChromaticLPUnregistered(market, address(lp));
+    }
+
+    function lpList() external view returns (address[] memory lpAddresses) {
+        return _lpsAll.values();
     }
 
     function lpListByMarket(address market) external view returns (address[] memory) {
