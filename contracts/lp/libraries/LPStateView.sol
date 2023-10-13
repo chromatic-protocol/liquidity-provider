@@ -23,4 +23,8 @@ library LPStateViewLib {
     ) internal view returns (ChromaticLPReceipt memory) {
         return s_state.receipts[receiptId];
     }
+
+    function binCount(LPState storage s_state) internal view returns (uint256) {
+        return s_state.feeRates.length;
+    }
 }

@@ -94,8 +94,8 @@ library LPStateValueLib {
     function clbTokenBalances(
         LPState storage s_state
     ) internal view returns (uint256[] memory _clbTokenBalances) {
-        address[] memory _owners = new address[](s_state.feeRates.length);
-        for (uint256 i; i < s_state.feeRates.length; ) {
+        address[] memory _owners = new address[](s_state.binCount());
+        for (uint256 i; i < s_state.binCount(); ) {
             _owners[i] = address(this);
             unchecked {
                 ++i;
@@ -107,10 +107,12 @@ library LPStateValueLib {
     function pendingRemoveClbBalances(
         LPState storage s_state
     ) internal view returns (uint256[] memory pendingBalances) {
-        uint256 length = s_state.feeRates.length;
-        pendingBalances = new uint256[](length);
-        for (uint256 i; i < length; ) {
+        pendingBalances = new uint256[](s_state.binCount());
+        for (uint256 i; i < s_state.binCount(); ) {
             pendingBalances[i] = s_state.pendingRemoveClbAmounts[s_state.feeRates[i]];
+            unchecked {
+                ++i;
+            }
         }
     }
 }

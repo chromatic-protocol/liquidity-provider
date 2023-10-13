@@ -158,8 +158,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     function _distributeAmount(
         uint256 amount
     ) internal view returns (uint256[] memory amounts, uint256 totalAmount) {
-        amounts = new uint256[](s_state.feeRates.length);
-        for (uint256 i = 0; i < s_state.feeRates.length; ) {
+        amounts = new uint256[](s_state.binCount());
+        for (uint256 i = 0; i < s_state.binCount(); ) {
             uint256 _amount = amount.mulDiv(s_state.distributionRates[s_state.feeRates[i]], BPS);
 
             amounts[i] = _amount;
@@ -203,8 +203,9 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     function _calcRemoveClbAmounts(
         uint256 lpTokenAmount
     ) internal view returns (uint256[] memory clbTokenAmounts) {
-        address[] memory _owners = new address[](s_state.feeRates.length);
-        for (uint256 i; i < s_state.feeRates.length; ) {
+        uint256 binCount = s_state.binCount();
+        address[] memory _owners = new address[](binCount);
+        for (uint256 i; i < binCount; ) {
             _owners[i] = address(this);
             unchecked {
                 ++i;
@@ -215,8 +216,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             s_state.clbTokenIds
         );
 
-        clbTokenAmounts = new uint256[](_clbTokenBalances.length);
-        for (uint256 i; i < _clbTokenBalances.length; ) {
+        clbTokenAmounts = new uint256[](binCount);
+        for (uint256 i; i < binCount; ) {
             clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
                 lpTokenAmount,
                 totalSupply(),
@@ -494,12 +495,16 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         );
         if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
             uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
-            uint256[] memory clbTokenAmounts = new uint256[](s_state.feeRates.length);
-            for (uint256 i; i < s_state.feeRates.length; ++i) {
+            uint256 binCount = s_state.binCount();
+            uint256[] memory clbTokenAmounts = new uint256[](binCount);
+            for (uint256 i; i < binCount; ) {
                 clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
                     s_config.rebalanceBPS,
                     currentUtility
                 );
+                unchecked {
+                    ++i;
+                }
             }
             ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
             emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
