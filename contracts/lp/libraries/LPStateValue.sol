@@ -101,10 +101,7 @@ library LPStateValueLib {
                 ++i;
             }
         }
-        _clbTokenBalances = IERC1155(s_state.market.clbToken()).balanceOfBatch(
-            _owners,
-            s_state.clbTokenIds
-        );
+        _clbTokenBalances = s_state.clbToken().balanceOfBatch(_owners, s_state.clbTokenIds);
     }
 
     function pendingRemoveClbBalances(

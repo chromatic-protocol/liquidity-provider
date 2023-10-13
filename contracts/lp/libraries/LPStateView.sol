@@ -14,4 +14,8 @@ library LPStateViewLib {
     function settlementToken(LPState storage s_state) internal view returns (IERC20) {
         return s_state.market.settlementToken();
     }
+
+    function clbToken(LPState storage s_state) internal view returns (IERC1155) {
+        return s_state.market.clbToken();
+    }
 }

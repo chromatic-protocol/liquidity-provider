@@ -210,7 +210,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
                 ++i;
             }
         }
-        uint256[] memory _clbTokenBalances = IERC1155(s_state.market.clbToken()).balanceOfBatch(
+        uint256[] memory _clbTokenBalances = s_state.clbToken().balanceOfBatch(
             _owners,
             s_state.clbTokenIds
         );
