@@ -13,6 +13,8 @@ import {ChromaticLPBaseGelato} from "~/lp/base/gelato/ChromaticLPBaseGelato.sol"
 import {ChromaticLPLogicGelato} from "~/lp/contracts/gelato/ChromaticLPLogicGelato.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
 uint16 constant BPS = 10000;
 
@@ -23,6 +25,7 @@ contract ChromaticLPGelato is
     Proxy
 {
     using EnumerableSet for EnumerableSet.UintSet;
+    using LPStateViewLib for LPState;
 
     address public immutable CHROMATIC_LP_LOGIC;
 
@@ -145,7 +148,7 @@ contract ChromaticLPGelato is
     function getReceipt(
         uint256 receiptId
     ) external view override returns (ChromaticLPReceipt memory) {
-        return s_state.receipts[receiptId];
+        return s_state.getReceipt(receiptId);
     }
 
     /**

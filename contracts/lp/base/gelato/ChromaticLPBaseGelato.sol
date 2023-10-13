@@ -156,7 +156,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
             .oracleProvider()
             .currentVersion();
 
-        ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
+        ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         if (receipt.id > 0 && receipt.oracleVersion < currentOracle.version) {
             return (true, abi.encodeCall(settleTask, (receiptId)));
         }

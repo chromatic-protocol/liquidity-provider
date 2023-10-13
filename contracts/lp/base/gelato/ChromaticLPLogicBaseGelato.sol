@@ -91,7 +91,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     function _getMaxPayableFeeInSettlement(
         uint256 receiptId
     ) internal view returns (uint256 maxFee) {
-        ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
+        ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
             maxFee = receipt.amount - receipt.amount.mulDiv(s_config.utilizationTargetBPS, BPS);
         } else {
@@ -111,7 +111,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     }
 
     function _settle(uint256 receiptId) internal returns (bool) {
-        ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
+        ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         IOracleProvider.OracleVersion memory currentOracle = s_state
             .market
             .oracleProvider()
