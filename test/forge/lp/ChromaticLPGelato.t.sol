@@ -83,7 +83,7 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
 
         int16[] memory feeRates = new int16[](_feeRates.length);
         uint16[] memory distributionRates = new uint16[](_feeRates.length);
-        for (uint256 i; i < _feeRates.length; i++) {
+        for (uint256 i; i < _feeRates.length; ++i) {
             feeRates[i] = _feeRates[i];
             distributionRates[i] = _distributions[i];
         }

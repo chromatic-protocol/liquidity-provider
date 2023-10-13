@@ -164,7 +164,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             totalAmount += _amount;
 
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -179,7 +179,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             lpReceiptIdSet.add(lpReceipts[i].id);
 
             unchecked {
-                i++;
+                ++i;
             }
         }
 
@@ -205,7 +205,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         for (uint256 i; i < s_state.feeRates.length; ) {
             _owners[i] = address(this);
             unchecked {
-                i++;
+                ++i;
             }
         }
         uint256[] memory _clbTokenBalances = IERC1155(s_config.market.clbToken()).balanceOfBatch(
@@ -222,7 +222,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             );
 
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -231,7 +231,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         for (uint256 i; i < lpReceipts.length; ) {
             s_state.pendingRemoveClbAmounts[lpReceipts[i].tradingFeeRate] += lpReceipts[i].amount;
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -243,7 +243,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         for (uint256 i; i < _feeRates.length; ) {
             s_state.pendingRemoveClbAmounts[_feeRates[i]] -= burnedCLBTokenAmounts[i];
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -444,7 +444,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             for (uint256 i; i < receiptIds.length; ) {
                 withdrawnAmount += withdrawnAmounts[i];
                 unchecked {
-                    i++;
+                    ++i;
                 }
             }
             // (tokenBalance - withdrawn) * (burningLP /totalSupplyLP) + withdrawn
@@ -497,7 +497,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
             uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
             uint256[] memory clbTokenAmounts = new uint256[](s_state.feeRates.length);
-            for (uint256 i; i < s_state.feeRates.length; i++) {
+            for (uint256 i; i < s_state.feeRates.length; ++i) {
                 clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
                     s_config.rebalanceBPS,
                     currentUtility

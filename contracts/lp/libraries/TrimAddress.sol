@@ -11,7 +11,7 @@ library TrimAddress {
         uint160 value = uint160(self);
 
         value = value >> (4 * (39 - length));
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < length; ++i) {
             value = value >> 4;
             converted[length - i - 1] = _base[uint8(value % 16)];
         }

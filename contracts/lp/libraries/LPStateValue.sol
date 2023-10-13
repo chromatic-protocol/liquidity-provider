@@ -53,7 +53,7 @@ library LPStateValueLib {
             uint256 clbAmount = clbTokenAmounts[i];
             value += clbAmount == 0 ? 0 : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -67,7 +67,7 @@ library LPStateValueLib {
             uint256 clbAmount = s_state.pendingRemoveClbAmounts[s_state.feeRates[i]];
             value += clbAmount == 0 ? 0 : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -83,7 +83,7 @@ library LPStateValueLib {
                 s_state.pendingRemoveClbAmounts[s_state.feeRates[i]];
             value += clbAmount == 0 ? 0 : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
             unchecked {
-                i++;
+                ++i;
             }
         }
     }
@@ -95,7 +95,7 @@ library LPStateValueLib {
         for (uint256 i; i < s_state.feeRates.length; ) {
             _owners[i] = address(this);
             unchecked {
-                i++;
+                ++i;
             }
         }
         _clbTokenBalances = IERC1155(s_state.market.clbToken()).balanceOfBatch(
@@ -103,4 +103,5 @@ library LPStateValueLib {
             s_state.clbTokenIds
         );
     }
+
 }

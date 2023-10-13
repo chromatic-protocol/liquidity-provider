@@ -74,7 +74,7 @@ contract LogUtil is Test {
         int16[] memory feeRates = lp.feeRates();
         console.log("clbBalances:");
         console.log("{");
-        for (uint256 i; i < feeRates.length; i++) {
+        for (uint256 i; i < feeRates.length; ++i) {
             if (clbBalances[i] != 0) {
                 console.log("  ");
                 console.logInt(int256(feeRates[i]));
