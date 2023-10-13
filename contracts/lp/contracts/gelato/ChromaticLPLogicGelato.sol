@@ -35,6 +35,7 @@ contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
         receipt = _addLiquidity(amount, recipient);
         emit AddLiquidity({
             receiptId: receipt.id,
+            provider: msg.sender,
             recipient: recipient,
             oracleVersion: receipt.oracleVersion,
             amount: amount
@@ -53,6 +54,7 @@ contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
         receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
         emit RemoveLiquidity({
             receiptId: receipt.id,
+            provider: msg.sender,
             recipient: recipient,
             oracleVersion: receipt.oracleVersion,
             lpTokenAmount: lpTokenAmount
@@ -72,7 +74,6 @@ contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
     function rebalance() external override {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
-            emit RebalanceLiquidity({receiptId: receiptId});
             uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
             _payKeeperFee(balance);
         }

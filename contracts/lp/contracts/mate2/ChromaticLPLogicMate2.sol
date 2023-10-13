@@ -27,6 +27,7 @@ contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
         receipt = _addLiquidity(amount, recipient);
         emit AddLiquidity({
             receiptId: receipt.id,
+            provider: msg.sender,
             recipient: recipient,
             oracleVersion: receipt.oracleVersion,
             amount: amount
@@ -45,6 +46,7 @@ contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
         receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
         emit RemoveLiquidity({
             receiptId: receipt.id,
+            provider: msg.sender,
             recipient: recipient,
             oracleVersion: receipt.oracleVersion,
             lpTokenAmount: lpTokenAmount
@@ -64,7 +66,6 @@ contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
     function rebalance() internal override onlyAutomation {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
-            emit RebalanceLiquidity({receiptId: receiptId});
             uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
             _payKeeperFee(balance);
         }

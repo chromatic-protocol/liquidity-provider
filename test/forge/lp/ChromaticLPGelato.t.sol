@@ -32,6 +32,7 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
 
     event AddLiquidity(
         uint256 indexed receiptId,
+        address indexed provider,
         address indexed recipient,
         uint256 oracleVersion,
         uint256 amount
@@ -39,12 +40,15 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
 
     event AddLiquiditySettled(
         uint256 indexed receiptId,
+        address indexed provider,
+        address indexed recipient,
         uint256 settlementAdded,
         uint256 lpTokenAmount
     );
 
     event RemoveLiquidity(
         uint256 indexed receiptId,
+        address indexed provider,
         address indexed recipient,
         uint256 oracleVersion,
         uint256 lpTokenAmount
@@ -52,6 +56,8 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
 
     event RemoveLiquiditySettled(
         uint256 indexed receiptId,
+        address indexed provider,
+        address indexed recipient,
         uint256 burningAmount,
         uint256 witdrawnSettlementAmount,
         uint256 refundedAmount
@@ -122,7 +128,13 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
 
         vm.expectEmit(true, true, false, true, address(lp));
         uint256 amount = 1000 ether;
-        emit AddLiquidity(1, address(this), oracleProvider.currentVersion().version, amount);
+        emit AddLiquidity(
+            1,
+            address(this),
+            address(this),
+            oracleProvider.currentVersion().version,
+            amount
+        );
 
         ChromaticLPReceipt memory receipt = lp.addLiquidity(amount, address(this));
         console.log("ChromaticLPReceipt:", receipt.id);
@@ -149,7 +161,13 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         assertEq(true, canExec);
 
         vm.expectEmit(true, false, false, true, address(lp));
-        emit AddLiquiditySettled(receipt.id, receipt.amount, receipt.amount);
+        emit AddLiquiditySettled(
+            receipt.id,
+            address(this),
+            address(this),
+            receipt.amount,
+            receipt.amount
+        );
         assertEq(true, lp.settle(receipt.id));
 
         uint256 tokenBalanceAfter = lp.balanceOf(address(this));
@@ -171,7 +189,13 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         lp.approve(address(lp), lptoken);
 
         vm.expectEmit(true, true, false, true, address(lp));
-        emit RemoveLiquidity(2, address(this), oracleProvider.currentVersion().version, lptoken);
+        emit RemoveLiquidity(
+            2,
+            address(this),
+            address(this),
+            oracleProvider.currentVersion().version,
+            lptoken
+        );
 
         ChromaticLPReceipt memory receipt = lp.removeLiquidity(lptoken, address(this));
 
@@ -186,7 +210,14 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         oracleProvider.increaseVersion(3 ether);
 
         vm.expectEmit(true, false, false, true, address(lp));
-        emit RemoveLiquiditySettled(receipt.id, receipt.amount, receipt.amount, 0);
+        emit RemoveLiquiditySettled(
+            receipt.id,
+            address(this),
+            address(this),
+            receipt.amount,
+            receipt.amount,
+            0
+        );
         assertEq(true, lp.settle(receipt.id));
         uint256 tokenBalanceAfter = usdc.balanceOf(address(this));
         assertEq(tokenBalanceAfter - tokenBalanceBefore, receipt.amount);

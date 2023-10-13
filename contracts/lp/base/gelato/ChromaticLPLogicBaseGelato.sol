@@ -249,7 +249,9 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         revert NotImplementedInLogicContract();
     }
 
-    function resolveSettle(uint256 receiptId) external view virtual returns (bool, bytes memory) {
+    function resolveSettle(
+        uint256 /* receiptId */
+    ) external view virtual returns (bool, bytes memory) {
         revert NotImplementedInLogicContract();
     }
 
@@ -278,10 +280,11 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
 
         receipt = ChromaticLPReceipt({
             id: nextReceiptId(),
+            provider: msg.sender,
+            recipient: recipient,
             oracleVersion: lpReceipts[0].oracleVersion,
             amount: amount,
             pendingLiquidity: liquidityAmount,
-            recipient: recipient,
             action: ChromaticLPAction.ADD_LIQUIDITY
         });
 
@@ -311,10 +314,11 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
 
         receipt = ChromaticLPReceipt({
             id: nextReceiptId(),
+            provider: msg.sender,
+            recipient: recipient,
             oracleVersion: lpReceipts[0].oracleVersion,
             amount: lpTokenAmount,
             pendingLiquidity: 0,
-            recipient: recipient,
             action: ChromaticLPAction.REMOVE_LIQUIDITY
         });
 
@@ -375,6 +379,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             _mint(receipt.recipient, lpTokenMint);
             emit AddLiquiditySettled({
                 receiptId: receipt.id,
+                provider: receipt.provider,
+                recipient: receipt.recipient,
                 settlementAdded: receipt.amount,
                 lpTokenAmount: lpTokenMint
             });
@@ -464,6 +470,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
 
             emit RemoveLiquiditySettled({
                 receiptId: receipt.id,
+                provider: receipt.provider,
+                recipient: receipt.recipient,
                 burningAmount: burningAmount,
                 witdrawnSettlementAmount: withdrawAmount,
                 refundedAmount: remainingAmount
@@ -493,14 +501,17 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
                 );
             }
             ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
+            emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
             return receipt.id;
         } else if (
             uint256(s_config.utilizationTargetBPS - s_config.rebalanceBPS) > currentUtility
         ) {
+            uint256 amount = (value.total).mulDiv(s_config.rebalanceBPS, BPS);
             ChromaticLPReceipt memory receipt = _addLiquidity(
                 (value.total).mulDiv(s_config.rebalanceBPS, BPS),
                 address(this)
             );
+            emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
             return receipt.id;
         }
         return 0;
