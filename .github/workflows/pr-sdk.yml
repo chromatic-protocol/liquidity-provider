@@ -56,7 +56,7 @@ jobs:
           branch: develop
           path: sdk
           add-paths: |
-            /src/gen/**
+            src/gen/**
           token: ${{ steps.generate-token.outputs.token }}
           commit-message: ${{ github.event.pull_request.title }}
           title: Changes from contracts
