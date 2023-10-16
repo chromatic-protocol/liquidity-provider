@@ -5,6 +5,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
+import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 
 library LPStateViewLib {
     using LPStateViewLib for LPState;
@@ -26,5 +27,9 @@ library LPStateViewLib {
 
     function binCount(LPState storage s_state) internal view returns (uint256) {
         return s_state.feeRates.length;
+    }
+
+    function oracleVersion(LPState storage s_state) internal view returns (uint256) {
+        return s_state.market.oracleProvider().currentVersion().version;
     }
 }

@@ -112,12 +112,9 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
 
     function _settle(uint256 receiptId) internal returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
-        IOracleProvider.OracleVersion memory currentOracle = s_state
-            .market
-            .oracleProvider()
-            .currentVersion();
+
         // TODO check receipt
-        if (receipt.oracleVersion < currentOracle.version) {
+        if (receipt.oracleVersion < s_state.oracleVersion()) {
             if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
                 _settleAddLiquidity(receipt);
             } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {

@@ -5,8 +5,6 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
-import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
-
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
@@ -125,13 +123,8 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
         uint256 receiptId,
         function(uint256) external settleTask
     ) internal view returns (bool, bytes memory) {
-        IOracleProvider.OracleVersion memory currentOracle = s_state
-            .market
-            .oracleProvider()
-            .currentVersion();
-
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
-        if (receipt.id > 0 && receipt.oracleVersion < currentOracle.version) {
+        if (receipt.id > 0 && receipt.oracleVersion < s_state.oracleVersion()) {
             return (true, abi.encodeCall(settleTask, (receiptId)));
         }
 
