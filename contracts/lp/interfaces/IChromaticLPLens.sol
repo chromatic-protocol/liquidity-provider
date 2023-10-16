@@ -26,7 +26,7 @@ interface IChromaticLPLens {
 
     function totalClbValue() external view returns (uint256 value);
 
-    function feeRates() external view returns (int16[] memory feeRates);
+    function feeRates() external view returns (int16[] memory);
 
     function clbTokenIds() external view returns (uint256[] memory tokenIds);
 
