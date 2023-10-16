@@ -5,53 +5,49 @@ import {Proxy} from "@openzeppelin/contracts/proxy/Proxy.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
+import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPAdmin} from "~/lp/interfaces/IChromaticLPAdmin.sol";
 import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
-import {IChromaticLPAdmin} from "~/lp/interfaces/IChromaticLPAdmin.sol";
-import {ChromaticLPBaseMate2} from "~/lp/base/mate2/ChromaticLPBaseMate2.sol";
-import {ChromaticLPLogicMate2} from "~/lp/contracts/mate2/ChromaticLPLogicMate2.sol";
-import {ChromaticLPStorageMate2} from "~/lp/base/mate2/ChromaticLPStorageMate2.sol";
-
-import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
+import {ChromaticLPBase} from "~/lp/base/ChromaticLPBase.sol";
+import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
+import {BPS} from "~/lp/libraries/Constants.sol";
 
-uint16 constant BPS = 10000;
-
-contract ChromaticLPMate2 is
-    IChromaticLP,
+contract ChromaticLP is
     IChromaticLiquidityCallback,
     IERC1155Receiver,
-    ChromaticLPBaseMate2,
+    ChromaticLPBase,
     Proxy
 {
     using EnumerableSet for EnumerableSet.UintSet;
+    using LPStateViewLib for LPState;
 
     address public immutable CHROMATIC_LP_LOGIC;
 
-    error NotImplementedInProxyContract();
-
     constructor(
-        ChromaticLPLogicMate2 lpLogic,
+        ChromaticLPLogic lpLogic,
         LPMeta memory lpMeta,
-        Config memory config,
+        ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates,
-        IMate2AutomationRegistry _automate
-    ) ChromaticLPBaseMate2(_automate) {
+        AutomateParam memory automateParam
+    ) ChromaticLPBase(automateParam) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(lpMeta, config, _feeRates, distributionRates);
+        createRebalanceTask();
     }
 
-    function createRebalanceTask() external onlyOwner {
+    function createRebalanceTask() public onlyOwner {
         if (s_task.rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
-        s_task.rebalanceTaskId = _registerUpkeep(
-            UpkeepType.Rebalance,
-            0,
-            false // is not singleExec
+        s_task.rebalanceTaskId = _createTask(
+            abi.encodeCall(this.resolveRebalance, ()),
+            abi.encodeCall(this.rebalance, ()),
+            s_config.rebalanceCheckingInterval
         );
     }
 
@@ -86,37 +82,26 @@ contract ChromaticLPMate2 is
         _fallback();
     }
 
-    function rebalance() internal pure override {
-        revert NotImplementedInProxyContract();
-    }
-
     /**
      * @inheritdoc IChromaticLPLiquidity
      */
-    function settle(
-        uint256 /* receiptId */
-    ) public override(IChromaticLPLiquidity, ChromaticLPStorageMate2) returns (bool) {
+    function settle(uint256 /* receiptId */) external override returns (bool) {
         _fallback();
     }
 
     function resolveSettle(
         uint256 receiptId
-    )
-        public
-        view
-        override(ChromaticLPStorageMate2, IChromaticLPAdmin)
-        returns (bool, bytes memory)
-    {
-        return _resolveSettle(receiptId);
+    ) external view override(IChromaticLPAdmin) returns (bool, bytes memory) {
+        return _resolveSettle(receiptId, this.settleTask);
     }
 
     function resolveRebalance()
-        public
+        external
         view
-        override(ChromaticLPStorageMate2, IChromaticLPAdmin)
+        override(IChromaticLPAdmin)
         returns (bool, bytes memory)
     {
-        return _resolveRebalance();
+        return _resolveRebalance(this.rebalance);
     }
 
     /**
@@ -130,14 +115,14 @@ contract ChromaticLPMate2 is
      * @inheritdoc IChromaticLP
      */
     function market() external view override returns (address) {
-        return address(s_config.market);
+        return address(s_state.market);
     }
 
     /**
      * @inheritdoc IChromaticLP
      */
     function settlementToken() external view override returns (address) {
-        return address(s_config.market.settlementToken());
+        return address(s_state.market.settlementToken());
     }
 
     /**
@@ -162,7 +147,7 @@ contract ChromaticLPMate2 is
     function getReceipt(
         uint256 receiptId
     ) external view override returns (ChromaticLPReceipt memory) {
-        return s_state.receipts[receiptId];
+        return s_state.getReceipt(receiptId);
     }
 
     /**
@@ -298,5 +283,19 @@ contract ChromaticLPMate2 is
         return
             interfaceID == this.supportsInterface.selector || // ERC165
             interfaceID == this.onERC1155Received.selector ^ this.onERC1155BatchReceived.selector; // IERC1155Receiver
+    }
+
+    /**
+     * @dev called by keeper only
+     */
+    function rebalance() external onlyAutomation {
+        _fallback();
+    }
+
+    /**
+     * @dev called by Keeper only
+     */
+    function settleTask(uint256 /* receiptId */) external onlyAutomation {
+        _fallback();
     }
 }

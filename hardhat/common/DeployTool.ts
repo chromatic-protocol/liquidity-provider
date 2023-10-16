@@ -91,16 +91,14 @@ export class DeployTool {
   }
 
   get lpLogicContractName() {
-    if (this.automateType == 'gelato') return 'ChromaticLPLogicGelato'
-    else if (this.automateType == 'mate2') return 'ChromaticLPLogicMate2'
+    if (this.automateType == 'gelato') return 'ChromaticLPLogic'
     else {
       throw new Error('unknown automateType')
     }
   }
 
   get lpContractName() {
-    if (this.automateType == 'gelato') return 'ChromaticLPGelato'
-    else if (this.automateType == 'mate2') return 'ChromaticLPMate2'
+    if (this.automateType == 'gelato') return 'ChromaticLP'
     else {
       throw new Error('unknown automateType')
     }
