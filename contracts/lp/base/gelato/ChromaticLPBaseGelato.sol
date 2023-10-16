@@ -101,14 +101,8 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
     function _resolveRebalance(
         function() external _rebalance
     ) internal view returns (bool, bytes memory) {
-        ValueInfo memory value = valueInfo();
-
-        if (value.total == 0) return (false, bytes(""));
-
-        uint256 currentUtility = (value.holdingClb + value.pending - value.pendingClb).mulDiv(
-            BPS,
-            value.total
-        );
+        (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
+        if (value == 0) return (false, bytes(""));
 
         if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
             return (true, abi.encodeCall(_rebalance, ()));
@@ -116,8 +110,9 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
             uint256(s_config.utilizationTargetBPS - s_config.rebalanceBPS) > currentUtility
         ) {
             return (true, abi.encodeCall(_rebalance, ()));
+        } else {
+            return (false, bytes(""));
         }
-        return (false, bytes(""));
     }
 
     function _resolveSettle(
@@ -134,7 +129,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
     }
 
     function utilization() public view override returns (uint16 currentUtility) {
-        return s_state.utilization();
+        (currentUtility, ) = s_state.utilizationInfo();
     }
 
     function totalValue() public view override returns (uint256 value) {

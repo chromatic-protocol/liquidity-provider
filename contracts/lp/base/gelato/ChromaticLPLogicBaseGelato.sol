@@ -321,15 +321,9 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     }
 
     function _rebalance() internal returns (uint256) {
-        // (uint256 total, uint256 clbValue, ) = _poolValue();
-        ValueInfo memory value = s_state.valueInfo();
+        (uint256 currentUtility, uint256 valueTotal) = s_state.utilizationInfo();
+        if (valueTotal == 0) return 0;
 
-        if (value.total == 0) return 0;
-
-        uint256 currentUtility = (value.holdingClb + value.pending - value.pendingClb).mulDiv(
-            BPS,
-            value.total
-        );
         if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
             uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
             uint256 binCount = s_state.binCount();
@@ -349,9 +343,9 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         } else if (
             uint256(s_config.utilizationTargetBPS - s_config.rebalanceBPS) > currentUtility
         ) {
-            uint256 amount = (value.total).mulDiv(s_config.rebalanceBPS, BPS);
+            uint256 amount = (valueTotal).mulDiv(s_config.rebalanceBPS, BPS);
             ChromaticLPReceipt memory receipt = _addLiquidity(
-                (value.total).mulDiv(s_config.rebalanceBPS, BPS),
+                (valueTotal).mulDiv(s_config.rebalanceBPS, BPS),
                 address(this)
             );
             emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);

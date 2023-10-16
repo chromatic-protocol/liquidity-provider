@@ -15,12 +15,18 @@ library LPStateValueLib {
 
     using Math for uint256;
 
-    function utilization(LPState storage s_state) internal view returns (uint16 currentUtility) {
+    function utilizationInfo(
+        LPState storage s_state
+    ) internal view returns (uint16 currentUtility, uint256 _totalValue) {
         ValueInfo memory value = s_state.valueInfo();
-        if (value.total == 0) return 0;
-        currentUtility = uint16(
-            uint256(value.total - (value.holding + value.pendingClb)).mulDiv(BPS, value.total)
-        );
+        _totalValue = value.total;
+        if (_totalValue == 0) {
+            currentUtility = 0;
+        } else {
+            currentUtility = uint16(
+                uint256(value.total - (value.holding + value.pendingClb)).mulDiv(BPS, value.total)
+            );
+        }
     }
 
     function totalValue(LPState storage s_state) internal view returns (uint256 value) {
