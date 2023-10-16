@@ -86,6 +86,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "lpList",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "lpAddresses",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
