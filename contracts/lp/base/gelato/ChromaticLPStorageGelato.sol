@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 
 abstract contract ChromaticLPStorageGelato is ChromaticLPStorage, AutomateReady {
     struct AutomateParam {
