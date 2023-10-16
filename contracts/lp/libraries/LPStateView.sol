@@ -3,13 +3,13 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 
 library LPStateViewLib {
     using LPStateViewLib for LPState;
 
-    function settlementToken(LPState storage s_state) internal view returns (IERC20) {
+    function settlementToken(LPState storage s_state) internal view returns (IERC20Metadata) {
         return s_state.market.settlementToken();
     }
 

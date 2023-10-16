@@ -118,7 +118,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
     }
 
     function _tokenSymbol() internal view returns (string memory) {
-        return s_state.market.settlementToken().symbol();
+        return s_state.settlementToken().symbol();
     }
 
     function _indexName() internal view returns (string memory) {
