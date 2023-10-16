@@ -6,7 +6,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
+import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
@@ -19,7 +19,7 @@ import {LPStateSetupLib} from "~/lp/libraries/LPStateSetup.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticLP {
+abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using Math for uint256;
     using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;
@@ -32,7 +32,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {
+    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {
         _owner = msg.sender;
     }
 

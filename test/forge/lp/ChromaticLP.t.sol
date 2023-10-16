@@ -9,26 +9,26 @@ import {MarketLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/ma
 import {IChromaticRouter} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticRouter.sol";
 import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketTrade.sol";
 import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
-import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
+import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {IChromaticAccount} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticAccount.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {CLAIM_USER} from "@chromatic-protocol/contracts/core/interfaces/market/Types.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPGelato} from "~/lp/contracts/gelato/ChromaticLPGelato.sol";
-import {ChromaticLPLogicGelato} from "~/lp/contracts/gelato/ChromaticLPLogicGelato.sol";
+import {ChromaticLP} from "~/lp/ChromaticLP.sol";
+import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 
 import {LogUtil, Taker} from "./Helper.sol";
 
 import "forge-std/console.sol";
 
-contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
+contract ChromaticLPTest is BaseSetup, LogUtil {
     using Math for uint256;
 
-    ChromaticLPGelato lp;
-    ChromaticLPLogicGelato lpLogic;
+    ChromaticLP lp;
+    ChromaticLPLogic lpLogic;
 
     event AddLiquidity(
         uint256 indexed receiptId,
@@ -88,17 +88,17 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
             distributionRates[i] = _distributions[i];
         }
 
-        lpLogic = new ChromaticLPLogicGelato(
-            ChromaticLPStorageGelato.AutomateParam({
+        lpLogic = new ChromaticLPLogic(
+            ChromaticLPStorage.AutomateParam({
                 automate: address(automate),
                 opsProxyFactory: address(opf)
             })
         );
 
-        lp = new ChromaticLPGelato(
+        lp = new ChromaticLP(
             lpLogic,
-            ChromaticLPStorage.LPMeta({lpName: "lp pool", tag: "N"}),
-            ChromaticLPStorage.ConfigParam({
+            ChromaticLPStorageCore.LPMeta({lpName: "lp pool", tag: "N"}),
+            ChromaticLPStorageCore.ConfigParam({
                 market: market,
                 utilizationTargetBPS: 5000,
                 rebalanceBPS: 500,
@@ -107,7 +107,7 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
             }),
             feeRates,
             distributionRates,
-            ChromaticLPStorageGelato.AutomateParam({
+            ChromaticLPStorage.AutomateParam({
                 automate: address(automate),
                 opsProxyFactory: address(opf)
             })

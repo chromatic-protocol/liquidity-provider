@@ -13,13 +13,14 @@ import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
 import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
+
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
+import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 
@@ -30,7 +31,7 @@ import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.s
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
+abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
     using Math for uint256;
 
     using LPStateValueLib for LPState;
@@ -55,7 +56,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
+    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
 
     function cancelRebalanceTask() external {
         if (s_task.rebalanceTaskId != 0) {

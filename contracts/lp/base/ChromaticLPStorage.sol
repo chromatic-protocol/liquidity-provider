@@ -1,41 +1,53 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
+import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
+import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
-
-import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
-import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
-import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
-import {LPState} from "~/lp/libraries/LPState.sol";
-import {LPConfig} from "~/lp/libraries/LPConfig.sol";
-import {BPS} from "~/lp/libraries/Constants.sol";
-
-abstract contract ChromaticLPStorage is ERC20, IChromaticLPEvents, IChromaticLPErrors {
-    struct LPMeta {
-        string lpName;
-        string tag;
+abstract contract ChromaticLPStorage is ChromaticLPStorageCore, AutomateReady {
+    struct AutomateParam {
+        address automate;
+        address opsProxyFactory;
     }
 
-    struct ConfigParam {
-        IChromaticMarket market;
-        uint16 utilizationTargetBPS;
-        uint16 rebalanceBPS;
-        uint256 rebalanceCheckingInterval;
-        uint256 settleCheckingInterval;
+    struct Tasks {
+        bytes32 rebalanceTaskId;
+        mapping(uint256 => bytes32) settleTasks;
     }
 
-    LPMeta internal s_meta;
-    LPConfig internal s_config;
-    LPState internal s_state;
+    modifier onlyAutomation() virtual {
+        if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
+        _;
+    }
 
-    constructor() ERC20("", "") {}
+    Tasks internal s_task;
 
-    function _getFeeInfo() internal view virtual returns (uint256 fee, address feePayee);
+    constructor(
+        AutomateParam memory automateParam
+    )
+        ChromaticLPStorageCore()
+        AutomateReady(automateParam.automate, address(this), automateParam.opsProxyFactory)
+    {}
+
+    function _createTask(
+        bytes memory resolver,
+        bytes memory execSelector,
+        uint256 interval
+    ) internal returns (bytes32) {
+        ModuleData memory moduleData = ModuleData({modules: new Module[](3), args: new bytes[](3)});
+        moduleData.modules[0] = Module.RESOLVER;
+        moduleData.modules[1] = Module.TIME;
+        moduleData.modules[2] = Module.PROXY;
+        moduleData.args[0] = abi.encode(address(this), resolver); // abi.encodeCall(this.resolveRebalance, ()));
+        moduleData.args[1] = abi.encode(uint128(block.timestamp + interval), uint128(interval));
+        moduleData.args[2] = bytes("");
+
+        return automate.createTask(address(this), execSelector, moduleData, ETH);
+    }
+
+    function _getFeeInfo() internal view override returns (uint256 fee, address feePayee) {
+        (fee, ) = _getFeeDetails();
+        feePayee = automate.gelato();
+    }
 }

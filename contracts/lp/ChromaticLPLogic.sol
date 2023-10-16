@@ -9,18 +9,18 @@ import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPLogicBaseGelato} from "~/lp/base/gelato/ChromaticLPLogicBaseGelato.sol";
+import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
-contract ChromaticLPLogicGelato is ChromaticLPLogicBaseGelato {
+contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;
     using LPStateViewLib for LPState;
 
     constructor(
         AutomateParam memory automateParam
     )
-        ChromaticLPLogicBaseGelato(
+        ChromaticLPLogicBase(
             AutomateParam({
                 automate: automateParam.automate,
                 opsProxyFactory: automateParam.opsProxyFactory

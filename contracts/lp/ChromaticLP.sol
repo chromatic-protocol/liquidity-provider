@@ -10,17 +10,17 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPAdmin} from "~/lp/interfaces/IChromaticLPAdmin.sol";
 import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
-import {ChromaticLPBaseGelato} from "~/lp/base/gelato/ChromaticLPBaseGelato.sol";
-import {ChromaticLPLogicGelato} from "~/lp/contracts/gelato/ChromaticLPLogicGelato.sol";
+import {ChromaticLPBase} from "~/lp/base/ChromaticLPBase.sol";
+import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-contract ChromaticLPGelato is
+contract ChromaticLP is
     IChromaticLiquidityCallback,
     IERC1155Receiver,
-    ChromaticLPBaseGelato,
+    ChromaticLPBase,
     Proxy
 {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -29,13 +29,13 @@ contract ChromaticLPGelato is
     address public immutable CHROMATIC_LP_LOGIC;
 
     constructor(
-        ChromaticLPLogicGelato lpLogic,
+        ChromaticLPLogic lpLogic,
         LPMeta memory lpMeta,
         ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates,
         AutomateParam memory automateParam
-    ) ChromaticLPBaseGelato(automateParam) {
+    ) ChromaticLPBase(automateParam) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(lpMeta, config, _feeRates, distributionRates);

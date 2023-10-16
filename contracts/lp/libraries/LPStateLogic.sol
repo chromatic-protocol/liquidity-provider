@@ -13,7 +13,7 @@ import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPR
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
-import {ChromaticLPLogicBaseGelato} from "~/lp/base/gelato/ChromaticLPLogicBaseGelato.sol";
+import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
 
 library LPStateLogicLib {
     using Math for uint256;
@@ -112,7 +112,7 @@ library LPStateLogicLib {
             s_state.feeRates,
             amounts,
             abi.encode(
-                ChromaticLPLogicBaseGelato.AddLiquidityBatchCallbackData({
+                ChromaticLPLogicBase.AddLiquidityBatchCallbackData({
                     provider: msg.sender,
                     liquidityAmount: liquidityAmount,
                     holdingAmount: amount - liquidityAmount
@@ -145,7 +145,7 @@ library LPStateLogicLib {
             s_state.feeRates,
             clbTokenAmounts,
             abi.encode(
-                ChromaticLPLogicBaseGelato.RemoveLiquidityBatchCallbackData({
+                ChromaticLPLogicBase.RemoveLiquidityBatchCallbackData({
                     provider: msg.sender,
                     lpTokenAmount: lpTokenAmount,
                     clbTokenAmounts: clbTokenAmounts
