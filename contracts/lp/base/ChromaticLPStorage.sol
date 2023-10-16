@@ -14,10 +14,9 @@ import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol"
 import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
+import {BPS} from "~/lp/libraries/Constants.sol";
 
 abstract contract ChromaticLPStorage is ERC20, IChromaticLPEvents, IChromaticLPErrors {
-    uint16 constant BPS = 10000;
-
     struct LPMeta {
         string lpName;
         string tag;

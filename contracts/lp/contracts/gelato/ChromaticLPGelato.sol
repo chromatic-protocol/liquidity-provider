@@ -15,8 +15,7 @@ import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/in
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
-
-uint16 constant BPS = 10000;
+import {BPS} from "~/lp/libraries/Constants.sol";
 
 contract ChromaticLPGelato is
     IChromaticLiquidityCallback,

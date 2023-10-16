@@ -15,6 +15,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateSetupLib} from "~/lp/libraries/LPStateSetup.sol";
+import {BPS} from "~/lp/libraries/Constants.sol";
 
 abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticLP {
     using Math for uint256;
