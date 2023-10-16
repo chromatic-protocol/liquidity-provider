@@ -16,11 +16,13 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
+import {LPStateSetupLib} from "~/lp/libraries/LPStateSetup.sol";
 
 abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticLP {
     using Math for uint256;
     using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;
+    using LPStateSetupLib for LPState;
 
     address _owner;
     modifier onlyOwner() virtual {
@@ -51,8 +53,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval
         });
-        s_state.market = config.market;
-        _setupState(_feeRates, distributionRates);
+        s_state.initialize(config.market, _feeRates, distributionRates);
     }
 
     function _validateConfig(
@@ -66,33 +67,6 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
             revert NotMatchDistributionLength(_feeRates.length, distributionRates.length);
 
         if (utilizationTargetBPS <= rebalanceBPS) revert InvalidRebalanceBPS();
-    }
-
-    function _setupState(int16[] memory _feeRates, uint16[] memory distributionRates) private {
-        uint16 totalRate;
-        for (uint256 i; i < distributionRates.length; ) {
-            s_state.distributionRates[_feeRates[i]] = distributionRates[i];
-            totalRate += distributionRates[i];
-
-            unchecked {
-                ++i;
-            }
-        }
-        if (totalRate != BPS) revert InvalidDistributionSum();
-        s_state.feeRates = _feeRates;
-
-        _setupClbTokenIds(_feeRates);
-    }
-
-    function _setupClbTokenIds(int16[] memory _feeRates) private {
-        s_state.clbTokenIds = new uint256[](_feeRates.length);
-        for (uint256 i; i < _feeRates.length; ) {
-            s_state.clbTokenIds[i] = CLBTokenLib.encodeId(_feeRates[i]);
-
-            unchecked {
-                ++i;
-            }
-        }
     }
 
     /**
