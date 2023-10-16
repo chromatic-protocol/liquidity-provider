@@ -10,11 +10,13 @@ import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelat
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateSetupLib} from "~/lp/libraries/LPStateSetup.sol";
+import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 
 abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticLP {
@@ -22,6 +24,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
     using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;
     using LPStateSetupLib for LPState;
+    using LPConfigLib for LPConfig;
 
     address _owner;
     modifier onlyOwner() virtual {
@@ -35,7 +38,7 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
 
     function _initialize(
         LPMeta memory meta,
-        Config memory config,
+        ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates
     ) internal {
@@ -104,14 +107,10 @@ abstract contract ChromaticLPBaseGelato is ChromaticLPStorageGelato, IChromaticL
         (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
         if (value == 0) return (false, bytes(""));
 
-        if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
-            return (true, abi.encodeCall(_rebalance, ()));
-        } else if (
-            uint256(s_config.utilizationTargetBPS - s_config.rebalanceBPS) > currentUtility
-        ) {
-            return (true, abi.encodeCall(_rebalance, ()));
-        } else {
+        if (s_config.allocationStatus(currentUtility) == AllocationStatus.InRange) {
             return (false, bytes(""));
+        } else {
+            return (true, abi.encodeCall(_rebalance, ()));
         }
     }
 

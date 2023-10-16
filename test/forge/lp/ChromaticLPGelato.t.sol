@@ -98,7 +98,7 @@ contract ChromaticLPGelatoTest is BaseSetup, LogUtil {
         lp = new ChromaticLPGelato(
             lpLogic,
             ChromaticLPStorage.LPMeta({lpName: "lp pool", tag: "N"}),
-            ChromaticLPStorage.Config({
+            ChromaticLPStorage.ConfigParam({
                 market: market,
                 utilizationTargetBPS: 5000,
                 rebalanceBPS: 500,

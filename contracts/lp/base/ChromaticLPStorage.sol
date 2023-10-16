@@ -14,6 +14,7 @@ import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol"
 import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 
 abstract contract ChromaticLPStorage is ERC20, IChromaticLPEvents, IChromaticLPErrors {
@@ -22,14 +23,8 @@ abstract contract ChromaticLPStorage is ERC20, IChromaticLPEvents, IChromaticLPE
         string tag;
     }
 
-    struct Config {
+    struct ConfigParam {
         IChromaticMarket market;
-        uint16 utilizationTargetBPS;
-        uint16 rebalanceBPS;
-        uint256 rebalanceCheckingInterval;
-        uint256 settleCheckingInterval;
-    }
-    struct LPConfig {
         uint16 utilizationTargetBPS;
         uint16 rebalanceBPS;
         uint256 rebalanceCheckingInterval;

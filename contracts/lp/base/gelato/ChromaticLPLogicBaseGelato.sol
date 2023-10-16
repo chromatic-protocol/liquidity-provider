@@ -26,6 +26,8 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
+import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
+
 import {BPS} from "~/lp/libraries/Constants.sol";
 
 abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
@@ -34,6 +36,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     using LPStateValueLib for LPState;
     using LPStateViewLib for LPState;
     using LPStateLogicLib for LPState;
+    using LPConfigLib for LPConfig;
 
     struct AddLiquidityBatchCallbackData {
         address provider;
@@ -324,33 +327,42 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         (uint256 currentUtility, uint256 valueTotal) = s_state.utilizationInfo();
         if (valueTotal == 0) return 0;
 
-        if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
-            uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
-            uint256 binCount = s_state.binCount();
-            uint256[] memory clbTokenAmounts = new uint256[](binCount);
-            for (uint256 i; i < binCount; ) {
-                clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
-                    s_config.rebalanceBPS,
-                    currentUtility
-                );
-                unchecked {
-                    ++i;
-                }
-            }
-            ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
-            emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
-            return receipt.id;
-        } else if (
-            uint256(s_config.utilizationTargetBPS - s_config.rebalanceBPS) > currentUtility
-        ) {
-            uint256 amount = (valueTotal).mulDiv(s_config.rebalanceBPS, BPS);
-            ChromaticLPReceipt memory receipt = _addLiquidity(
-                (valueTotal).mulDiv(s_config.rebalanceBPS, BPS),
-                address(this)
-            );
-            emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
-            return receipt.id;
+        AllocationStatus status = s_config.allocationStatus(currentUtility);
+
+        if (status == AllocationStatus.OverUtilized) {
+            return _rebalanceRemoveLiquidity(currentUtility);
+        } else if (status == AllocationStatus.UnderUtilized) {
+            return _rebalanceAddLiquidity(currentUtility, valueTotal);
+        } else {
+            return 0;
         }
-        return 0;
+    }
+
+    function _rebalanceRemoveLiquidity(uint256 currentUtility) private returns (uint256 receiptId) {
+        uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
+        uint256 binCount = s_state.binCount();
+        uint256[] memory clbTokenAmounts = new uint256[](binCount);
+        for (uint256 i; i < binCount; ) {
+            clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(s_config.rebalanceBPS, currentUtility);
+            unchecked {
+                ++i;
+            }
+        }
+        ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
+        emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
+        return receipt.id;
+    }
+
+    function _rebalanceAddLiquidity(
+        uint256 currentUtility,
+        uint256 valueTotal
+    ) private returns (uint256 receiptId) {
+        uint256 amount = (valueTotal).mulDiv(s_config.rebalanceBPS, BPS);
+        ChromaticLPReceipt memory receipt = _addLiquidity(
+            (valueTotal).mulDiv(s_config.rebalanceBPS, BPS),
+            address(this)
+        );
+        emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
+        return receipt.id;
     }
 }

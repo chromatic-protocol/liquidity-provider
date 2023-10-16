@@ -31,7 +31,7 @@ contract ChromaticLPGelato is
     constructor(
         ChromaticLPLogicGelato lpLogic,
         LPMeta memory lpMeta,
-        Config memory config,
+        ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory distributionRates,
         AutomateParam memory automateParam
