@@ -7,25 +7,37 @@ import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
 import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
+
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {ChromaticLPStorageGelato} from "~/lp/base/gelato/ChromaticLPStorageGelato.sol";
+import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
 
-abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
+import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
+import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
+import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
+
+import {BPS} from "~/lp/libraries/Constants.sol";
+
+abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
     using Math for uint256;
-    using EnumerableSet for EnumerableSet.UintSet;
+
+    using LPStateValueLib for LPState;
+    using LPStateViewLib for LPState;
+    using LPStateLogicLib for LPState;
+    using LPConfigLib for LPConfig;
 
     struct AddLiquidityBatchCallbackData {
         address provider;
@@ -40,15 +52,11 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     }
 
     modifier verifyCallback() virtual {
-        if (address(s_config.market) != msg.sender) revert NotMarket();
+        if (address(s_state.market) != msg.sender) revert NotMarket();
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorageGelato(automateParam) {}
-
-    function nextReceiptId() internal returns (uint256 id) {
-        id = ++s_state.receiptId;
-    }
+    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
 
     function cancelRebalanceTask() external {
         if (s_task.rebalanceTaskId != 0) {
@@ -86,37 +94,34 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     function _getMaxPayableFeeInSettlement(
         uint256 receiptId
     ) internal view returns (uint256 maxFee) {
-        ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
+        ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
             maxFee = receipt.amount - receipt.amount.mulDiv(s_config.utilizationTargetBPS, BPS);
         } else {
-            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = s_state.settlementToken().balanceOf(address(this));
             maxFee = balance.mulDiv(receipt.amount, totalSupply());
         }
     }
 
     function _payKeeperFee(uint256 maxFeeInSettlementToken) internal virtual {
         (uint256 fee, address feePayee) = _getFeeInfo();
-        IKeeperFeePayer payer = IKeeperFeePayer(s_config.market.factory().keeperFeePayer());
+        IKeeperFeePayer payer = IKeeperFeePayer(s_state.market.factory().keeperFeePayer());
 
-        address token = address(s_config.market.settlementToken());
-        SafeERC20.safeTransfer(IERC20(token), address(payer), maxFeeInSettlementToken);
+        IERC20 token = s_state.settlementToken();
+        SafeERC20.safeTransfer(token, address(payer), maxFeeInSettlementToken);
 
-        payer.payKeeperFee(address(s_config.market.settlementToken()), fee, feePayee);
+        payer.payKeeperFee(address(token), fee, feePayee);
     }
 
     function _settle(uint256 receiptId) internal returns (bool) {
-        ChromaticLPReceipt memory receipt = s_state.receipts[receiptId];
-        IOracleProvider.OracleVersion memory currentOracle = s_config
-            .market
-            .oracleProvider()
-            .currentVersion();
+        ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
+
         // TODO check receipt
-        if (receipt.oracleVersion < currentOracle.version) {
+        if (receipt.oracleVersion < s_state.oracleVersion()) {
             if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
-                _settleAddLiquidity(receipt);
+                s_state.claimLiquidity(receipt);
             } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
-                _settleRemoveLiquidity(receipt);
+                s_state.withdrawLiquidity(receipt);
             } else {
                 revert UnknownLPAction();
             }
@@ -128,128 +133,19 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         }
     }
 
-    function _settleAddLiquidity(ChromaticLPReceipt memory receipt) internal {
-        // pass ChromaticLPReceipt as calldata
-        // mint and transfer lp pool token to provider in callback
-        s_config.market.claimLiquidityBatch(
-            s_state.lpReceiptMap[receipt.id].values(),
-            abi.encode(receipt)
-        );
-
-        _removeReceipt(receipt.id);
-    }
-
-    function _settleRemoveLiquidity(ChromaticLPReceipt memory receipt) internal {
-        // do claim
-        // pass ChromaticLPReceipt as calldata
-        s_config.market.withdrawLiquidityBatch(
-            s_state.lpReceiptMap[receipt.id].values(),
-            abi.encode(receipt)
-        );
-
-        _removeReceipt(receipt.id);
-    }
-
-    function _distributeAmount(
-        uint256 amount
-    ) internal view returns (uint256[] memory amounts, uint256 totalAmount) {
-        amounts = new uint256[](s_state.feeRates.length);
-        for (uint256 i = 0; i < s_state.feeRates.length; ) {
-            uint256 _amount = amount.mulDiv(s_state.distributionRates[s_state.feeRates[i]], BPS);
-
-            amounts[i] = _amount;
-            totalAmount += _amount;
-
-            unchecked {
-                i++;
-            }
-        }
-    }
-
-    function _addReceipt(
-        ChromaticLPReceipt memory receipt,
-        LpReceipt[] memory lpReceipts
-    ) internal {
-        s_state.receipts[receipt.id] = receipt;
-        EnumerableSet.UintSet storage lpReceiptIdSet = s_state.lpReceiptMap[receipt.id];
-        for (uint256 i; i < lpReceipts.length; ) {
-            lpReceiptIdSet.add(lpReceipts[i].id);
-
-            unchecked {
-                i++;
-            }
-        }
-
-        s_state.providerMap[receipt.id] = msg.sender;
-        EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[msg.sender];
-        receiptIdSet.add(receipt.id);
-    }
-
-    function _removeReceipt(uint256 receiptId) internal {
-        delete s_state.receipts[receiptId];
-        delete s_state.lpReceiptMap[receiptId];
-
-        address provider = s_state.providerMap[receiptId];
-        EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[provider];
-        receiptIdSet.remove(receiptId);
-        delete s_state.providerMap[receiptId];
-    }
-
     function _calcRemoveClbAmounts(
         uint256 lpTokenAmount
     ) internal view returns (uint256[] memory clbTokenAmounts) {
-        address[] memory _owners = new address[](s_state.feeRates.length);
-        for (uint256 i; i < s_state.feeRates.length; ) {
-            _owners[i] = address(this);
-            unchecked {
-                i++;
-            }
-        }
-        uint256[] memory _clbTokenBalances = IERC1155(s_config.market.clbToken()).balanceOfBatch(
-            _owners,
-            s_state.clbTokenIds
-        );
-
-        clbTokenAmounts = new uint256[](_clbTokenBalances.length);
-        for (uint256 i; i < _clbTokenBalances.length; ) {
-            clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
-                lpTokenAmount,
-                totalSupply(),
-                Math.Rounding.Up
-            );
-
-            unchecked {
-                i++;
-            }
-        }
-    }
-
-    function _increasePendingClb(LpReceipt[] memory lpReceipts) internal {
-        for (uint256 i; i < lpReceipts.length; ) {
-            s_state.pendingRemoveClbAmounts[lpReceipts[i].tradingFeeRate] += lpReceipts[i].amount;
-            unchecked {
-                i++;
-            }
-        }
-    }
-
-    function _decreasePendingClb(
-        int16[] calldata _feeRates,
-        uint256[] calldata burnedCLBTokenAmounts
-    ) internal {
-        for (uint256 i; i < _feeRates.length; ) {
-            s_state.pendingRemoveClbAmounts[_feeRates[i]] -= burnedCLBTokenAmounts[i];
-            unchecked {
-                i++;
-            }
-        }
+        return s_state.calcRemoveClbAmounts(lpTokenAmount, totalSupply());
     }
 
     function resolveRebalance() external view virtual returns (bool, bytes memory) {
         revert NotImplementedInLogicContract();
     }
 
-    function resolveSettle(uint256 receiptId) external view virtual returns (bool, bytes memory) {
+    function resolveSettle(
+        uint256 /* receiptId */
+    ) external view virtual returns (bool, bytes memory) {
         revert NotImplementedInLogicContract();
     }
 
@@ -259,34 +155,11 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         uint256 amount,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
-        (uint256[] memory amounts, uint256 liquidityAmount) = _distributeAmount(
-            amount.mulDiv(s_config.utilizationTargetBPS, BPS)
+        receipt = s_state.addLiquidity(
+            amount,
+            amount.mulDiv(s_config.utilizationTargetBPS, BPS),
+            recipient
         );
-
-        LpReceipt[] memory lpReceipts = s_config.market.addLiquidityBatch(
-            address(this),
-            s_state.feeRates,
-            amounts,
-            abi.encode(
-                AddLiquidityBatchCallbackData({
-                    provider: msg.sender,
-                    liquidityAmount: liquidityAmount,
-                    holdingAmount: amount - liquidityAmount
-                })
-            )
-        );
-
-        receipt = ChromaticLPReceipt({
-            id: nextReceiptId(),
-            oracleVersion: lpReceipts[0].oracleVersion,
-            amount: amount,
-            pendingLiquidity: liquidityAmount,
-            recipient: recipient,
-            action: ChromaticLPAction.ADD_LIQUIDITY
-        });
-
-        _addReceipt(receipt, lpReceipts);
-        s_state.pendingAddAmount += liquidityAmount;
 
         createSettleTask(receipt.id);
     }
@@ -296,30 +169,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         uint256 lpTokenAmount,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
-        LpReceipt[] memory lpReceipts = s_config.market.removeLiquidityBatch(
-            address(this),
-            s_state.feeRates,
-            clbTokenAmounts,
-            abi.encode(
-                RemoveLiquidityBatchCallbackData({
-                    provider: msg.sender,
-                    lpTokenAmount: lpTokenAmount,
-                    clbTokenAmounts: clbTokenAmounts
-                })
-            )
-        );
+        receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
 
-        receipt = ChromaticLPReceipt({
-            id: nextReceiptId(),
-            oracleVersion: lpReceipts[0].oracleVersion,
-            amount: lpTokenAmount,
-            pendingLiquidity: 0,
-            recipient: recipient,
-            action: ChromaticLPAction.REMOVE_LIQUIDITY
-        });
-
-        _addReceipt(receipt, lpReceipts);
-        _increasePendingClb(lpReceipts);
         createSettleTask(receipt.id);
     }
 
@@ -367,7 +218,7 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
         s_state.pendingAddAmount -= receipt.pendingLiquidity;
 
         if (receipt.recipient != address(this)) {
-            uint256 total = totalValue();
+            uint256 total = s_state.totalValue();
 
             uint256 lpTokenMint = totalSupply() == 0
                 ? receipt.amount
@@ -375,6 +226,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
             _mint(receipt.recipient, lpTokenMint);
             emit AddLiquiditySettled({
                 receiptId: receipt.id,
+                provider: receipt.provider,
+                recipient: receipt.recipient,
                 settlementAdded: receipt.amount,
                 lpTokenAmount: lpTokenMint
             });
@@ -425,31 +278,27 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     ) external verifyCallback {
         ChromaticLPReceipt memory receipt = abi.decode(data, (ChromaticLPReceipt));
 
-        _decreasePendingClb(_feeRates, burnedCLBTokenAmounts);
+        s_state.decreasePendingClb(_feeRates, burnedCLBTokenAmounts);
         // burn and transfer settlementToken
 
         if (receipt.recipient != address(this)) {
-            uint256 value = totalValue();
+            uint256 value = s_state.totalValue();
 
             uint256 withdrawnAmount;
             for (uint256 i; i < receiptIds.length; ) {
                 withdrawnAmount += withdrawnAmounts[i];
                 unchecked {
-                    i++;
+                    ++i;
                 }
             }
             // (tokenBalance - withdrawn) * (burningLP /totalSupplyLP) + withdrawn
-            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = s_state.settlementToken().balanceOf(address(this));
             uint256 withdrawAmount = (balance - withdrawnAmount).mulDiv(
                 receipt.amount,
                 totalSupply()
             ) + withdrawnAmount;
 
-            SafeERC20.safeTransfer(
-                s_config.market.settlementToken(),
-                receipt.recipient,
-                withdrawAmount
-            );
+            SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawAmount);
             // burningLP: withdrawAmount = totalSupply: totalValue
             // burningLP = withdrawAmount * totalSupply / totalValue
             // burn LPToken requested
@@ -464,6 +313,8 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
 
             emit RemoveLiquiditySettled({
                 receiptId: receipt.id,
+                provider: receipt.provider,
+                recipient: receipt.recipient,
                 burningAmount: burningAmount,
                 witdrawnSettlementAmount: withdrawAmount,
                 refundedAmount: remainingAmount
@@ -474,35 +325,45 @@ abstract contract ChromaticLPLogicBaseGelato is ChromaticLPStorageGelato {
     }
 
     function _rebalance() internal returns (uint256) {
-        // (uint256 total, uint256 clbValue, ) = _poolValue();
-        ValueInfo memory value = valueInfo();
+        (uint256 currentUtility, uint256 valueTotal) = s_state.utilizationInfo();
+        if (valueTotal == 0) return 0;
 
-        if (value.total == 0) return 0;
+        AllocationStatus status = s_config.allocationStatus(currentUtility);
 
-        uint256 currentUtility = (value.holdingClb + value.pending - value.pendingClb).mulDiv(
-            BPS,
-            value.total
-        );
-        if (uint256(s_config.utilizationTargetBPS + s_config.rebalanceBPS) < currentUtility) {
-            uint256[] memory _clbTokenBalances = clbTokenBalances();
-            uint256[] memory clbTokenAmounts = new uint256[](s_state.feeRates.length);
-            for (uint256 i; i < s_state.feeRates.length; i++) {
-                clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
-                    s_config.rebalanceBPS,
-                    currentUtility
-                );
-            }
-            ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
-            return receipt.id;
-        } else if (
-            uint256(s_config.utilizationTargetBPS - s_config.rebalanceBPS) > currentUtility
-        ) {
-            ChromaticLPReceipt memory receipt = _addLiquidity(
-                (value.total).mulDiv(s_config.rebalanceBPS, BPS),
-                address(this)
-            );
-            return receipt.id;
+        if (status == AllocationStatus.OverUtilized) {
+            return _rebalanceRemoveLiquidity(currentUtility);
+        } else if (status == AllocationStatus.UnderUtilized) {
+            return _rebalanceAddLiquidity(currentUtility, valueTotal);
+        } else {
+            return 0;
         }
-        return 0;
+    }
+
+    function _rebalanceRemoveLiquidity(uint256 currentUtility) private returns (uint256 receiptId) {
+        uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
+        uint256 binCount = s_state.binCount();
+        uint256[] memory clbTokenAmounts = new uint256[](binCount);
+        for (uint256 i; i < binCount; ) {
+            clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(s_config.rebalanceBPS, currentUtility);
+            unchecked {
+                ++i;
+            }
+        }
+        ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
+        emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
+        return receipt.id;
+    }
+
+    function _rebalanceAddLiquidity(
+        uint256 currentUtility,
+        uint256 valueTotal
+    ) private returns (uint256 receiptId) {
+        uint256 amount = (valueTotal).mulDiv(s_config.rebalanceBPS, BPS);
+        ChromaticLPReceipt memory receipt = _addLiquidity(
+            (valueTotal).mulDiv(s_config.rebalanceBPS, BPS),
+            address(this)
+        );
+        emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
+        return receipt.id;
     }
 }

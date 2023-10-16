@@ -11,6 +11,7 @@ type AddLiquidity @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address
   receiptId: BigInt!
+  provider: Bytes! # address
   recipient: Bytes! # address
   oracleVersion: BigInt!
   amount: BigInt!
@@ -23,6 +24,8 @@ type AddLiquiditySettled @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address
   receiptId: BigInt!
+  provider: Bytes! # address
+  recipient: Bytes! # address
   settlementAdded: BigInt!
   lpTokenAmount: BigInt!
   blockNumber: BigInt!
@@ -34,6 +37,7 @@ type RemoveLiquidity @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address
   receiptId: BigInt!
+  provider: Bytes! # address
   recipient: Bytes! # address
   oracleVersion: BigInt!
   lpTokenAmount: BigInt!
@@ -46,9 +50,43 @@ type RemoveLiquiditySettled @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address
   receiptId: BigInt!
+  provider: Bytes! # address
+  recipient: Bytes! # address
   burningAmount: BigInt!
   witdrawnSettlementAmount: BigInt!
   refundedAmount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RebalanceAddLiquidity @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  receiptId: BigInt!
+  oracleVersion: BigInt!
+  amount: BigInt!
+  currentUtility: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RebalanceRemoveLiquidity @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  receiptId: BigInt!
+  oracleVersion: BigInt!
+  currentUtility: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RebalanceSettled @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  receiptId: BigInt!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

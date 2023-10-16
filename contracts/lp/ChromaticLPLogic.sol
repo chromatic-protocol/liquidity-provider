@@ -1,21 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
-import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {ChromaticLPLogicBaseMate2} from "~/lp/base/mate2/ChromaticLPLogicBaseMate2.sol";
-import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
+import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
-contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
+contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;
+    using LPStateViewLib for LPState;
 
-    constructor(IMate2AutomationRegistry _automate) ChromaticLPLogicBaseMate2(_automate) {}
+    constructor(
+        AutomateParam memory automateParam
+    )
+        ChromaticLPLogicBase(
+            AutomateParam({
+                automate: automateParam.automate,
+                opsProxyFactory: automateParam.opsProxyFactory
+            })
+        )
+    {}
 
     /**
      * @dev implementation of IChromaticLP
@@ -27,6 +38,7 @@ contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
         receipt = _addLiquidity(amount, recipient);
         emit AddLiquidity({
             receiptId: receipt.id,
+            provider: msg.sender,
             recipient: recipient,
             oracleVersion: receipt.oracleVersion,
             amount: amount
@@ -45,6 +57,7 @@ contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
         receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
         emit RemoveLiquidity({
             receiptId: receipt.id,
+            provider: msg.sender,
             recipient: recipient,
             oracleVersion: receipt.oracleVersion,
             lpTokenAmount: lpTokenAmount
@@ -54,18 +67,17 @@ contract ChromaticLPLogicMate2 is ChromaticLPLogicBaseMate2 {
     /**
      * @dev implementation of IChromaticLP
      */
-    function settle(uint256 receiptId) public override returns (bool) {
+    function settle(uint256 receiptId) external returns (bool) {
         return _settle(receiptId);
     }
 
     /**
      * @dev implementation of IChromaticLP
      */
-    function rebalance() internal override onlyAutomation {
+    function rebalance() external override {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
-            emit RebalanceLiquidity({receiptId: receiptId});
-            uint256 balance = IERC20(s_config.market.settlementToken()).balanceOf(address(this));
+            uint256 balance = s_state.settlementToken().balanceOf(address(this));
             _payKeeperFee(balance);
         }
     }
