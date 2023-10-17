@@ -34,6 +34,8 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
         uint256 amount,
         address recipient
     ) external returns (ChromaticLPReceipt memory receipt) {
+        receipt = _addLiquidity(amount, recipient);
+        //slither-disable-next-line reentrancy-events
         emit AddLiquidity({
             receiptId: receipt.id,
             provider: msg.sender,
@@ -41,7 +43,6 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
             oracleVersion: receipt.oracleVersion,
             amount: amount
         });
-        receipt = _addLiquidity(amount, recipient);
     }
 
     /**
@@ -53,6 +54,8 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     ) external returns (ChromaticLPReceipt memory receipt) {
         uint256[] memory clbTokenAmounts = _calcRemoveClbAmounts(lpTokenAmount);
 
+        receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
+        //slither-disable-next-line reentrancy-events
         emit RemoveLiquidity({
             receiptId: receipt.id,
             provider: msg.sender,
@@ -60,7 +63,6 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
             oracleVersion: receipt.oracleVersion,
             lpTokenAmount: lpTokenAmount
         });
-        receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
     }
 
     /**
