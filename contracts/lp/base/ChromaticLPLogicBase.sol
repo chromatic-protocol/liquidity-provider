@@ -58,7 +58,9 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
+    constructor(
+        AutomateParam memory automateParam
+    ) ChromaticLPStorage(automateParam) ReentrancyGuard() {}
 
     function cancelRebalanceTask() external {
         if (s_task.rebalanceTaskId != 0) {
@@ -158,7 +160,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function _addLiquidity(
         uint256 amount,
         address recipient
-    ) internal nonReentrant returns (ChromaticLPReceipt memory receipt) {
+    ) internal returns (ChromaticLPReceipt memory receipt) {
         receipt = s_state.addLiquidity(
             amount,
             amount.mulDiv(s_config.utilizationTargetBPS, BPS),
@@ -172,7 +174,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256[] memory clbTokenAmounts,
         uint256 lpTokenAmount,
         address recipient
-    ) internal nonReentrant returns (ChromaticLPReceipt memory receipt) {
+    ) internal returns (ChromaticLPReceipt memory receipt) {
         receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
 
         createSettleTask(receipt.id);
@@ -358,12 +360,9 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 ++i;
             }
         }
-        emit RebalanceRemoveLiquidity(
-            s_state.receiptId + 1,
-            s_state.oracleVersion(),
-            currentUtility
-        );
         ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
+        //slither-disable-next-line reentrancy-events
+        emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
         return receipt.id;
     }
 
@@ -372,16 +371,12 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256 valueTotal
     ) private returns (uint256 receiptId) {
         uint256 amount = (valueTotal).mulDiv(s_config.rebalanceBPS, BPS);
-        emit RebalanceAddLiquidity(
-            s_state.receiptId + 1,
-            s_state.oracleVersion(),
-            amount,
-            currentUtility
-        );
         ChromaticLPReceipt memory receipt = _addLiquidity(
             (valueTotal).mulDiv(s_config.rebalanceBPS, BPS),
             address(this)
         );
+        //slither-disable-next-line reentrancy-events
+        emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;
     }
 }
