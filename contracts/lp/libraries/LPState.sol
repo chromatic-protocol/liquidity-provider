@@ -11,7 +11,6 @@ struct LPState {
     uint256[] clbTokenIds;
     mapping(uint256 => ChromaticLPReceipt) receipts; // receiptId => receipt
     mapping(uint256 => EnumerableSet.UintSet) lpReceiptMap; // receiptId => lpReceiptIds
-    mapping(uint256 => address) providerMap; // receiptId => provider
     mapping(address => EnumerableSet.UintSet) providerReceiptIds; // provider => receiptIds
     uint256 pendingAddAmount; // in settlement token
     mapping(int16 => uint256) pendingRemoveClbAmounts; // feeRate => pending remove

@@ -31,7 +31,9 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
         uint256 settleCheckingInterval;
     }
 
+    //slither-disable-next-line unused-state
     LPMeta internal s_meta;
+    //slither-disable-next-line uninitialized-state
     LPConfig internal s_config;
     LPState internal s_state;
 

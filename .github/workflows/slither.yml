@@ -3,6 +3,7 @@ name: slither analysis
 on:
   push:
     branches:
+      - develop
       - main
 permissions:
   actions: read

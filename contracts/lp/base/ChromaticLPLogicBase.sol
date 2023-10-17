@@ -7,6 +7,8 @@ import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
@@ -31,7 +33,7 @@ import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.s
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
+abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     using Math for uint256;
 
     using LPStateValueLib for LPState;
@@ -56,12 +58,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
+    constructor(
+        AutomateParam memory automateParam
+    ) ChromaticLPStorage(automateParam) ReentrancyGuard() {}
 
     function cancelRebalanceTask() external {
         if (s_task.rebalanceTaskId != 0) {
-            automate.cancelTask(s_task.rebalanceTaskId);
             s_task.rebalanceTaskId = 0;
+            automate.cancelTask(s_task.rebalanceTaskId);
         }
     }
 
@@ -77,8 +81,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
 
     function cancelSettleTask(uint256 receiptId) internal {
         if (s_task.settleTasks[receiptId] != 0) {
-            automate.cancelTask(s_task.settleTasks[receiptId]);
             delete s_task.settleTasks[receiptId];
+            automate.cancelTask(s_task.settleTasks[receiptId]);
         }
     }
 
@@ -103,14 +107,16 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         }
     }
 
-    function _payKeeperFee(uint256 maxFeeInSettlementToken) internal virtual {
+    function _payKeeperFee(
+        uint256 maxFeeInSettlementToken
+    ) internal virtual returns (uint256 feeInSettlementAmount) {
         (uint256 fee, address feePayee) = _getFeeInfo();
         IKeeperFeePayer payer = IKeeperFeePayer(s_state.market.factory().keeperFeePayer());
 
         IERC20 token = s_state.settlementToken();
         SafeERC20.safeTransfer(token, address(payer), maxFeeInSettlementToken);
 
-        payer.payKeeperFee(address(token), fee, feePayee);
+        feeInSettlementAmount = payer.payKeeperFee(address(token), fee, feePayee);
     }
 
     function _settle(uint256 receiptId) internal returns (bool) {
@@ -195,6 +201,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         );
 
         if (callbackData.provider != address(this)) {
+            //slither-disable-next-line arbitrary-send-erc20
             SafeERC20.safeTransferFrom(
                 IERC20(settlementToken),
                 callbackData.provider,
@@ -220,6 +227,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         if (receipt.recipient != address(this)) {
             uint256 total = s_state.totalValue();
 
+            //slither-disable-next-line incorrect-equality
             uint256 lpTokenMint = totalSupply() == 0
                 ? receipt.amount
                 : receipt.amount.mulDiv(totalSupply(), total - receipt.amount);
@@ -243,7 +251,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         address clbToken,
         uint256[] calldata _clbTokenIds,
         bytes calldata data
-    ) external {
+    ) external verifyCallback {
         RemoveLiquidityBatchCallbackData memory callbackData = abi.decode(
             data,
             (RemoveLiquidityBatchCallbackData)
@@ -257,6 +265,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         );
 
         if (callbackData.provider != address(this)) {
+            //slither-disable-next-line arbitrary-send-erc20
             SafeERC20.safeTransferFrom(
                 IERC20(this),
                 callbackData.provider,
@@ -298,18 +307,11 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
                 totalSupply()
             ) + withdrawnAmount;
 
-            SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawAmount);
             // burningLP: withdrawAmount = totalSupply: totalValue
             // burningLP = withdrawAmount * totalSupply / totalValue
-            // burn LPToken requested
             uint256 burningAmount = withdrawAmount.mulDiv(totalSupply(), value);
-            _burn(address(this), burningAmount);
-
             // transfer left lpTokens
             uint256 remainingAmount = receipt.amount - burningAmount;
-            if (remainingAmount > 0) {
-                SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
-            }
 
             emit RemoveLiquiditySettled({
                 receiptId: receipt.id,
@@ -319,12 +321,21 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
                 witdrawnSettlementAmount: withdrawAmount,
                 refundedAmount: remainingAmount
             });
+
+            SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawAmount);
+
+            // burn LPToken requested
+            _burn(address(this), burningAmount);
+
+            if (remainingAmount > 0) {
+                SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
+            }
         } else {
             emit RebalanceSettled({receiptId: receipt.id});
         }
     }
 
-    function _rebalance() internal returns (uint256) {
+    function _rebalance() internal nonReentrant returns (uint256) {
         (uint256 currentUtility, uint256 valueTotal) = s_state.utilizationInfo();
         if (valueTotal == 0) return 0;
 
@@ -350,6 +361,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
             }
         }
         ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
+        //slither-disable-next-line reentrancy-events
         emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
         return receipt.id;
     }
@@ -363,6 +375,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
             (valueTotal).mulDiv(s_config.rebalanceBPS, BPS),
             address(this)
         );
+        //slither-disable-next-line reentrancy-events
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;
     }
