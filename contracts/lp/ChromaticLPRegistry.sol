@@ -31,8 +31,12 @@ contract ChromaticLPRegistry is Ownable {
 
     function register(IChromaticLP lp) external onlyOwner {
         address market = lp.market();
+
+        //slither-disable-next-line unused-return
         _lpsByMarket[market].add(address(lp));
+        //slither-disable-next-line unused-return
         _lpsBySettlementToken[lp.settlementToken()].add(address(lp));
+        //slither-disable-next-line unused-return
         _lpsAll.add(address(lp));
 
         emit ChromaticLPRegistered(market, address(lp));
@@ -40,8 +44,11 @@ contract ChromaticLPRegistry is Ownable {
 
     function unregister(IChromaticLP lp) external onlyOwner {
         address market = lp.market();
+        //slither-disable-next-line unused-return
         _lpsByMarket[market].remove(address(lp));
+        //slither-disable-next-line unused-return
         _lpsBySettlementToken[lp.settlementToken()].remove(address(lp));
+        //slither-disable-next-line unused-return
         _lpsAll.remove(address(lp));
 
         emit ChromaticLPUnregistered(market, address(lp));
