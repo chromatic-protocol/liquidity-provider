@@ -24,6 +24,7 @@ library LPStateLogicLib {
     function nextReceiptId(LPState storage s_state) internal returns (uint256 id) {
         id = ++s_state.receiptId;
     }
+
     function addReceipt(
         LPState storage s_state,
         ChromaticLPReceipt memory receipt,
@@ -32,6 +33,7 @@ library LPStateLogicLib {
         s_state.receipts[receipt.id] = receipt;
         EnumerableSet.UintSet storage lpReceiptIdSet = s_state.lpReceiptMap[receipt.id];
         for (uint256 i; i < lpReceipts.length; ) {
+            //slither-disable-next-line unused-return
             lpReceiptIdSet.add(lpReceipts[i].id);
 
             unchecked {
@@ -41,6 +43,7 @@ library LPStateLogicLib {
 
         s_state.providerMap[receipt.id] = msg.sender;
         EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[msg.sender];
+        //slither-disable-next-line unused-return
         receiptIdSet.add(receipt.id);
     }
 
@@ -50,6 +53,7 @@ library LPStateLogicLib {
 
         address provider = s_state.providerMap[receiptId];
         EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[provider];
+        //slither-disable-next-line unused-return
         receiptIdSet.remove(receiptId);
         delete s_state.providerMap[receiptId];
     }

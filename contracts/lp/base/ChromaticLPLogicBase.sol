@@ -105,14 +105,16 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         }
     }
 
-    function _payKeeperFee(uint256 maxFeeInSettlementToken) internal virtual {
+    function _payKeeperFee(
+        uint256 maxFeeInSettlementToken
+    ) internal virtual returns (uint256 feeInSettlementAmount) {
         (uint256 fee, address feePayee) = _getFeeInfo();
         IKeeperFeePayer payer = IKeeperFeePayer(s_state.market.factory().keeperFeePayer());
 
         IERC20 token = s_state.settlementToken();
         SafeERC20.safeTransfer(token, address(payer), maxFeeInSettlementToken);
 
-        payer.payKeeperFee(address(token), fee, feePayee);
+        feeInSettlementAmount = payer.payKeeperFee(address(token), fee, feePayee);
     }
 
     function _settle(uint256 receiptId) internal returns (bool) {

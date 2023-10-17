@@ -128,6 +128,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     }
 
     function utilization() public view override returns (uint16 currentUtility) {
+        //slither-disable-next-line unused-return
         (currentUtility, ) = s_state.utilizationInfo();
     }
 
