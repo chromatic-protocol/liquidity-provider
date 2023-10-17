@@ -58,7 +58,9 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {}
+    constructor(
+        AutomateParam memory automateParam
+    ) ChromaticLPStorage(automateParam) ReentrancyGuard() {}
 
     function cancelRebalanceTask() external {
         if (s_task.rebalanceTaskId != 0) {
@@ -158,7 +160,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function _addLiquidity(
         uint256 amount,
         address recipient
-    ) internal nonReentrant returns (ChromaticLPReceipt memory receipt) {
+    ) internal returns (ChromaticLPReceipt memory receipt) {
         receipt = s_state.addLiquidity(
             amount,
             amount.mulDiv(s_config.utilizationTargetBPS, BPS),
@@ -172,7 +174,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256[] memory clbTokenAmounts,
         uint256 lpTokenAmount,
         address recipient
-    ) internal nonReentrant returns (ChromaticLPReceipt memory receipt) {
+    ) internal returns (ChromaticLPReceipt memory receipt) {
         receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
 
         createSettleTask(receipt.id);

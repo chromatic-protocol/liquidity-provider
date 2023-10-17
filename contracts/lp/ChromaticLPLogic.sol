@@ -33,7 +33,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     function addLiquidity(
         uint256 amount,
         address recipient
-    ) external returns (ChromaticLPReceipt memory receipt) {
+    ) external nonReentrant returns (ChromaticLPReceipt memory receipt) {
         receipt = _addLiquidity(amount, recipient);
         //slither-disable-next-line reentrancy-events
         emit AddLiquidity({
@@ -51,7 +51,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     function removeLiquidity(
         uint256 lpTokenAmount,
         address recipient
-    ) external returns (ChromaticLPReceipt memory receipt) {
+    ) external nonReentrant returns (ChromaticLPReceipt memory receipt) {
         uint256[] memory clbTokenAmounts = _calcRemoveClbAmounts(lpTokenAmount);
 
         receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
@@ -68,14 +68,14 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     /**
      * @dev implementation of IChromaticLP
      */
-    function settle(uint256 receiptId) external returns (bool) {
+    function settle(uint256 receiptId) external nonReentrant returns (bool) {
         return _settle(receiptId);
     }
 
     /**
      * @dev implementation of IChromaticLP
      */
-    function rebalance() external override {
+    function rebalance() external override nonReentrant {
         uint256 receiptId = _rebalance();
         if (receiptId != 0) {
             uint256 balance = s_state.settlementToken().balanceOf(address(this));
