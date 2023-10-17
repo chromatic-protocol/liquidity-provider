@@ -243,7 +243,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         address clbToken,
         uint256[] calldata _clbTokenIds,
         bytes calldata data
-    ) external {
+    ) external verifyCallback {
         RemoveLiquidityBatchCallbackData memory callbackData = abi.decode(
             data,
             (RemoveLiquidityBatchCallbackData)
