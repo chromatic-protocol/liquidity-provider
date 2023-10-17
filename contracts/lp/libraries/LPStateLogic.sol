@@ -24,7 +24,6 @@ library LPStateLogicLib {
     function nextReceiptId(LPState storage s_state) internal returns (uint256 id) {
         id = ++s_state.receiptId;
     }
-
     function addReceipt(
         LPState storage s_state,
         ChromaticLPReceipt memory receipt,

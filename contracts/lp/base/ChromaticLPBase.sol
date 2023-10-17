@@ -26,7 +26,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using LPStateSetupLib for LPState;
     using LPConfigLib for LPConfig;
 
-    address _owner;
+    address immutable _owner;
     modifier onlyOwner() virtual {
         if (msg.sender != _owner) revert OnlyAccessableByOwner();
         _;

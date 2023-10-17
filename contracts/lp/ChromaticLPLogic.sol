@@ -3,7 +3,6 @@ pragma solidity >=0.8.0 <0.9.0;
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
 import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
 
@@ -35,7 +34,6 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
         uint256 amount,
         address recipient
     ) external returns (ChromaticLPReceipt memory receipt) {
-        receipt = _addLiquidity(amount, recipient);
         emit AddLiquidity({
             receiptId: receipt.id,
             provider: msg.sender,
@@ -43,6 +41,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
             oracleVersion: receipt.oracleVersion,
             amount: amount
         });
+        receipt = _addLiquidity(amount, recipient);
     }
 
     /**
@@ -54,7 +53,6 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     ) external returns (ChromaticLPReceipt memory receipt) {
         uint256[] memory clbTokenAmounts = _calcRemoveClbAmounts(lpTokenAmount);
 
-        receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
         emit RemoveLiquidity({
             receiptId: receipt.id,
             provider: msg.sender,
@@ -62,6 +60,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
             oracleVersion: receipt.oracleVersion,
             lpTokenAmount: lpTokenAmount
         });
+        receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
     }
 
     /**
