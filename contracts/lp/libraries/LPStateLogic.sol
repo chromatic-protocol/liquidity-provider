@@ -41,21 +41,19 @@ library LPStateLogicLib {
             }
         }
 
-        s_state.providerMap[receipt.id] = msg.sender;
         EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[msg.sender];
         //slither-disable-next-line unused-return
         receiptIdSet.add(receipt.id);
     }
 
     function removeReceipt(LPState storage s_state, uint256 receiptId) internal {
+        ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         delete s_state.receipts[receiptId];
         delete s_state.lpReceiptMap[receiptId];
 
-        address provider = s_state.providerMap[receiptId];
-        EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[provider];
+        EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[receipt.provider];
         //slither-disable-next-line unused-return
         receiptIdSet.remove(receiptId);
-        delete s_state.providerMap[receiptId];
     }
 
     function claimLiquidity(LPState storage s_state, ChromaticLPReceipt memory receipt) internal {
