@@ -45,6 +45,11 @@
     "typechain": "^8.1.0",
     "typescript": ">=4.5.0"
   },
+  "resolutions": {
+    "@openzeppelin/contracts": "^4.9.3",
+    "@openzeppelin/contracts-upgradeable": "^4.9.3",
+    "minimatch": "^9.0.3"
+  },
   "scripts": {
     "repl": "hardhat console --config hardhat.repl.config.ts --no-compile",
     "repl:anvil:arbitrum": "hardhat console --network anvil_arbitrum --config hardhat.repl.config.ts --no-compile",
