@@ -335,7 +335,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         }
     }
 
-    function _rebalance() internal nonReentrant returns (uint256) {
+    function _rebalance() internal returns (uint256) {
         (uint256 currentUtility, uint256 valueTotal) = s_state.utilizationInfo();
         if (valueTotal == 0) return 0;
 
