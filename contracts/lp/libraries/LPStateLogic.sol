@@ -153,6 +153,7 @@ library LPStateLogicLib {
             abi.encode(
                 ChromaticLPLogicBase.RemoveLiquidityBatchCallbackData({
                     provider: msg.sender,
+                    recipient: recipient,
                     lpTokenAmount: lpTokenAmount,
                     clbTokenAmounts: clbTokenAmounts
                 })

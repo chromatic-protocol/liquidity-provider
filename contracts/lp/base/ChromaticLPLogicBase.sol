@@ -49,6 +49,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
 
     struct RemoveLiquidityBatchCallbackData {
         address provider;
+        address recipient;
         uint256 lpTokenAmount;
         uint256[] clbTokenAmounts;
     }
@@ -267,7 +268,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             bytes("")
         );
 
-        if (callbackData.provider != address(this)) {
+        if (callbackData.recipient != address(this) && callbackData.lpTokenAmount > 0) {
             //slither-disable-next-line arbitrary-send-erc20
             SafeERC20.safeTransferFrom(
                 IERC20(this),
