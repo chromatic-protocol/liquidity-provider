@@ -23,9 +23,7 @@ library LPStateValueLib {
         if (_totalValue == 0) {
             currentUtility = 0;
         } else {
-            currentUtility = uint16(
-                uint256(value.total - (value.holding + value.pendingClb)).mulDiv(BPS, value.total)
-            );
+            currentUtility = uint16(uint256(value.total - value.holding).mulDiv(BPS, value.total));
         }
     }
 
