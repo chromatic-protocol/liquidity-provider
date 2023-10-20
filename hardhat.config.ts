@@ -1,7 +1,7 @@
-import '@chromatic-protocol/hardhat-package'
 import '@nomicfoundation/hardhat-ethers'
 import '@nomicfoundation/hardhat-foundry'
 import '@nomicfoundation/hardhat-toolbox'
+import '@nomicfoundation/hardhat-toolbox-viem'
 import * as dotenv from 'dotenv'
 
 import { JsonRpcProvider, Network } from 'ethers'
