@@ -48,16 +48,16 @@ templates:
       eventHandlers:
         - event: AddLiquidity(indexed uint256,indexed address,indexed address,uint256,uint256)
           handler: handleAddLiquidity
-        - event: AddLiquiditySettled(indexed uint256,indexed address,indexed address,uint256,uint256)
+        - event: AddLiquiditySettled(indexed uint256,indexed address,indexed address,uint256,uint256,uint256)
           handler: handleAddLiquiditySettled
         - event: RemoveLiquidity(indexed uint256,indexed address,indexed address,uint256,uint256)
           handler: handleRemoveLiquidity
-        - event: RemoveLiquiditySettled(indexed uint256,indexed address,indexed address,uint256,uint256,uint256)
+        - event: RemoveLiquiditySettled(indexed uint256,indexed address,indexed address,uint256,uint256,uint256,uint256)
           handler: handleRemoveLiquiditySettled
         - event: RebalanceAddLiquidity(indexed uint256,uint256,uint256,uint256)
           handler: handleRebalanceAddLiquidity
         - event: RebalanceRemoveLiquidity(indexed uint256,uint256,uint256)
           handler: handleRebalanceRemoveLiquidity
-        - event: RebalanceSettled(indexed uint256)
+        - event: RebalanceSettled(indexed uint256,uint256)
           handler: handleRebalanceSettled
       file: ./src/chromatic-lp.ts

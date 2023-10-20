@@ -28,6 +28,7 @@ type AddLiquiditySettled @entity(immutable: true) {
   recipient: Bytes! # address
   settlementAdded: BigInt!
   lpTokenAmount: BigInt!
+  keeperFee: BigInt!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -55,6 +56,7 @@ type RemoveLiquiditySettled @entity(immutable: true) {
   burningAmount: BigInt!
   witdrawnSettlementAmount: BigInt!
   refundedAmount: BigInt!
+  keeperFee: BigInt!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -87,6 +89,7 @@ type RebalanceSettled @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address
   receiptId: BigInt!
+  keeperFee: BigInt!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

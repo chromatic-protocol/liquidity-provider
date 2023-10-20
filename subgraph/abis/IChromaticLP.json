@@ -155,6 +155,12 @@
         "internalType": "uint256",
         "name": "lpTokenAmount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "keeperFee",
+        "type": "uint256"
       }
     ],
     "name": "AddLiquiditySettled",
@@ -223,6 +229,12 @@
         "indexed": true,
         "internalType": "uint256",
         "name": "receiptId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "keeperFee",
         "type": "uint256"
       }
     ],
@@ -303,6 +315,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "refundedAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "keeperFee",
         "type": "uint256"
       }
     ],

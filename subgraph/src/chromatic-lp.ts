@@ -41,6 +41,7 @@ export function handleAddLiquiditySettled(event: AddLiquiditySettledEvent): void
   entity.recipient = event.params.recipient
   entity.settlementAdded = event.params.settlementAdded
   entity.lpTokenAmount = event.params.lpTokenAmount
+  entity.keeperFee = event.params.keeperFee
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
@@ -74,6 +75,7 @@ export function handleRemoveLiquiditySettled(event: RemoveLiquiditySettledEvent)
   entity.burningAmount = event.params.burningAmount
   entity.witdrawnSettlementAmount = event.params.witdrawnSettlementAmount
   entity.refundedAmount = event.params.refundedAmount
+  entity.keeperFee = event.params.keeperFee
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
@@ -117,6 +119,7 @@ export function handleRebalanceSettled(event: RebalanceSettledEvent): void {
   let entity = new RebalanceSettled(event.transaction.hash.concatI32(event.logIndex.toI32()))
   entity.lp = event.address
   entity.receiptId = event.params.receiptId
+  entity.keeperFee = event.params.keeperFee
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
