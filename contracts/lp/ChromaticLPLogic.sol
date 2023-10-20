@@ -11,10 +11,14 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
+import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
+import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 
 contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;
     using LPStateViewLib for LPState;
+    using LPStateValueLib for LPState;
+    using LPConfigLib for LPConfig;
 
     constructor(
         AutomateParam memory automateParam
@@ -69,17 +73,22 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
      * @dev implementation of IChromaticLP
      */
     function settle(uint256 receiptId) external nonReentrant returns (bool) {
-        return _settle(receiptId);
+        return _settle(receiptId, 0);
     }
 
     /**
      * @dev implementation of IChromaticLP
      */
     function rebalance() external override nonReentrant {
-        uint256 receiptId = _rebalance();
-        if (receiptId != 0) {
+        (uint256 currentUtility, uint256 valueTotal) = s_state.utilizationInfo();
+        if (valueTotal == 0) return;
+
+        AllocationStatus status = s_config.allocationStatus(currentUtility);
+
+        if (status != AllocationStatus.InRange) {
             uint256 balance = s_state.settlementToken().balanceOf(address(this));
             _payKeeperFee(balance);
+            _rebalance();
         }
     }
 }

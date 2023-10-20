@@ -43,7 +43,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         address indexed provider,
         address indexed recipient,
         uint256 settlementAdded,
-        uint256 lpTokenAmount
+        uint256 lpTokenAmount,
+        uint256 keeperFee
     );
 
     event RemoveLiquidity(
@@ -60,7 +61,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         address indexed recipient,
         uint256 burningAmount,
         uint256 witdrawnSettlementAmount,
-        uint256 refundedAmount
+        uint256 refundedAmount,
+        uint256 keeperFee
     );
 
     event RebalanceLiquidity(uint256 indexed receiptId);
@@ -166,7 +168,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
             address(this),
             address(this),
             receipt.amount,
-            receipt.amount
+            receipt.amount,
+            0
         );
         assertEq(true, lp.settle(receipt.id));
 
@@ -216,6 +219,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
             address(this),
             receipt.amount,
             receipt.amount,
+            0,
             0
         );
         assertEq(true, lp.settle(receipt.id));
