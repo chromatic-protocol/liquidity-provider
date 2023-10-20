@@ -15,7 +15,8 @@ interface IChromaticLPEvents {
         address indexed provider,
         address indexed recipient,
         uint256 settlementAdded,
-        uint256 lpTokenAmount
+        uint256 lpTokenAmount,
+        uint256 keeperFee
     );
 
     event RemoveLiquidity(
@@ -32,7 +33,8 @@ interface IChromaticLPEvents {
         address indexed recipient,
         uint256 burningAmount,
         uint256 witdrawnSettlementAmount,
-        uint256 refundedAmount
+        uint256 refundedAmount,
+        uint256 keeperFee
     );
 
     event RebalanceAddLiquidity(
@@ -48,5 +50,5 @@ interface IChromaticLPEvents {
         uint256 currentUtility
     );
 
-    event RebalanceSettled(uint256 indexed receiptId);
+    event RebalanceSettled(uint256 indexed receiptId, uint256 keeperFee);
 }

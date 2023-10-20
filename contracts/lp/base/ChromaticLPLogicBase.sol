@@ -89,9 +89,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function settleTask(uint256 receiptId) external /* onlyAutomation */ {
         if (s_task.settleTasks[receiptId] != 0) {
             uint256 feeMax = _getMaxPayableFeeInSettlement(receiptId);
-            if (_settle(receiptId)) {
-                _payKeeperFee(feeMax);
-            }
+            uint256 keeperFee = _payKeeperFee(feeMax);
+            _settle(receiptId, keeperFee);
         } // TODO else revert
     }
 
@@ -119,15 +118,15 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         feeInSettlementAmount = payer.payKeeperFee(address(token), fee, feePayee);
     }
 
-    function _settle(uint256 receiptId) internal returns (bool) {
+    function _settle(uint256 receiptId, uint256 keeperFee) internal returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
 
         // TODO check receipt
         if (receipt.oracleVersion < s_state.oracleVersion()) {
             if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
-                s_state.claimLiquidity(receipt);
+                s_state.claimLiquidity(receipt, keeperFee);
             } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
-                s_state.withdrawLiquidity(receipt);
+                s_state.withdrawLiquidity(receipt, keeperFee);
             } else {
                 revert UnknownLPAction();
             }
@@ -221,26 +220,30 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256[] calldata /* mintedCLBTokenAmounts */,
         bytes calldata data
     ) external verifyCallback {
-        ChromaticLPReceipt memory receipt = abi.decode(data, (ChromaticLPReceipt));
+        (ChromaticLPReceipt memory receipt, uint256 keeperFee) = abi.decode(
+            data,
+            (ChromaticLPReceipt, uint256)
+        );
         s_state.pendingAddAmount -= receipt.pendingLiquidity;
-
+        uint256 netAmount = receipt.amount - keeperFee;
         if (receipt.recipient != address(this)) {
             uint256 total = s_state.totalValue();
 
             //slither-disable-next-line incorrect-equality
             uint256 lpTokenMint = totalSupply() == 0
-                ? receipt.amount
-                : receipt.amount.mulDiv(totalSupply(), total - receipt.amount);
+                ? netAmount
+                : netAmount.mulDiv(totalSupply(), total - netAmount);
             _mint(receipt.recipient, lpTokenMint);
             emit AddLiquiditySettled({
                 receiptId: receipt.id,
                 provider: receipt.provider,
                 recipient: receipt.recipient,
-                settlementAdded: receipt.amount,
-                lpTokenAmount: lpTokenMint
+                settlementAdded: netAmount,
+                lpTokenAmount: lpTokenMint,
+                keeperFee: keeperFee
             });
         } else {
-            emit RebalanceSettled({receiptId: receipt.id});
+            emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }
     }
 
@@ -285,7 +288,10 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256[] calldata burnedCLBTokenAmounts,
         bytes calldata data
     ) external verifyCallback {
-        ChromaticLPReceipt memory receipt = abi.decode(data, (ChromaticLPReceipt));
+        (ChromaticLPReceipt memory receipt, uint256 keeperFee) = abi.decode(
+            data,
+            (ChromaticLPReceipt, uint256)
+        );
 
         s_state.decreasePendingClb(_feeRates, burnedCLBTokenAmounts);
         // burn and transfer settlementToken
@@ -319,7 +325,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 recipient: receipt.recipient,
                 burningAmount: burningAmount,
                 witdrawnSettlementAmount: withdrawAmount,
-                refundedAmount: remainingAmount
+                refundedAmount: remainingAmount,
+                keeperFee: keeperFee
             });
 
             SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawAmount);
@@ -331,7 +338,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
             }
         } else {
-            emit RebalanceSettled({receiptId: receipt.id});
+            emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }
     }
 

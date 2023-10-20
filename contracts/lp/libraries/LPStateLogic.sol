@@ -56,12 +56,16 @@ library LPStateLogicLib {
         receiptIdSet.remove(receiptId);
     }
 
-    function claimLiquidity(LPState storage s_state, ChromaticLPReceipt memory receipt) internal {
+    function claimLiquidity(
+        LPState storage s_state,
+        ChromaticLPReceipt memory receipt,
+        uint256 keeperFee
+    ) internal {
         // pass ChromaticLPReceipt as calldata
         // mint and transfer lp pool token to provider in callback
         s_state.market.claimLiquidityBatch(
             s_state.lpReceiptMap[receipt.id].values(),
-            abi.encode(receipt)
+            abi.encode(receipt, keeperFee)
         );
 
         s_state.removeReceipt(receipt.id);
@@ -69,13 +73,14 @@ library LPStateLogicLib {
 
     function withdrawLiquidity(
         LPState storage s_state,
-        ChromaticLPReceipt memory receipt
+        ChromaticLPReceipt memory receipt,
+        uint256 keeperFee
     ) internal {
         // do claim
         // pass ChromaticLPReceipt as calldata
         s_state.market.withdrawLiquidityBatch(
             s_state.lpReceiptMap[receipt.id].values(),
-            abi.encode(receipt)
+            abi.encode(receipt, keeperFee)
         );
 
         s_state.removeReceipt(receipt.id);
