@@ -49,6 +49,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
 
     struct RemoveLiquidityBatchCallbackData {
         address provider;
+        address recipient;
         uint256 lpTokenAmount;
         uint256[] clbTokenAmounts;
     }
@@ -267,7 +268,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             bytes("")
         );
 
-        if (callbackData.provider != address(this)) {
+        if (callbackData.recipient != address(this) && callbackData.lpTokenAmount > 0) {
             //slither-disable-next-line arbitrary-send-erc20
             SafeERC20.safeTransferFrom(
                 IERC20(this),
@@ -351,7 +352,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         if (status == AllocationStatus.OverUtilized) {
             return _rebalanceRemoveLiquidity(currentUtility);
         } else if (status == AllocationStatus.UnderUtilized) {
-            return _rebalanceAddLiquidity(currentUtility, valueTotal);
+            return _rebalanceAddLiquidity(currentUtility);
         } else {
             return 0;
         }
@@ -362,7 +363,10 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256 binCount = s_state.binCount();
         uint256[] memory clbTokenAmounts = new uint256[](binCount);
         for (uint256 i; i < binCount; ) {
-            clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(s_config.rebalanceBPS, currentUtility);
+            clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
+                currentUtility - s_config.utilizationTargetBPS,
+                currentUtility
+            );
             unchecked {
                 ++i;
             }
@@ -373,15 +377,12 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         return receipt.id;
     }
 
-    function _rebalanceAddLiquidity(
-        uint256 currentUtility,
-        uint256 valueTotal
-    ) private returns (uint256 receiptId) {
-        uint256 amount = (valueTotal).mulDiv(s_config.rebalanceBPS, BPS);
-        ChromaticLPReceipt memory receipt = _addLiquidity(
-            (valueTotal).mulDiv(s_config.rebalanceBPS, BPS),
-            address(this)
+    function _rebalanceAddLiquidity(uint256 currentUtility) private returns (uint256 receiptId) {
+        uint256 amount = (s_state.holdingValue()).mulDiv(
+            (BPS - currentUtility) - (BPS - s_config.utilizationTargetBPS),
+            BPS - currentUtility
         );
+        ChromaticLPReceipt memory receipt = _addLiquidity(amount, address(this));
         //slither-disable-next-line reentrancy-events
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;
