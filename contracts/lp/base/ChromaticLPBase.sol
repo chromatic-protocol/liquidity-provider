@@ -106,10 +106,9 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     function _resolveRebalance(
         function() external _rebalance
     ) internal view returns (bool, bytes memory) {
-        require(
-            s_state.holdingValue() > s_config.automationFeeReserved,
-            Errors.BALANCE_LESS_THAN_AUTOMATION_FEE_RESERVED
-        );
+        if (s_state.holdingValue() < s_config.automationFeeReserved) {
+            return (false, bytes(""));
+        }
 
         (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
         if (value == 0) return (false, bytes(""));
@@ -125,10 +124,9 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         uint256 receiptId,
         function(uint256) external settleTask
     ) internal view returns (bool, bytes memory) {
-        require(
-            s_state.holdingValue() > s_config.automationFeeReserved,
-            Errors.BALANCE_LESS_THAN_AUTOMATION_FEE_RESERVED
-        );
+        if (s_state.holdingValue() < s_config.automationFeeReserved) {
+            return (false, bytes(""));
+        }
 
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         if (receipt.id > 0 && receipt.oracleVersion < s_state.oracleVersion()) {
