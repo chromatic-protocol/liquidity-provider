@@ -306,7 +306,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             uint256 burningAmount;
             uint256 withdrawingAmount;
 
-            require(withdrawingMaxAmount > keeperFee, Errors.WITHDRAWAL_LESS_THAN_KEEPERFEE);
+            require(withdrawingMaxAmount > keeperFee, Errors.WITHDRAWAL_LESS_THAN_AUTOMATION_FEE);
 
             if (withdrawingMaxAmount - keeperFee > s_state.holdingValue()) {
                 withdrawingAmount = s_state.holdingValue();

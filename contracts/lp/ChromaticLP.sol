@@ -104,6 +104,12 @@ contract ChromaticLP is
         return _resolveRebalance(this.rebalance);
     }
 
+    function setAutomationFeeReserved(
+        uint256 automationFeeReserved
+    ) external override(IChromaticLPAdmin) onlyOwner {
+        s_config.automationFeeReserved = automationFeeReserved;
+    }
+
     /**
      * @inheritdoc IChromaticLPMeta
      */

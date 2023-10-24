@@ -18,6 +18,7 @@ import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateSetupLib} from "~/lp/libraries/LPStateSetup.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
+import {Errors} from "~/lp/libraries/Errors.sol";
 
 abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using Math for uint256;
@@ -53,7 +54,8 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
-            settleCheckingInterval: config.settleCheckingInterval
+            settleCheckingInterval: config.settleCheckingInterval,
+            automationFeeReserved: config.automationFeeReserved
         });
         s_state.initialize(config.market, _feeRates, distributionRates);
     }
@@ -104,6 +106,10 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     function _resolveRebalance(
         function() external _rebalance
     ) internal view returns (bool, bytes memory) {
+        if (s_state.holdingValue() < s_config.automationFeeReserved) {
+            return (false, bytes(""));
+        }
+
         (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
         if (value == 0) return (false, bytes(""));
 
@@ -118,6 +124,10 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         uint256 receiptId,
         function(uint256) external settleTask
     ) internal view returns (bool, bytes memory) {
+        if (s_state.holdingValue() < s_config.automationFeeReserved) {
+            return (false, bytes(""));
+        }
+
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         if (receipt.id > 0 && receipt.oracleVersion < s_state.oracleVersion()) {
             return (true, abi.encodeCall(settleTask, (receiptId)));

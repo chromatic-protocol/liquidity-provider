@@ -10,7 +10,8 @@ const LP_CONFIG: LPConfig = {
     utilizationTargetBPS: 5000,
     rebalanceBPS: 500,
     rebalanceCheckingInterval: 1 * 60 * 60, // 1 hours
-    settleCheckingInterval: 1 * 60 // 1 minutes
+    settleCheckingInterval: 1 * 60, // 1 minutes
+    automationFeeReserved: 1 ** 18
   },
   feeRates: [-4, -3, -2, -1, 1, 2, 3, 4],
   distributionRates: [2000, 1500, 1000, 500, 500, 1000, 1500, 2000]
