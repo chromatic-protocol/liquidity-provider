@@ -1,25 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {LPState} from "~/lp/libraries/LPState.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
+import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
+import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 // import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
+import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
+import {Errors} from "~/lp/libraries/Errors.sol";
 
 library LPStateLogicLib {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
     using LPStateViewLib for LPState;
     using LPStateLogicLib for LPState;
+    using LPStateValueLib for LPState;
 
     function nextReceiptId(LPState storage s_state) internal returns (uint256 id) {
         id = ++s_state.receiptId;
@@ -183,13 +186,11 @@ library LPStateLogicLib {
         }
     }
 
-    function decreasePendingClb(
-        LPState storage s_state,
-        int16[] calldata _feeRates,
-        uint256[] calldata burnedCLBTokenAmounts
-    ) internal {
-        for (uint256 i; i < _feeRates.length; ) {
-            s_state.pendingRemoveClbAmounts[_feeRates[i]] -= burnedCLBTokenAmounts[i];
+    function decreasePendingClb(LPState storage s_state, LpReceipt[] memory lpReceits) internal {
+        for (uint256 i; i < lpReceits.length; ) {
+            LpReceipt memory lpReceit;
+
+            s_state.pendingRemoveClbAmounts[lpReceit.tradingFeeRate] -= lpReceit.amount;
             unchecked {
                 ++i;
             }
@@ -200,31 +201,24 @@ library LPStateLogicLib {
         LPState storage s_state,
         uint256 lpTokenAmount,
         uint256 totalSupply
-    ) internal view returns (uint256[] memory clbTokenAmounts) {
+    ) internal view returns (uint256[] memory removeAmounts) {
         uint256 binCount = s_state.binCount();
-        address[] memory _owners = new address[](binCount);
+        uint256[] memory clbBalances = s_state.clbTokenBalances();
+        uint256[] memory pendingClb = s_state.pendingRemoveClbBalances();
+        removeAmounts = new uint256[](binCount);
         for (uint256 i; i < binCount; ) {
-            _owners[i] = address(this);
-            unchecked {
-                ++i;
-            }
-        }
-        uint256[] memory _clbTokenBalances = s_state.clbToken().balanceOfBatch(
-            _owners,
-            s_state.clbTokenIds
-        );
-
-        clbTokenAmounts = new uint256[](binCount);
-        for (uint256 i; i < binCount; ) {
-            clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
+            removeAmounts[i] = (clbBalances[i] + pendingClb[i]).mulDiv(
                 lpTokenAmount,
                 totalSupply,
                 Math.Rounding.Up
             );
-
+            if (removeAmounts[i] > clbBalances[i]) {
+                removeAmounts[i] = clbBalances[i];
+            }
             unchecked {
                 ++i;
             }
         }
     }
+
 }

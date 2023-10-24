@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {LPState} from "~/lp/libraries/LPState.sol";
-import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
-import {BPS} from "~/lp/libraries/Constants.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {LiquidityBinValue} from "@chromatic-protocol/contracts/core/interfaces/market/Types.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {BPS} from "~/lp/libraries/Constants.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
+import {Errors} from "~/lp/libraries/Errors.sol";
 
 library LPStateValueLib {
     using LPStateValueLib for LPState;
@@ -51,14 +53,14 @@ library LPStateValueLib {
     }
 
     function holdingClbValue(LPState storage s_state) internal view returns (uint256 value) {
-        uint256[] memory clbSupplies = s_state.market.clbToken().totalSupplyBatch(
-            s_state.clbTokenIds
-        );
+        uint256[] memory clbSupplies = s_state.clbTotalSupplies();
         uint256[] memory binValues = s_state.market.getBinValues(s_state.feeRates);
         uint256[] memory clbTokenAmounts = s_state.clbTokenBalances();
         for (uint256 i; i < binValues.length; ) {
             uint256 clbAmount = clbTokenAmounts[i];
-            value += clbAmount == 0 ? 0 : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
+            value += (clbAmount == 0 || clbSupplies[i] == 0 || binValues[i] == 0)
+                ? 0
+                : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
             unchecked {
                 ++i;
             }
@@ -66,13 +68,13 @@ library LPStateValueLib {
     }
 
     function pendingClbValue(LPState storage s_state) internal view returns (uint256 value) {
-        uint256[] memory clbSupplies = s_state.market.clbToken().totalSupplyBatch(
-            s_state.clbTokenIds
-        );
+        uint256[] memory clbSupplies = s_state.clbTotalSupplies();
         uint256[] memory binValues = s_state.market.getBinValues(s_state.feeRates);
         for (uint256 i; i < binValues.length; ) {
             uint256 clbAmount = s_state.pendingRemoveClbAmounts[s_state.feeRates[i]];
-            value += clbAmount == 0 ? 0 : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
+            value += (clbAmount == 0 || clbSupplies[i] == 0 || binValues[i] == 0)
+                ? 0
+                : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
             unchecked {
                 ++i;
             }
@@ -80,15 +82,15 @@ library LPStateValueLib {
     }
 
     function totalClbValue(LPState storage s_state) internal view returns (uint256 value) {
-        uint256[] memory clbSupplies = s_state.market.clbToken().totalSupplyBatch(
-            s_state.clbTokenIds
-        );
+        uint256[] memory clbSupplies = s_state.clbTotalSupplies();
         uint256[] memory binValues = s_state.market.getBinValues(s_state.feeRates);
         uint256[] memory clbTokenAmounts = s_state.clbTokenBalances();
         for (uint256 i; i < binValues.length; ) {
             uint256 clbAmount = clbTokenAmounts[i] +
                 s_state.pendingRemoveClbAmounts[s_state.feeRates[i]];
-            value += clbAmount == 0 ? 0 : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
+            value += (clbAmount == 0 || clbSupplies[i] == 0 || binValues[i] == 0)
+                ? 0
+                : clbAmount.mulDiv(binValues[i], clbSupplies[i]);
             unchecked {
                 ++i;
             }
@@ -106,6 +108,12 @@ library LPStateValueLib {
             }
         }
         _clbTokenBalances = s_state.clbToken().balanceOfBatch(_owners, s_state.clbTokenIds);
+    }
+
+    function clbTotalSupplies(
+        LPState storage s_state
+    ) internal view returns (uint256[] memory clbTokenTotalSupplies) {
+        clbTokenTotalSupplies = s_state.clbToken().totalSupplyBatch(s_state.clbTokenIds);
     }
 
     function pendingRemoveClbBalances(

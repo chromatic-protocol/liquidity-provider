@@ -19,7 +19,6 @@ import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelat
 import {IOracleProvider} from "@chromatic-protocol/contracts/oracle/interfaces/IOracleProvider.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
-
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
@@ -32,6 +31,7 @@ import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
+import {Errors} from "~/lp/libraries/Errors.sol";
 
 abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     using Math for uint256;
@@ -284,40 +284,42 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
      */
     function withdrawLiquidityBatchCallback(
         uint256[] calldata receiptIds,
-        int16[] calldata _feeRates,
-        uint256[] calldata withdrawnAmounts,
-        uint256[] calldata burnedCLBTokenAmounts,
+        int16[] calldata /* _feeRates */,
+        uint256[] calldata /* withdrawnAmounts */,
+        uint256[] calldata /* burnedCLBTokenAmounts */,
         bytes calldata data
     ) external verifyCallback {
         (ChromaticLPReceipt memory receipt, uint256 keeperFee) = abi.decode(
             data,
             (ChromaticLPReceipt, uint256)
         );
-
-        s_state.decreasePendingClb(_feeRates, burnedCLBTokenAmounts);
+        LpReceipt[] memory lpReceits = s_state.market.getLpReceipts(receiptIds);
+        s_state.decreasePendingClb(lpReceits);
         // burn and transfer settlementToken
 
         if (receipt.recipient != address(this)) {
-            uint256 value = s_state.totalValue();
+            uint256 totalValue = s_state.totalValue();
+            uint256 totalValueBefore = totalValue + keeperFee;
 
-            uint256 withdrawnAmount;
-            for (uint256 i; i < receiptIds.length; ) {
-                withdrawnAmount += withdrawnAmounts[i];
-                unchecked {
-                    ++i;
-                }
+            uint256 withdrawingMaxAmount = totalValueBefore.mulDiv(receipt.amount, totalSupply());
+
+            uint256 burningAmount;
+            uint256 withdrawingAmount;
+
+            require(withdrawingMaxAmount > keeperFee, Errors.WITHDRAWAL_LESS_THAN_KEEPERFEE);
+
+            if (withdrawingMaxAmount - keeperFee > s_state.holdingValue()) {
+                withdrawingAmount = s_state.holdingValue();
+                // burningAmount: (withdrawingAmount + keeperFee) = receipt.amount: withdrawingMaxAmount
+                burningAmount = receipt.amount.mulDiv(
+                    withdrawingAmount + keeperFee,
+                    withdrawingMaxAmount
+                );
+            } else {
+                withdrawingAmount = withdrawingMaxAmount - keeperFee;
+                burningAmount = receipt.amount;
             }
-            // (tokenBalance - withdrawn) * (burningLP /totalSupplyLP) + withdrawn
-            uint256 balance = s_state.settlementToken().balanceOf(address(this));
-            uint256 withdrawAmount = (balance - withdrawnAmount).mulDiv(
-                receipt.amount,
-                totalSupply()
-            ) + withdrawnAmount;
 
-            // burningLP: withdrawAmount = totalSupply: totalValue
-            // burningLP = withdrawAmount * totalSupply / totalValue
-            uint256 burningAmount = withdrawAmount.mulDiv(totalSupply(), value);
-            // transfer left lpTokens
             uint256 remainingAmount = receipt.amount - burningAmount;
 
             emit RemoveLiquiditySettled({
@@ -325,16 +327,17 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 provider: receipt.provider,
                 recipient: receipt.recipient,
                 burningAmount: burningAmount,
-                witdrawnSettlementAmount: withdrawAmount,
+                witdrawnSettlementAmount: withdrawingAmount,
                 refundedAmount: remainingAmount,
                 keeperFee: keeperFee
             });
 
-            SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawAmount);
+            SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawingAmount);
 
-            // burn LPToken requested
-            _burn(address(this), burningAmount);
-
+            // burn LPToken requested\
+            if (burningAmount > 0) {
+                _burn(address(this), burningAmount);
+            }
             if (remainingAmount > 0) {
                 SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
             }
