@@ -188,7 +188,7 @@ library LPStateLogicLib {
 
     function decreasePendingClb(LPState storage s_state, LpReceipt[] memory lpReceits) internal {
         for (uint256 i; i < lpReceits.length; ) {
-            LpReceipt memory lpReceit;
+            LpReceipt memory lpReceit = lpReceits[i];
 
             s_state.pendingRemoveClbAmounts[lpReceit.tradingFeeRate] -= lpReceit.amount;
             unchecked {
@@ -220,5 +220,4 @@ library LPStateLogicLib {
             }
         }
     }
-
 }
