@@ -4,7 +4,7 @@ import { lazyFunction, lazyObject } from 'hardhat/plugins'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 import { type Signer } from 'ethers'
-import { DEPLOYED, DeployTool, Helper } from '~/hardhat/common'
+import { DEPLOYED, DeployTool, Helper, getSDKClient, getLPClient } from '~/hardhat/common'
 import type { LPConfig } from '~/hardhat/common/DeployTool'
 import { Client } from './Client'
 
@@ -46,6 +46,14 @@ extendEnvironment((hre: HardhatRuntimeEnvironment) => {
   hre.getDeployTool = lazyFunction(() => async () => {
     const tool = await DeployTool.createAsync(hre, LP_CONFIG)
     return tool
+  })
+
+  hre.getSDKClient = lazyFunction(() => async () => {
+    return await getSDKClient(hre)
+  })
+
+  hre.getLPClient = lazyFunction(() => async () => {
+    return await getLPClient(hre)
   })
 
   hre.lpDeployed = lazyObject(() => DEPLOYED)

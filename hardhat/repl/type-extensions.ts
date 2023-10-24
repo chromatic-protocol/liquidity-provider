@@ -7,6 +7,7 @@ import 'hardhat/types/runtime'
 import { DeployTool, DeployedStore, Helper } from '~/hardhat/common'
 import type { MarketInfo } from '~/hardhat/common/DeployTool'
 
+import { LPClient, Client as SDKClient } from '~/hardhat/common'
 import { Client } from './Client'
 
 declare module 'hardhat/types/runtime' {
@@ -15,7 +16,8 @@ declare module 'hardhat/types/runtime' {
     getClient?: (signer?: Signer) => Promise<Client>
     getHelper?: (signer?: Signer) => Promise<Helper>
     getDeployTool?: () => Promise<DeployTool>
-
+    getSDKClient?: () => Promise<SDKClient>
+    getLPClient?: () => Promise<LPClient>
     lpDeployed?: DeployedStore
   }
 }

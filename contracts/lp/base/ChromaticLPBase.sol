@@ -133,7 +133,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     }
 
     function totalValue() public view override returns (uint256 value) {
-        value = (holdingValue() + pendingValue() + totalClbValue());
+        value = s_state.totalValue();
     }
 
     function valueInfo() public view override returns (ValueInfo memory info) {

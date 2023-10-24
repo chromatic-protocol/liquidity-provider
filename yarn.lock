@@ -80,10 +80,10 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.254":
-  version "0.0.1-rc.254"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.254.tgz#541c6d3820926c3bdeb54ca1b3febf00dcba4c82"
-  integrity sha512-KJSTm6lybrZeuEIceARu9RWMxcLLI7MKz4l78o4uXjIZcvvqxgRpZqGvk7dbL7k9xUBYTHA+RP8rwbrMmjjlCg==
+"@chromatic-protocol/contracts@^0.0.1-rc.255":
+  version "0.0.1-rc.255"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.255.tgz#5d3931115f75c74bf092e71f80925fe95ef4d04a"
+  integrity sha512-XwVTt2zEuugPDDjnoc8bvbaZTqX1VK2z2A/odwU8+ExaavA31+ZfEezsPFE6CXDoBU3fkmRRmmsGujdFPXoxmw==
   dependencies:
     "@chainlink/contracts" "^0.6.1"
     "@openzeppelin/contracts" "^4.9.3"
@@ -98,6 +98,13 @@
     chalk "^2.4.2"
     minimatch "^9.0.0"
     solidity-docgen "^0.6.0-beta.35"
+
+"@chromatic-protocol/liquidity-provider-sdk@^1.0.1-rc.24":
+  version "1.0.1-rc.24"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/liquidity-provider-sdk/-/liquidity-provider-sdk-1.0.1-rc.24.tgz#01ee5d11ba39a09a4276f591c676137f51e5c4da"
+  integrity sha512-mIiejgz64PLNVP12s+44Sr1EaWDrwfvUVZBhjBp3mREitCz17O/nFSXImMLffTaSuH2F2LlkcXQvQX6eHo6jKQ==
+  dependencies:
+    viem "^1.5.0"
 
 "@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.156":
   version "0.1.0-rc.156"
@@ -967,6 +974,13 @@
   dependencies:
     ethereumjs-util "^7.1.4"
 
+"@nomicfoundation/hardhat-toolbox-viem@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-toolbox-viem/-/hardhat-toolbox-viem-1.0.0.tgz#636fe36af60c6cd893c763c521669f01f9afdfe5"
+  integrity sha512-mXsvBc4tbtSpzifB6XRQB055rdvgsXg8DYi3lkWqV6JU27Z3ClCd8TjfZ6Oc5e5RWpw6wNbJqd9ZlcoeXCBDqw==
+  dependencies:
+    chai-as-promised "^7.1.1"
+
 "@nomicfoundation/hardhat-toolbox@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-toolbox/-/hardhat-toolbox-3.0.0.tgz#83e2c28a745aa4eb1236072166367b0de68b4c76"
@@ -986,6 +1000,14 @@
     semver "^6.3.0"
     table "^6.8.0"
     undici "^5.14.0"
+
+"@nomicfoundation/hardhat-viem@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-viem/-/hardhat-viem-1.0.0.tgz#a36798de8957ca2f7b5a9bdd4357777ee4597050"
+  integrity sha512-BWIrjlw3AOGVOPLZ/aGcAYC4EiFUF2QVrFV5StVtMUhQ9Wl6rlUCW98vNd1n0DFW1dPw93NYrMy5w0pEJPyKeg==
+  dependencies:
+    abitype "^0.9.8"
+    lodash.memoize "^4.1.2"
 
 "@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.1":
   version "0.1.1"
@@ -1909,6 +1931,11 @@ abitype@0.9.8:
   version "0.9.8"
   resolved "https://registry.yarnpkg.com/abitype/-/abitype-0.9.8.tgz#1f120b6b717459deafd213dfbf3a3dd1bf10ae8c"
   integrity sha512-puLifILdm+8sjyss4S+fsUN09obiT1g2YW6CtcQF+QDzxR0euzgEB29MZujC6zMk2a6SVmtttq1fc6+YFA7WYQ==
+
+abitype@^0.9.8:
+  version "0.9.10"
+  resolved "https://registry.yarnpkg.com/abitype/-/abitype-0.9.10.tgz#fa6fa30a6465da98736f98b6c601a02ed49f6eec"
+  integrity sha512-FIS7U4n7qwAT58KibwYig5iFG4K61rbhAqaQh/UWj8v1Y8mjX3F8TC9gd8cz9yT1TYel9f8nS5NO5kZp2RW0jQ==
 
 abort-controller@^3.0.0:
   version "3.0.0"
@@ -5155,6 +5182,11 @@ isomorphic-ws@^4.0.1:
   resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
   integrity sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==
 
+isows@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.3.tgz#93c1cf0575daf56e7120bab5c8c448b0809d0d74"
+  integrity sha512-2cKei4vlmg2cxEjm3wVSqn8pcoRF/LX/wpifuuNquFO4SQmPwarClT+SUCA2lt+l581tTeZIPIZuIDo2jWN1fg==
+
 isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
@@ -5478,6 +5510,11 @@ lodash.lowerfirst@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/lodash.lowerfirst/-/lodash.lowerfirst-4.3.1.tgz#de3c7b12e02c6524a0059c2f6cb7c5c52655a13d"
   integrity sha512-UUKX7VhP1/JL54NXg2aq/E1Sfnjjes8fNYTNkPU8ZmsaVeBvPHKdbNaN79Re5XRL01u6wbq3j0cbYZj71Fcu5w==
+
+lodash.memoize@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/lodash.memoize/-/lodash.memoize-4.1.2.tgz#bcc6c49a42a2840ed997f323eada5ecd182e0bfe"
+  integrity sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==
 
 lodash.pad@^4.5.1:
   version "4.5.1"
@@ -7923,6 +7960,20 @@ viem@^1.0.0:
     "@types/ws" "^8.5.5"
     abitype "0.9.8"
     isomorphic-ws "5.0.0"
+    ws "8.13.0"
+
+viem@^1.15.1, viem@^1.5.0:
+  version "1.16.6"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-1.16.6.tgz#78118c9269506a59e2bc4deab13f1646e113d3fc"
+  integrity sha512-jcWcFQ+xzIfDwexwPJRvCuCRJKEkK9iHTStG7mpU5MmuSBpACs4nATBDyXNFtUiyYTFzLlVEwWkt68K0nCSImg==
+  dependencies:
+    "@adraffy/ens-normalize" "1.9.4"
+    "@noble/curves" "1.2.0"
+    "@noble/hashes" "1.3.2"
+    "@scure/bip32" "1.3.2"
+    "@scure/bip39" "1.2.1"
+    abitype "0.9.8"
+    isows "1.0.3"
     ws "8.13.0"
 
 wcwidth@^1.0.1:
