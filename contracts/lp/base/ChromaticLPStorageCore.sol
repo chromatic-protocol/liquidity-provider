@@ -29,6 +29,7 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
         uint16 rebalanceBPS;
         uint256 rebalanceCheckingInterval;
         uint256 settleCheckingInterval;
+        uint256 automationFeeReserved;
     }
 
     //slither-disable-next-line unused-state

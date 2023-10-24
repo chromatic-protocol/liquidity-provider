@@ -11,4 +11,6 @@ interface IChromaticLPAdmin {
     ) external view returns (bool upkeepNeeded, bytes memory performData);
 
     function resolveRebalance() external view returns (bool upkeepNeeded, bytes memory performData);
+
+    function setAutomationFeeReserved(uint256 automationFeeReserved) external;
 }

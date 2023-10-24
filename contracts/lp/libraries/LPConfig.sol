@@ -6,6 +6,7 @@ struct LPConfig {
     uint16 rebalanceBPS;
     uint256 rebalanceCheckingInterval;
     uint256 settleCheckingInterval;
+    uint256 automationFeeReserved;
 }
 
 enum AllocationStatus {

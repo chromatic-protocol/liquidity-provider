@@ -105,7 +105,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
                 utilizationTargetBPS: 5000,
                 rebalanceBPS: 500,
                 rebalanceCheckingInterval: 1 hours,
-                settleCheckingInterval: 1 minutes
+                settleCheckingInterval: 1 minutes,
+                automationFeeReserved: 1 ether
             }),
             feeRates,
             distributionRates,
