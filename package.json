@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@chromatic-protocol/hardhat-package": "^0.0.1-dev.18",
-    "@chromatic-protocol/liquidity-provider-sdk": "^1.0.1-rc.24",
+    "@chromatic-protocol/liquidity-provider-sdk": "^1.0.1-rc.25",
     "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.159",
     "@gelatonetwork/automate-sdk": "^2.14.0",
     "@graphprotocol/graph-cli": "^0.58.0",
