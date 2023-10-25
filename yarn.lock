@@ -99,10 +99,10 @@
     minimatch "^9.0.0"
     solidity-docgen "^0.6.0-beta.35"
 
-"@chromatic-protocol/liquidity-provider-sdk@^1.0.1-rc.24":
-  version "1.0.1-rc.24"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/liquidity-provider-sdk/-/liquidity-provider-sdk-1.0.1-rc.24.tgz#01ee5d11ba39a09a4276f591c676137f51e5c4da"
-  integrity sha512-mIiejgz64PLNVP12s+44Sr1EaWDrwfvUVZBhjBp3mREitCz17O/nFSXImMLffTaSuH2F2LlkcXQvQX6eHo6jKQ==
+"@chromatic-protocol/liquidity-provider-sdk@^1.0.1-rc.25":
+  version "1.0.1-rc.25"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/liquidity-provider-sdk/-/liquidity-provider-sdk-1.0.1-rc.25.tgz#d7ebf49af699a809d8c803bceb4dd97c66acc580"
+  integrity sha512-ShKf+Vu1OiTicp6AP8aYs5q9wOswTzOVXsZ0VzCxOgMViEi28smT8owk0lbCKYbGxJEhnbVEA0HlEfBDXggApw==
   dependencies:
     viem "^1.5.0"
 
