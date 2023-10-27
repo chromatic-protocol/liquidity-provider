@@ -1,26 +1,14 @@
 import type { DeployFunction } from 'hardhat-deploy/types'
+import { DeployResult } from 'hardhat-deploy/types'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { DeployTool, type LPConfig } from '~/hardhat/common/DeployTool'
-const LP_CONFIG: LPConfig = {
-  meta: {
-    lpName: 'normal',
-    tag: 'N'
-  },
-  config: {
-    utilizationTargetBPS: 5000,
-    rebalanceBPS: 500,
-    rebalanceCheckingInterval: 1 * 60 * 60, // 1 hours
-    settleCheckingInterval: 1 * 60, // 1 minutes
-    automationFeeReserved: 1 ** 18
-  },
-  feeRates: [-4, -3, -2, -1, 1, 2, 3, 4],
-  distributionRates: [2000, 1500, 1000, 500, 500, 1000, 1500, 2000]
-}
+import { DeployTool } from '~/hardhat/common/DeployTool'
+import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const tool = await DeployTool.createAsync(hre)
-  const result = await tool.deployAllLP(LP_CONFIG)
-  for (let deployed of Object.values(result)) {
+  const tool = await DeployTool.createAsync(hre, getDefaultLPConfigs())
+  const result = await tool.deployAllLP()
+  const deployedResults: DeployResult[] = [].concat(...Object.values(result))
+  for (let deployed of deployedResults) {
     await tool.registerLP(deployed.address)
   }
 }

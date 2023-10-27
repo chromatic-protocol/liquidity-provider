@@ -85,10 +85,10 @@ export class Helper {
     return ChromaticLPRegistry__factory.connect(address, this.signer)
   }
 
-  lpOfMarket(marketAddress: string) {
-    const address = this.deployed.lpOfMarket(marketAddress)
-    if (!address) throw new Error('no address')
-    return IChromaticLP__factory.connect(address, this.signer)
+  lpOfMarket(marketAddress: string, index: number) {
+    const addresses = this.deployed.lpOfMarket(marketAddress)
+    if (!addresses) throw new Error('no address')
+    return IChromaticLP__factory.connect(addresses[index], this.signer)
   }
 
   lp(lpAddress: string) {

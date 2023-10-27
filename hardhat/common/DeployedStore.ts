@@ -4,8 +4,8 @@ import { type DeployResult } from 'hardhat-deploy/types'
 // const REGISTRY_DEPLOYED: RegistryDeployedResultMap = {}
 // const LP_DEPLOYED: LPDeployedResultMap = {}
 
-interface MarketToLP {
-  [marketAddress: string]: string
+interface MarketToLPs {
+  [marketAddress: string]: string[]
 }
 
 export interface RegistryDeployedResultMap {
@@ -13,13 +13,17 @@ export interface RegistryDeployedResultMap {
 }
 export class DeployedStore {
   registryAddress: string = ''
-  marketToLP: MarketToLP = {}
+  marketToLPs: MarketToLPs = {}
 
   saveRegistry(result: string) {
     this.registryAddress = result
   }
   saveLP(lpAddress: string, marketAddress: string) {
-    this.marketToLP[marketAddress] = lpAddress
+    if (!this.marketToLPs[marketAddress]) {
+      this.marketToLPs[marketAddress] = [lpAddress]
+    } else {
+      this.marketToLPs[marketAddress].push(lpAddress)
+    }
   }
 
   get registry() {
@@ -27,12 +31,13 @@ export class DeployedStore {
   }
 
   lpOfMarket(marketAddress: string) {
-    return this.marketToLP[marketAddress]
+    return this.marketToLPs[marketAddress]
   }
 
   get lpAddresses() {
-    return Object.values(this.marketToLP)
+    const result: any = []
+
+    return result.concat(...Object.values(this.marketToLPs))
   }
 }
-
 export const DEPLOYED = new DeployedStore()

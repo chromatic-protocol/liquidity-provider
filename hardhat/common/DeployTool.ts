@@ -6,6 +6,7 @@ import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
 import { ChromaticLPRegistry } from '~/typechain-types'
 
+import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { getAutomateConfig } from './getAutomateConfig'
 import type { AutomateConfig, LPConfig, LPDeployedResultMap, MarketInfo } from './types'
 
@@ -15,14 +16,15 @@ export class DeployTool {
   constructor(
     public readonly hre: HardhatRuntimeEnvironment,
     public readonly helper: Helper,
-    public readonly defaultLPConfig?: LPConfig
+    public readonly defaultLPConfigs: LPConfig[]
   ) {}
   async initialize() {}
 
-  static async createAsync(hre: HardhatRuntimeEnvironment, defaultLPConfig?: LPConfig) {
+  static async createAsync(hre: HardhatRuntimeEnvironment, defaultLPConfigs?: LPConfig[]) {
     const { deployer } = await hre.getNamedAccounts()
     const helper = await Helper.createAsync(hre, deployer)
-    const tool = new DeployTool(hre, helper, defaultLPConfig)
+    defaultLPConfigs = defaultLPConfigs === undefined ? getDefaultLPConfigs() : defaultLPConfigs
+    const tool = new DeployTool(hre, helper, defaultLPConfigs)
     await tool.initialize()
     return tool
   }
@@ -44,7 +46,7 @@ export class DeployTool {
   private async deploy(name: string, options: DeployOptions): Promise<DeployResult> {
     if (!this.deployer) throw new Error('not initialized')
 
-    console.log(chalk.yellow(`✨ Deploying... ${name}\n deployOptions: ${JSON.stringify(options)}`))
+    console.log(chalk.yellow(`✨ Deploying... ${name}\n deployOptions:`), options)
     const deployResult = await this._deploy(name, options)
 
     if (deployResult.newlyDeployed) {
@@ -58,8 +60,8 @@ export class DeployTool {
 
   async deployAll() {
     await this.deployRegistry()
-    const result = await this.deployAllLP(this.defaultLPConfig)
-    for (let deployed of Object.values(result)) {
+    const result = await this.deployAllLP(this.defaultLPConfigs)
+    for (let deployed of [].concat(...Object.values(result))) {
       await this.registerLP(deployed.address)
     }
   }
@@ -104,39 +106,37 @@ export class DeployTool {
     }
   }
 
-  async deployAllLP(lpConfig?: LPConfig) {
-    const config = this.getLPConfig(lpConfig)
-
+  async deployAllLP(lpConfigs?: LPConfig[]): Promise<LPDeployedResultMap> {
     const markets = await this.getMarkets()
-
+    lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
     const lpDeployed: LPDeployedResultMap = {}
+    const deployedResults = []
     for (let market of markets) {
-      const deployed = await this.deployLP(market.address, config)
+      for (let lpConfig of lpConfigs) {
+        const config = this.getLPConfig(lpConfig)
 
-      lpDeployed[market.address] = deployed
+        const deployed = await this.deployLP(market.address, config)
+        deployedResults.push(deployed)
+      }
+
+      lpDeployed[market.address] = deployedResults
     }
     return lpDeployed
   }
 
-  getLPConfig(lpConfig?: LPConfig): LPConfig {
-    let config: LPConfig
-    if (lpConfig == undefined) {
-      if (this.defaultLPConfig != undefined) {
-        config = { ...this.defaultLPConfig }
-      } else {
-        throw new Error('undefined LPConfig')
-      }
-    } else {
-      config = lpConfig
+  getLPConfig(lpConfig: LPConfig): LPConfig {
+    let config = {
+      ...lpConfig,
+      automateConfig: this.automateConfig
     }
-    config.automateConfig = this.automateConfig
     return config
   }
 
-  async deployLP(marketAddress: string, lpConfig?: LPConfig): Promise<DeployResult> {
+  async deployLP(marketAddress: string, lpConfig: LPConfig): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying LP for market: ${marketAddress}`))
     const config = this.getLPConfig(lpConfig)
     if (!config.meta?.lpName) throw new Error('lpName not found')
+    if (!config.meta?.tag) throw new Error('lp-tag not found')
 
     const { address: logicAddress } = await this.deploy(this.lpLogicContractName, {
       from: this.deployer,
