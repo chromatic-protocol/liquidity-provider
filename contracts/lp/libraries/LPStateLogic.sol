@@ -8,9 +8,6 @@ import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKe
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
-import {BPS} from "~/lp/libraries/Constants.sol";
-
-// import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
@@ -95,7 +92,10 @@ library LPStateLogicLib {
     ) internal view returns (uint256[] memory amounts, uint256 totalAmount) {
         amounts = new uint256[](s_state.binCount());
         for (uint256 i = 0; i < s_state.binCount(); ) {
-            uint256 _amount = amount.mulDiv(s_state.distributionRates[s_state.feeRates[i]], BPS);
+            uint256 _amount = amount.mulDiv(
+                s_state.distributionRates[s_state.feeRates[i]],
+                s_state.totalRate
+            );
 
             amounts[i] = _amount;
             totalAmount += _amount;

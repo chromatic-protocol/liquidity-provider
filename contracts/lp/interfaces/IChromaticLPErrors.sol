@@ -5,7 +5,6 @@ interface IChromaticLPErrors {
     error InvalidUtilizationTarget(uint16 targetBPS);
     error InvalidRebalanceBPS();
     error NotMatchDistributionLength(uint256 feeLength, uint256 distributionLength);
-    error InvalidDistributionSum();
 
     error NotMarket();
     error OnlyBatchCall();
