@@ -61,8 +61,8 @@ export class Client {
     return this._settlementTokenAddress
   }
 
-  get lpAddress(): string {
-    return this.helper.deployed.lpOfMarket(this._marketAddress)
+  lpAddress(index: number): string {
+    return this.helper.deployed.lpOfMarket(this._marketAddress)[index]
   }
 
   get market() {
@@ -73,8 +73,8 @@ export class Client {
     return IERC20__factory.connect(this._settlementTokenAddress, this.signer)
   }
 
-  get lp(): ChromaticLP {
-    return ChromaticLP__factory.connect(this.lpAddress, this.signer)
+  lp(index: number): ChromaticLP {
+    return ChromaticLP__factory.connect(this.lpAddress(index), this.signer)
   }
 
   get lpAddresses(): string[] {

@@ -8,6 +8,7 @@ struct LPState {
     IChromaticMarket market;
     int16[] feeRates;
     mapping(int16 => uint16) distributionRates;
+    uint256 totalRate;
     uint256[] clbTokenIds;
     mapping(uint256 => ChromaticLPReceipt) receipts; // receiptId => receipt
     mapping(uint256 => EnumerableSet.UintSet) lpReceiptMap; // receiptId => lpReceiptIds

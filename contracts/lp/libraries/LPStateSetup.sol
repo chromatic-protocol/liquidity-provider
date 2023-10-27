@@ -32,7 +32,7 @@ library LPStateSetupLib {
                 ++i;
             }
         }
-        if (totalRate != BPS) revert IChromaticLPErrors.InvalidDistributionSum();
+        s_state.totalRate = totalRate;
         s_state.feeRates = feeRates;
 
         _setupClbTokenIds(s_state, feeRates);

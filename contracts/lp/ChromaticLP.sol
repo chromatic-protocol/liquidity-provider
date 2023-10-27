@@ -17,12 +17,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-contract ChromaticLP is 
-    IChromaticLiquidityCallback, 
-    IERC1155Receiver, 
-    ChromaticLPBase, 
-    Proxy 
-{
+contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, ChromaticLPBase, Proxy {
     using EnumerableSet for EnumerableSet.UintSet;
     using LPStateViewLib for LPState;
 
@@ -115,6 +110,13 @@ contract ChromaticLP is
      */
     function lpName() external view override returns (string memory) {
         return s_meta.lpName;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPMeta
+     */
+    function lpTag() external view override returns (string memory) {
+        return s_meta.tag;
     }
 
     /**
