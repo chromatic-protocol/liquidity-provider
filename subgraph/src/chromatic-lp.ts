@@ -30,7 +30,6 @@ export function handleAddLiquidity(event: AddLiquidityEvent): void {
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-  entity.insertedAt = BigInt.fromI64(Date.now())
 
   entity.save()
 }
@@ -48,7 +47,6 @@ export function handleAddLiquiditySettled(event: AddLiquiditySettledEvent): void
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-  entity.insertedAt = BigInt.fromI64(Date.now())
 
   entity.save()
 }
@@ -65,7 +63,6 @@ export function handleRemoveLiquidity(event: RemoveLiquidityEvent): void {
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-  entity.insertedAt = BigInt.fromI64(Date.now())
 
   entity.save()
 }
@@ -84,7 +81,6 @@ export function handleRemoveLiquiditySettled(event: RemoveLiquiditySettledEvent)
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-  entity.insertedAt = BigInt.fromI64(Date.now())
 
   entity.save()
 }
@@ -100,7 +96,6 @@ export function handleRebalanceAddLiquidity(event: RebalanceAddLiquidityEvent): 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-  entity.insertedAt = BigInt.fromI64(Date.now())
 
   entity.save()
 }
@@ -117,7 +112,6 @@ export function handleRebalanceRemoveLiquidity(event: RebalanceRemoveLiquidityEv
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-  entity.insertedAt = BigInt.fromI64(Date.now())
 
   entity.save()
 }
@@ -131,7 +125,6 @@ export function handleRebalanceSettled(event: RebalanceSettledEvent): void {
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-  entity.insertedAt = BigInt.fromI64(Date.now())
 
   entity.save()
 }
