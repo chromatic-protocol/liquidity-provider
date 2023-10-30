@@ -12,6 +12,16 @@
   },
   {
     "inputs": [],
+    "name": "AlreadyRegistered",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotRegistered",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "OnlyAccessableByOwner",
     "type": "error"
   },
