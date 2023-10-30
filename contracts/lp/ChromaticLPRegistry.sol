@@ -20,6 +20,8 @@ contract ChromaticLPRegistry is Ownable {
     event ChromaticLPUnregistered(address indexed market, address indexed lp);
 
     error OnlyAccessableByOwner();
+    error AlreadyRegistered();
+    error NotRegistered();
 
     constructor(IChromaticMarketFactory _factory) Ownable() {
         factory = _factory;
@@ -32,26 +34,27 @@ contract ChromaticLPRegistry is Ownable {
     function register(IChromaticLP lp) external onlyOwner {
         address market = lp.market();
 
-        //slither-disable-next-line unused-return
-        _lpsByMarket[market].add(address(lp));
-        //slither-disable-next-line unused-return
-        _lpsBySettlementToken[lp.settlementToken()].add(address(lp));
-        //slither-disable-next-line unused-return
-        _lpsAll.add(address(lp));
-
-        emit ChromaticLPRegistered(market, address(lp));
+        bool success = _lpsByMarket[market].add(address(lp));
+        success = success && _lpsBySettlementToken[lp.settlementToken()].add(address(lp));
+        success = success && _lpsAll.add(address(lp));
+        if (success) {
+            emit ChromaticLPRegistered(market, address(lp));
+        } else {
+            revert AlreadyRegistered();
+        }
     }
 
     function unregister(IChromaticLP lp) external onlyOwner {
         address market = lp.market();
-        //slither-disable-next-line unused-return
-        _lpsByMarket[market].remove(address(lp));
-        //slither-disable-next-line unused-return
-        _lpsBySettlementToken[lp.settlementToken()].remove(address(lp));
-        //slither-disable-next-line unused-return
-        _lpsAll.remove(address(lp));
 
-        emit ChromaticLPUnregistered(market, address(lp));
+        bool success = _lpsByMarket[market].remove(address(lp));
+        success = success && _lpsBySettlementToken[lp.settlementToken()].remove(address(lp));
+        success = success && _lpsAll.remove(address(lp));
+        if (success) {
+            emit ChromaticLPUnregistered(market, address(lp));
+        } else {
+            revert NotRegistered();
+        }
     }
 
     function lpList() external view returns (address[] memory lpAddresses) {

@@ -110,8 +110,8 @@ export class DeployTool {
     const markets = await this.getMarkets()
     lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
     const lpDeployed: LPDeployedResultMap = {}
-    const deployedResults = []
     for (let market of markets) {
+      const deployedResults = []
       for (let lpConfig of lpConfigs) {
         const config = this.getLPConfig(lpConfig)
 
