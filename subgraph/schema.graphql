@@ -18,7 +18,6 @@ type AddLiquidity @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  insertedAt: BigInt!
 }
 
 type AddLiquiditySettled @entity(immutable: true) {
@@ -33,7 +32,6 @@ type AddLiquiditySettled @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  insertedAt: BigInt!
 }
 
 type RemoveLiquidity @entity(immutable: true) {
@@ -47,7 +45,6 @@ type RemoveLiquidity @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  insertedAt: BigInt!
 }
 
 type RemoveLiquiditySettled @entity(immutable: true) {
@@ -63,7 +60,6 @@ type RemoveLiquiditySettled @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  insertedAt: BigInt!
 }
 
 type RebalanceAddLiquidity @entity(immutable: true) {
@@ -76,7 +72,6 @@ type RebalanceAddLiquidity @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  insertedAt: BigInt!
 }
 
 type RebalanceRemoveLiquidity @entity(immutable: true) {
@@ -88,7 +83,6 @@ type RebalanceRemoveLiquidity @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  insertedAt: BigInt!
 }
 
 type RebalanceSettled @entity(immutable: true) {
@@ -99,5 +93,4 @@ type RebalanceSettled @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-  insertedAt: BigInt!
 }
