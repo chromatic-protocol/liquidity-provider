@@ -6,11 +6,11 @@
     "@chainlink/contracts": "^0.6.1",
     "@chromatic-protocol/contracts": "^0.0.1-rc.260",
     "@openzeppelin/contracts": "^4.9.3",
-    "@uniswap/v3-periphery": "^1.4.3"
+    "@uniswap/v3-periphery": "^1.4.4"
   },
   "devDependencies": {
     "@chromatic-protocol/hardhat-package": "^0.0.1-dev.18",
-    "@chromatic-protocol/liquidity-provider-sdk": "^1.0.1-rc.25",
+    "@chromatic-protocol/liquidity-provider-sdk": "^1.0.1-rc.27",
     "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.159",
     "@gelatonetwork/automate-sdk": "^2.14.0",
     "@graphprotocol/graph-cli": "^0.58.0",
@@ -30,7 +30,7 @@
     "@types/gaussian": "^1.2.0",
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=12.0.0",
-    "@uniswap/smart-order-router": "^3.13.7",
+    "@uniswap/smart-order-router": "^3.17.2",
     "@wagmi/cli": "^1.5.0",
     "chai": "^4.2.0",
     "dotenv": "^16.0.3",
@@ -52,7 +52,11 @@
   "resolutions": {
     "@openzeppelin/contracts": "^4.9.3",
     "@openzeppelin/contracts-upgradeable": "^4.9.3",
-    "minimatch": "^9.0.3"
+    "minimatch": "^9.0.3",
+    "ejs": "^3.1.9",
+    "semver": "^7.5.4",
+    "lodash": "^4.17.21",
+    "tough-cookie": "^4.1.3"
   },
   "scripts": {
     "repl": "hardhat console --config hardhat.repl.config.ts --no-compile",
