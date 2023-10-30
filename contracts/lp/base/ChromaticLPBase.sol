@@ -12,6 +12,7 @@ import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPLens} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
@@ -137,51 +138,87 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         return (false, bytes(""));
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function utilization() public view override returns (uint16 currentUtility) {
         //slither-disable-next-line unused-return
         (currentUtility, ) = s_state.utilizationInfo();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function totalValue() public view override returns (uint256 value) {
         value = s_state.totalValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function valueInfo() public view override returns (ValueInfo memory info) {
         return s_state.valueInfo();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function holdingValue() public view override returns (uint256) {
         return s_state.holdingValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingValue() public view override returns (uint256) {
         return s_state.pendingValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function holdingClbValue() public view override returns (uint256 value) {
         return s_state.holdingClbValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingClbValue() public view override returns (uint256 value) {
         return s_state.pendingClbValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function totalClbValue() public view override returns (uint256 value) {
         return s_state.totalClbValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function feeRates() external view override returns (int16[] memory) {
         return s_state.feeRates;
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function clbTokenIds() external view override returns (uint256[] memory) {
         return s_state.clbTokenIds;
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function clbTokenBalances() public view override returns (uint256[] memory _clbTokenBalances) {
         return s_state.clbTokenBalances();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingRemoveClbBalances() public view override returns (uint256[] memory) {
         return s_state.pendingRemoveClbBalances();
     }
