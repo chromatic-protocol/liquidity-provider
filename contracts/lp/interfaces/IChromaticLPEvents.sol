@@ -61,7 +61,7 @@ interface IChromaticLPEvents {
      * @param provider Address of the liquidity provider.
      * @param recipient Address of the recipient.
      * @param burningAmount Amount of LP tokens burned.
-     * @param witdrawnSettlementAmount Withdrawn settlement amount.
+     * @param withdrawnSettlementAmount Withdrawn settlement amount.
      * @param refundedAmount Amount refunded to the provider.
      * @param keeperFee Fee paid to the keeper.
      */
@@ -70,7 +70,7 @@ interface IChromaticLPEvents {
         address indexed provider,
         address indexed recipient,
         uint256 burningAmount,
-        uint256 witdrawnSettlementAmount,
+        uint256 withdrawnSettlementAmount,
         uint256 refundedAmount,
         uint256 keeperFee
     );

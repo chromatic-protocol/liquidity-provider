@@ -327,7 +327,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 provider: receipt.provider,
                 recipient: receipt.recipient,
                 burningAmount: burningAmount,
-                witdrawnSettlementAmount: withdrawingAmount,
+                withdrawnSettlementAmount: withdrawingAmount,
                 refundedAmount: remainingAmount,
                 keeperFee: keeperFee
             });

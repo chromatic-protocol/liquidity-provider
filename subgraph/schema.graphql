@@ -57,7 +57,7 @@ type RemoveLiquiditySettled @entity(immutable: true) {
   provider: Bytes! # address
   recipient: Bytes! # address
   burningAmount: BigInt!
-  witdrawnSettlementAmount: BigInt!
+  withdrawnSettlementAmount: BigInt!
   refundedAmount: BigInt!
   keeperFee: BigInt!
   blockNumber: BigInt!
