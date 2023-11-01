@@ -1,9 +1,11 @@
 import fs from 'fs'
 import Mustache from 'mustache'
+
 import { join } from 'path'
 
 const abiPath = join('.', 'abis')
 const deployments = join('..', '..', 'deployments')
+const interfacesPath = join(...'../../artifacts/contracts/lp/interfaces'.split('/'))
 
 async function loadDeployment(network, contract) {
   const json = await import(join(deployments, network, `${contract}.json`), {
@@ -17,6 +19,20 @@ function saveABI(contract, deployment) {
   fs.writeFileSync(join(abiPath, `${contract}.json`), JSON.stringify(deployment.abi, null, 2))
 }
 
+async function loadInterfaceABI(interfaceName) {
+  const json = await import(join(interfacesPath, `${interfaceName}.sol`, `${interfaceName}.json`), {
+    assert: { type: 'json' }
+  })
+  return json.default
+}
+
+async function saveInterfaceABI(interfaceName) {
+  if (!fs.existsSync(abiPath)) fs.mkdirSync(abiPath, { recursive: true })
+  const json = await loadInterfaceABI(interfaceName)
+
+  fs.writeFileSync(join(abiPath, `${interfaceName}.json`), JSON.stringify(json.abi, null, 2))
+}
+
 async function main() {
   const network = process.argv[2]
   const templateFile = process.argv[3]
@@ -25,6 +41,7 @@ async function main() {
   const registry = await loadDeployment(network, 'ChromaticLPRegistry')
 
   saveABI('ChromaticLPRegistry', registry)
+  await saveInterfaceABI('IChromaticLP')
 
   const template = fs.readFileSync(templateFile).toString()
   const output = Mustache.render(template, {

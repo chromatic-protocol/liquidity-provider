@@ -41,12 +41,27 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     using LPStateLogicLib for LPState;
     using LPConfigLib for LPConfig;
 
+    /**
+     * @title AddLiquidityBatchCallbackData
+     * @dev A struct representing callback data for the addLiquidityBatch function in the Chromatic LP contract.
+     * @param provider The address of the liquidity provider initiating the addLiquidityBatch.
+     * @param liquidityAmount The amount of liquidity added to the LP.
+     * @param holdingAmount The remaining holding amount after adding liquidity.
+     */
     struct AddLiquidityBatchCallbackData {
         address provider;
         uint256 liquidityAmount;
         uint256 holdingAmount;
     }
 
+    /**
+     * @title RemoveLiquidityBatchCallbackData
+     * @dev A struct representing callback data for the removeLiquidityBatch function in the Chromatic LP contract.
+     * @param provider The address of the liquidity provider initiating the removeLiquidityBatch.
+     * @param recipient The address where the LP tokens and settlement tokens are sent after removal.
+     * @param lpTokenAmount The amount of LP tokens removed from the LP.
+     * @param clbTokenAmounts An array of CLB token amounts corresponding to different fee rates.
+     */
     struct RemoveLiquidityBatchCallbackData {
         address provider;
         address recipient;
@@ -327,7 +342,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 provider: receipt.provider,
                 recipient: receipt.recipient,
                 burningAmount: burningAmount,
-                witdrawnSettlementAmount: withdrawingAmount,
+                withdrawnSettlementAmount: withdrawingAmount,
                 refundedAmount: remainingAmount,
                 keeperFee: keeperFee
             });

@@ -6,11 +6,23 @@ import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 
 abstract contract ChromaticLPStorage is ChromaticLPStorageCore, AutomateReady {
+    /**
+     * @title AutomateParam
+     * @dev A struct representing the automation parameters for the Chromatic LP contract.
+     * @param automate The address of the automation contract.
+     * @param opsProxyFactory The address of the operations proxy factory contract.
+     */
     struct AutomateParam {
         address automate;
         address opsProxyFactory;
     }
 
+    /**
+     * @title Tasks
+     * @dev A struct representing tasks associated with Chromatic LP operations.
+     * @param rebalanceTaskId The task ID for rebalance operations.
+     * @param settleTasks A mapping from receipt ID to the corresponding settle task ID.
+     */
     struct Tasks {
         bytes32 rebalanceTaskId;
         mapping(uint256 => bytes32) settleTasks;

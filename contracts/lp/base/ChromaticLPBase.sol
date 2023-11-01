@@ -12,6 +12,9 @@ import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPLens} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {IChromaticLPConfigLens} from "~/lp/interfaces/IChromaticLPConfigLens.sol";
+import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
@@ -41,15 +44,20 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         LPMeta memory meta,
         ConfigParam memory config,
         int16[] memory _feeRates,
-        uint16[] memory distributionRates
+        uint16[] memory _distributionRates
     ) internal {
         _validateConfig(
             config.utilizationTargetBPS,
             config.rebalanceBPS,
             _feeRates,
-            distributionRates
+            _distributionRates
         );
+
+        emit SetLpName(meta.lpName);
+        emit SetLpTag(meta.tag);
+
         s_meta = LPMeta({lpName: meta.lpName, tag: meta.tag});
+
         s_config = LPConfig({
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
@@ -57,20 +65,20 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             settleCheckingInterval: config.settleCheckingInterval,
             automationFeeReserved: config.automationFeeReserved
         });
-        s_state.initialize(config.market, _feeRates, distributionRates);
+        s_state.initialize(config.market, _feeRates, _distributionRates);
     }
 
     function _validateConfig(
-        uint16 utilizationTargetBPS,
-        uint16 rebalanceBPS,
+        uint16 _utilizationTargetBPS,
+        uint16 _rebalanceBPS,
         int16[] memory _feeRates,
-        uint16[] memory distributionRates
+        uint16[] memory _distributionRates
     ) private pure {
-        if (utilizationTargetBPS > BPS) revert InvalidUtilizationTarget(utilizationTargetBPS);
-        if (_feeRates.length != distributionRates.length)
-            revert NotMatchDistributionLength(_feeRates.length, distributionRates.length);
+        if (_utilizationTargetBPS > BPS) revert InvalidUtilizationTarget(_utilizationTargetBPS);
+        if (_feeRates.length != _distributionRates.length)
+            revert NotMatchDistributionLength(_feeRates.length, _distributionRates.length);
 
-        if (utilizationTargetBPS <= rebalanceBPS) revert InvalidRebalanceBPS();
+        if (_utilizationTargetBPS <= _rebalanceBPS) revert InvalidRebalanceBPS();
     }
 
     /**
@@ -137,52 +145,152 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         return (false, bytes(""));
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function utilization() public view override returns (uint16 currentUtility) {
         //slither-disable-next-line unused-return
         (currentUtility, ) = s_state.utilizationInfo();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function totalValue() public view override returns (uint256 value) {
         value = s_state.totalValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function valueInfo() public view override returns (ValueInfo memory info) {
         return s_state.valueInfo();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function holdingValue() public view override returns (uint256) {
         return s_state.holdingValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingValue() public view override returns (uint256) {
         return s_state.pendingValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function holdingClbValue() public view override returns (uint256 value) {
         return s_state.holdingClbValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingClbValue() public view override returns (uint256 value) {
         return s_state.pendingClbValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function totalClbValue() public view override returns (uint256 value) {
         return s_state.totalClbValue();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function feeRates() external view override returns (int16[] memory) {
         return s_state.feeRates;
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function clbTokenIds() external view override returns (uint256[] memory) {
         return s_state.clbTokenIds;
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function clbTokenBalances() public view override returns (uint256[] memory _clbTokenBalances) {
         return s_state.clbTokenBalances();
     }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingRemoveClbBalances() public view override returns (uint256[] memory) {
         return s_state.pendingRemoveClbBalances();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPMeta
+     */
+    function setLpName(string memory lpName) external onlyOwner {
+        emit SetLpName(lpName);
+        s_meta.lpName = lpName;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPMeta
+     */
+    function setLpTag(string memory tag) external onlyOwner {
+        emit SetLpTag(tag);
+        s_meta.tag = tag;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
+    function utilizationTargetBPS() external view returns (uint256) {
+        return s_config.utilizationTargetBPS;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
+    function rebalanceBPS() external view returns (uint256) {
+        return s_config.rebalanceBPS;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
+    function rebalanceCheckingInterval() external view returns (uint256) {
+        return s_config.rebalanceCheckingInterval;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
+    function settleCheckingInterval() external view returns (uint256) {
+        return s_config.settleCheckingInterval;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
+    function automationFeeReserved() external view returns (uint256) {
+        return s_config.automationFeeReserved;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
+    function distributionRates() external view returns (uint16[] memory rates) {
+        rates = new uint16[](s_state.binCount());
+        for (uint256 i; i < s_state.binCount(); ) {
+            rates[i] = s_state.distributionRates[s_state.feeRates[i]];
+            unchecked {
+                ++i;
+            }
+        }
     }
 }

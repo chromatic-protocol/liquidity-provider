@@ -14,6 +14,10 @@ import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
+/**
+ * @title LPStateLogicLib
+ * @dev A library providing functions for managing the logic and state transitions of an LP (Liquidity Provider) in the Chromatic Protocol.
+ */
 library LPStateLogicLib {
     using Math for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -21,10 +25,21 @@ library LPStateLogicLib {
     using LPStateLogicLib for LPState;
     using LPStateValueLib for LPState;
 
+    /**
+     * @dev Retrieves the next receipt ID and increments the receipt ID counter.
+     * @param s_state The storage state of the liquidity provider.
+     * @return id The next receipt ID.
+     */
     function nextReceiptId(LPState storage s_state) internal returns (uint256 id) {
         id = ++s_state.receiptId;
     }
 
+    /**
+     * @dev Adds a receipt to the LPState, updating relevant mappings and sets.
+     * @param s_state The storage state of the liquidity provider.
+     * @param receipt The Chromatic LP Receipt to be added.
+     * @param lpReceipts Array of LpReceipts associated with the Chromatic LP Receipt.
+     */
     function addReceipt(
         LPState storage s_state,
         ChromaticLPReceipt memory receipt,
@@ -46,6 +61,11 @@ library LPStateLogicLib {
         receiptIdSet.add(receipt.id);
     }
 
+    /**
+     * @dev Removes a receipt from the LPState, cleaning up associated mappings and sets.
+     * @param s_state The storage state of the liquidity provider.
+     * @param receiptId The ID of the Chromatic LP Receipt to be removed.
+     */
     function removeReceipt(LPState storage s_state, uint256 receiptId) internal {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         delete s_state.receipts[receiptId];
@@ -56,6 +76,12 @@ library LPStateLogicLib {
         receiptIdSet.remove(receiptId);
     }
 
+    /**
+     * @dev Claims liquidity for a given Chromatic LP Receipt, initiating the transfer of LP tokens to the recipient.
+     * @param s_state The storage state of the liquidity provider.
+     * @param receipt The Chromatic LP Receipt for which liquidity is to be claimed.
+     * @param keeperFee The keeper fee associated with the claim.
+     */
     function claimLiquidity(
         LPState storage s_state,
         ChromaticLPReceipt memory receipt,
@@ -71,6 +97,12 @@ library LPStateLogicLib {
         s_state.removeReceipt(receipt.id);
     }
 
+    /**
+     * @dev Initiates the withdrawal of liquidity for a given Chromatic LP Receipt.
+     * @param s_state The storage state of the liquidity provider.
+     * @param receipt The Chromatic LP Receipt for which liquidity withdrawal is to be initiated.
+     * @param keeperFee The keeper fee associated with the withdrawal.
+     */
     function withdrawLiquidity(
         LPState storage s_state,
         ChromaticLPReceipt memory receipt,
@@ -86,6 +118,13 @@ library LPStateLogicLib {
         s_state.removeReceipt(receipt.id);
     }
 
+    /**
+     * @dev Distributes a given amount among different fee bins based on their distribution rates.
+     * @param s_state The storage state of the liquidity provider.
+     * @param amount The total amount to be distributed.
+     * @return amounts An array containing the distributed amounts for each fee bin.
+     * @return totalAmount The total amount after distribution.
+     */
     function distributeAmount(
         LPState storage s_state,
         uint256 amount
@@ -106,6 +145,14 @@ library LPStateLogicLib {
         }
     }
 
+    /**
+     * @dev Adds liquidity to the liquidity pool and updates the LPState accordingly.
+     * @param s_state The storage state of the liquidity provider.
+     * @param amount The total amount of liquidity to be added.
+     * @param liquidityTarget The target liquidity amount.
+     * @param recipient The address to receive LP tokens.
+     * @return receipt The Chromatic LP Receipt representing the addition of liquidity.
+     */
     function addLiquidity(
         LPState storage s_state,
         uint256 amount,
@@ -143,6 +190,14 @@ library LPStateLogicLib {
         s_state.pendingAddAmount += liquidityAmount;
     }
 
+    /**
+     * @dev Removes liquidity from the liquidity pool and updates the LPState accordingly.
+     * @param s_state The storage state of the liquidity provider.
+     * @param clbTokenAmounts The amounts of CLB tokens to be removed for each fee bin.
+     * @param lpTokenAmount The total amount of LP tokens to be removed.
+     * @param recipient The address to receive the removed liquidity.
+     * @return receipt The Chromatic LP Receipt representing the removal of liquidity.
+     */
     function removeLiquidity(
         LPState storage s_state,
         uint256[] memory clbTokenAmounts,
@@ -177,6 +232,11 @@ library LPStateLogicLib {
         s_state.increasePendingClb(lpReceipts);
     }
 
+    /**
+     * @dev Increases the pending CLB amounts based on the given LpReceipts.
+     * @param s_state The storage state of the liquidity provider.
+     * @param lpReceipts Array of LpReceipts for which pending CLB amounts are to be increased.
+     */
     function increasePendingClb(LPState storage s_state, LpReceipt[] memory lpReceipts) internal {
         for (uint256 i; i < lpReceipts.length; ) {
             s_state.pendingRemoveClbAmounts[lpReceipts[i].tradingFeeRate] += lpReceipts[i].amount;
@@ -186,6 +246,11 @@ library LPStateLogicLib {
         }
     }
 
+    /**
+     * @dev Decreases the pending CLB amounts based on the given LpReceipts.
+     * @param s_state The storage state of the liquidity provider.
+     * @param lpReceits Array of LpReceipts for which pending CLB amounts are to be decreased.
+     */
     function decreasePendingClb(LPState storage s_state, LpReceipt[] memory lpReceits) internal {
         for (uint256 i; i < lpReceits.length; ) {
             LpReceipt memory lpReceit = lpReceits[i];
@@ -197,6 +262,14 @@ library LPStateLogicLib {
         }
     }
 
+    /**
+     * @dev Calculates the amounts of pending CLB tokens to be removed
+     * based on the given LP token amount and total LP token supply.
+     * @param s_state The storage state of the liquidity provider.
+     * @param lpTokenAmount The total amount of LP tokens to be removed.
+     * @param totalSupply The total supply of LP tokens.
+     * @return removeAmounts An array containing the amounts of pending CLB tokens to be removed for each fee bin.
+     */
     function calcRemoveClbAmounts(
         LPState storage s_state,
         uint256 lpTokenAmount,

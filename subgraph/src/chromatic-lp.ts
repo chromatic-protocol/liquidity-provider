@@ -74,7 +74,7 @@ export function handleRemoveLiquiditySettled(event: RemoveLiquiditySettledEvent)
   entity.provider = event.params.provider
   entity.recipient = event.params.recipient
   entity.burningAmount = event.params.burningAmount
-  entity.witdrawnSettlementAmount = event.params.witdrawnSettlementAmount
+  entity.withdrawnSettlementAmount = event.params.withdrawnSettlementAmount
   entity.refundedAmount = event.params.refundedAmount
   entity.keeperFee = event.params.keeperFee
 

@@ -18,11 +18,27 @@ import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 
 abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromaticLPErrors {
+    /**
+     * @title LPMeta
+     * @dev A struct representing metadata information for an LP (Liquidity Provider) in the Chromatic Protocol.
+     * @param lpName The name associated with the LP.
+     * @param tag A tag or identifier for the LP.
+     */
     struct LPMeta {
         string lpName;
         string tag;
     }
 
+    /**
+     * @title ConfigParam
+     * @dev A struct representing the configuration parameters for an LP (Liquidity Provider) in the Chromatic Protocol.
+     * @param market An instance of the IChromaticMarket interface, representing the market associated with the LP.
+     * @param utilizationTargetBPS Target utilization rate for the LP, represented in basis points (BPS).
+     * @param rebalanceBPS Rebalance basis points, indicating the percentage change that triggers a rebalance.
+     * @param rebalanceCheckingInterval Time interval (in seconds) between checks for rebalance conditions.
+     * @param settleCheckingInterval Time interval (in seconds) between checks for settlement conditions.
+     * @param automationFeeReserved Amount reserved as automation fee, used for automated operations within the LP.
+     */
     struct ConfigParam {
         IChromaticMarket market;
         uint16 utilizationTargetBPS;

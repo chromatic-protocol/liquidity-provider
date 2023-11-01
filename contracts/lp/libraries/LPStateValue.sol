@@ -10,12 +10,22 @@ import {BPS} from "~/lp/libraries/Constants.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
+/**
+ * @title LPStateValueLib
+ * @dev A library providing value-related functions for LPState in the Chromatic Protocol.
+ */
 library LPStateValueLib {
     using LPStateValueLib for LPState;
     using LPStateViewLib for LPState;
 
     using Math for uint256;
 
+    /**
+     * @dev Retrieves the current utility and total value of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return currentUtility The current utility percentage (basis points).
+     * @return _totalValue The total value of the LPState.
+     */
     function utilizationInfo(
         LPState storage s_state
     ) internal view returns (uint16 currentUtility, uint256 _totalValue) {
@@ -28,10 +38,20 @@ library LPStateValueLib {
         }
     }
 
+    /**
+     * @dev Retrieves the total value of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The total value of the LPState.
+     */
     function totalValue(LPState storage s_state) internal view returns (uint256 value) {
         value = (s_state.holdingValue() + s_state.pendingValue() + s_state.totalClbValue());
     }
 
+    /**
+     * @dev Retrieves the value information of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return info The ValueInfo struct containing total, holding, pending, holdingClb, and pendingClb values.
+     */
     function valueInfo(LPState storage s_state) internal view returns (ValueInfo memory info) {
         info = ValueInfo({
             total: 0,
@@ -43,14 +63,29 @@ library LPStateValueLib {
         info.total = info.holding + info.pending + info.holdingClb + info.pendingClb;
     }
 
+    /**
+     * @dev Retrieves the holding value (balance of the settlement token) of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The holding value of the LPState.
+     */
     function holdingValue(LPState storage s_state) internal view returns (uint256) {
         return s_state.settlementToken().balanceOf(address(this));
     }
 
+    /**
+     * @dev Retrieves the pending value (amount pending for addition to the liquidity pool) of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The pending value of the LPState.
+     */
     function pendingValue(LPState storage s_state) internal view returns (uint256) {
         return s_state.pendingAddAmount;
     }
 
+    /**
+     * @dev Retrieves the holding CLB (Cumulative Loyalty Bonus) value of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The holding CLB value of the LPState.
+     */
     function holdingClbValue(LPState storage s_state) internal view returns (uint256 value) {
         uint256[] memory clbSupplies = s_state.clbTotalSupplies();
         uint256[] memory binValues = s_state.market.getBinValues(s_state.feeRates);
@@ -66,6 +101,11 @@ library LPStateValueLib {
         }
     }
 
+    /**
+     * @dev Retrieves the pending CLB (Cumulative Loyalty Bonus) value of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The pending CLB value of the LPState.
+     */
     function pendingClbValue(LPState storage s_state) internal view returns (uint256 value) {
         uint256[] memory clbSupplies = s_state.clbTotalSupplies();
         uint256[] memory binValues = s_state.market.getBinValues(s_state.feeRates);
@@ -80,6 +120,11 @@ library LPStateValueLib {
         }
     }
 
+    /**
+     * @dev Retrieves the total CLB (Cumulative Loyalty Bonus) value of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The total CLB value of the LPState.
+     */
     function totalClbValue(LPState storage s_state) internal view returns (uint256 value) {
         uint256[] memory clbSupplies = s_state.clbTotalSupplies();
         uint256[] memory binValues = s_state.market.getBinValues(s_state.feeRates);
@@ -96,6 +141,11 @@ library LPStateValueLib {
         }
     }
 
+    /**
+     * @dev Retrieves the CLB token balances associated with the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return _clbTokenBalances The array of CLB token balances.
+     */
     function clbTokenBalances(
         LPState storage s_state
     ) internal view returns (uint256[] memory _clbTokenBalances) {
@@ -109,12 +159,22 @@ library LPStateValueLib {
         _clbTokenBalances = s_state.clbToken().balanceOfBatch(_owners, s_state.clbTokenIds);
     }
 
+    /**
+     * @dev Retrieves the total supplies of CLB tokens associated with the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return clbTokenTotalSupplies The array of total supplies of CLB tokens.
+     */
     function clbTotalSupplies(
         LPState storage s_state
     ) internal view returns (uint256[] memory clbTokenTotalSupplies) {
         clbTokenTotalSupplies = s_state.clbToken().totalSupplyBatch(s_state.clbTokenIds);
     }
 
+    /**
+     * @dev Retrieves the pending CLB balances associated with the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return pendingBalances The array of pending CLB balances.
+     */
     function pendingRemoveClbBalances(
         LPState storage s_state
     ) internal view returns (uint256[] memory pendingBalances) {

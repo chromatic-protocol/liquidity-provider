@@ -37,6 +37,9 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         createRebalanceTask();
     }
 
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
     function createRebalanceTask() public onlyOwner {
         if (s_task.rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
         s_task.rebalanceTaskId = _createTask(
@@ -84,12 +87,18 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         _fallback();
     }
 
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
     function resolveSettle(
         uint256 receiptId
     ) external view override(IChromaticLPAdmin) returns (bool, bytes memory) {
         return _resolveSettle(receiptId, this.settleTask);
     }
 
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
     function resolveRebalance()
         external
         view
@@ -99,6 +108,9 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         return _resolveRebalance(this.rebalance);
     }
 
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
     function setAutomationFeeReserved(
         uint256 automationFeeReserved
     ) external override(IChromaticLPAdmin) onlyOwner {
