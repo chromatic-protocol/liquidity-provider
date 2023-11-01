@@ -40,7 +40,7 @@ library LPStateSetupLib {
         int16[] memory feeRates,
         uint16[] memory distributionRates
     ) private {
-        uint16 totalRate;
+        uint256 totalRate;
         for (uint256 i; i < distributionRates.length; ) {
             s_state.distributionRates[feeRates[i]] = distributionRates[i];
             totalRate += distributionRates[i];
