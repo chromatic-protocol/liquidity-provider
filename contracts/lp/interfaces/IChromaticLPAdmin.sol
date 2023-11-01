@@ -38,7 +38,7 @@ interface IChromaticLPAdmin {
 
     /**
      * @dev Additional data to be used in the rebalance process.
-     * @param automationFeeReserved The new value for the reserved automation fee.
+     * @param _automationFeeReserved The new value for the reserved automation fee.
      */
-    function setAutomationFeeReserved(uint256 automationFeeReserved) external;
+    function setAutomationFeeReserved(uint256 _automationFeeReserved) external;
 }

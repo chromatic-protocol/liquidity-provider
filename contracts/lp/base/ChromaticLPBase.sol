@@ -233,9 +233,9 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPMeta
      */
-    function setLpName(string memory lpName) external onlyOwner {
-        emit SetLpName(lpName);
-        s_meta.lpName = lpName;
+    function setLpName(string memory newName) external onlyOwner {
+        emit SetLpName(newName);
+        s_meta.lpName = newName;
     }
 
     /**
