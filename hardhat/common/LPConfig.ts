@@ -1,5 +1,7 @@
 import { parseEther } from 'ethers'
+import { getLinearDistributionConfig } from './DistributionRates'
 import type { LPConfig } from './types'
+
 // prettier-ignore
 const _FEE_RATES = [
     1, 2, 3, 4, 5, 6, 7, 8, 9, // 0.01% ~ 0.09%, step 0.01%
@@ -26,37 +28,48 @@ export function getDefaultDistribution(feeRates: number[]): number[] {
 export function getDefaultLPConfigs(): LPConfig[] {
   const infos = [
     {
-      lpName: 'Junior Pool',
+      lpName: 'Cresendo',
       tag: 'Low Risk',
-      utilizationTargetBPS: 7500
+      utilizationTargetBPS: 2500,
+      startLevel: 0,
+      endLevel: 50
     },
     {
-      lpName: 'Mezzanine Pool',
+      lpName: 'Semi-crescendo',
       tag: 'Mid Risk',
-      utilizationTargetBPS: 5000
+      utilizationTargetBPS: 5000,
+      startLevel: 25,
+      endLevel: 75
     },
     {
-      lpName: 'Senior Pool',
+      lpName: 'Plateau',
       tag: 'High Risk',
-      utilizationTargetBPS: 2500
+      utilizationTargetBPS: 7500,
+      startLevel: 75,
+      endLevel: 75
     }
   ]
   const lpConfigs = []
   for (let info of infos) {
+    const distInfo = getLinearDistributionConfig(info.startLevel, info.endLevel, _FEE_RATES.length)
+    // console.log('linear distribution information:', distInfo)
+
     const config = {
       meta: {
         lpName: info.lpName,
         tag: info.tag
       },
+
       config: {
-        utilizationTargetBPS: info.utilizationTargetBPS,
+        utilizationTargetBPS: distInfo.utilizationTargetBPS,
         rebalanceBPS: 500,
         rebalanceCheckingInterval: 24 * 60 * 60, // 24 hours
         settleCheckingInterval: 1 * 60, // 1 minutes
         automationFeeReserved: parseEther('1.0')
       },
       feeRates: FEE_RATES,
-      distributionRates: getDefaultDistribution(FEE_RATES)
+      distributionRates: distInfo.distributionRates
+      // distributionRates: getDefaultDistribution(FEE_RATES)
     }
 
     lpConfigs.push(config)
