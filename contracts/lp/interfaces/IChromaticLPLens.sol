@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
+import {IChromaticLPConfigLens} from "./IChromaticLPConfigLens.sol";
 
 struct ValueInfo {
     uint256 total;
@@ -12,7 +13,7 @@ struct ValueInfo {
 /**
  * @title The IChromaticLPLens interface is designed to offer a lens into the financial and operational aspects of the Chromatic Protocol. Developers can use the functions defined in this interface to retrieve information such as utilization, total value, value breakdowns, fee rates, and token balances.
  */
-interface IChromaticLPLens {
+interface IChromaticLPLens is IChromaticLPConfigLens {
     /**
      * @dev The current utilization of the liquidity provider, represented in basis points (BPS)
      */

@@ -6,7 +6,6 @@ import {IChromaticLPAdmin} from "./IChromaticLPAdmin.sol";
 import {IChromaticLPLens} from "./IChromaticLPLens.sol";
 import {IChromaticLPMeta} from "./IChromaticLPMeta.sol";
 import {IChromaticLPEvents} from "./IChromaticLPEvents.sol";
-
 import {IChromaticLPErrors} from "./IChromaticLPErrors.sol";
 
 /**
