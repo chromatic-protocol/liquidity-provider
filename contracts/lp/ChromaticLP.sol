@@ -28,12 +28,12 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         LPMeta memory lpMeta,
         ConfigParam memory config,
         int16[] memory _feeRates,
-        uint16[] memory distributionRates,
+        uint16[] memory _distributionRates,
         AutomateParam memory automateParam
     ) ChromaticLPBase(automateParam) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
-        _initialize(lpMeta, config, _feeRates, distributionRates);
+        _initialize(lpMeta, config, _feeRates, _distributionRates);
         createRebalanceTask();
     }
 
@@ -112,9 +112,9 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
      * @inheritdoc IChromaticLPAdmin
      */
     function setAutomationFeeReserved(
-        uint256 automationFeeReserved
+        uint256 _automationFeeReserved
     ) external override(IChromaticLPAdmin) onlyOwner {
-        s_config.automationFeeReserved = automationFeeReserved;
+        s_config.automationFeeReserved = _automationFeeReserved;
     }
 
     /**

@@ -30,13 +30,13 @@ interface IChromaticLPMeta {
 
     /**
      * @dev Sets the name of the Chromatic Protocol liquidity provider.
-     * @param lpName The new name for the liquidity provider.
+     * @param newName The new name for the liquidity provider.
      */
-    function setLpName(string memory lpName) external;
+    function setLpName(string memory newName) external;
 
     /**
      * @dev Sets the tag associated with the Chromatic Protocol liquidity provider.
-     * @param lpTag The new tag for the liquidity provider.
+     * @param newTag The new tag for the liquidity provider.
      */
-    function setLpTag(string memory lpTag) external;
+    function setLpTag(string memory newTag) external;
 }
