@@ -13,6 +13,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPLens} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
@@ -50,7 +51,12 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             _feeRates,
             distributionRates
         );
+
+        emit SetLpName(meta.lpName);
+        emit SetLpTag(meta.tag);
+
         s_meta = LPMeta({lpName: meta.lpName, tag: meta.tag});
+
         s_config = LPConfig({
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
@@ -221,5 +227,21 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
      */
     function pendingRemoveClbBalances() public view override returns (uint256[] memory) {
         return s_state.pendingRemoveClbBalances();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPMeta
+     */
+    function setLpName(string memory lpName) external onlyOwner {
+        emit SetLpName(lpName);
+        s_meta.lpName = lpName;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPMeta
+     */
+    function setLpTag(string memory tag) external onlyOwner {
+        emit SetLpTag(tag);
+        s_meta.tag = tag;
     }
 }
