@@ -12,6 +12,7 @@ on:
       - hardhat.config.ts
       - wagmi.config.ts
       - .github/workflows/pr-sdk.yml
+      - yarn.lock
 permissions:
   contents: write
 
