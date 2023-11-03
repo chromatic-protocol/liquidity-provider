@@ -1,6 +1,6 @@
 {
   "name": "@chromatic-protocol/liquidity-provider",
-  "version": "0.0.1-rc.32",
+  "version": "0.0.1-rc.33",
   "license": "MIT",
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
