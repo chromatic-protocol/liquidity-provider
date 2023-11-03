@@ -80,10 +80,10 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.262":
-  version "0.0.1-rc.262"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.262.tgz#81ba1dbc0d22ce08dee10a1b5de5a2363919b99b"
-  integrity sha512-n8YCbO7xoCj2NhCantZw1EG1vE1JGtODfQP0Mf5BhKfqc8SNxxSBuYITmeTOLwyUqkxIh2ksiI5GR5E6AZ/UQA==
+"@chromatic-protocol/contracts@^0.0.1-rc.264":
+  version "0.0.1-rc.264"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.264.tgz#f9a59b0425216b5ae946cb2e03a3c073fba5335e"
+  integrity sha512-p3jLCe5bNH5F/8wVp1lJP4o24aNIDawuuyxqto0y3M+H7RFX98xiA0w4KpYycM4tAjJ/UZqRp7/TTSh9hgfzuA==
   dependencies:
     "@chainlink/contracts" "^0.6.1"
     "@openzeppelin/contracts" "^4.9.3"
@@ -106,10 +106,10 @@
   dependencies:
     viem "^1.5.0"
 
-"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.161":
-  version "0.1.0-rc.161"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.161.tgz#0f79a1f6eca6cb4325d2edf2be5d9d6269411efc"
-  integrity sha512-g/y1rWLYry+YIa3f3ma9wEc85pNi203YRl42RU3aQVU7HXUaQ6048Jhm3lrBdk2icf2LteoGvgPm7lKzDsMR7g==
+"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.163":
+  version "0.1.0-rc.163"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.163.tgz#943cf60ce620b27f013e958d3af21a31afa9c3aa"
+  integrity sha512-weNYlaSYPjglg1Fkdc+rO3GXi+IBr/y/1K94gEHwK/0ROK7HcTux85MZgdvdZAzE3K5NdET/QKF0E3U14OrQiw==
 
 "@colors/colors@1.5.0":
   version "1.5.0"
@@ -1490,6 +1490,13 @@
   dependencies:
     "@types/chai" "*"
 
+"@types/chai-as-promised@^7.1.6":
+  version "7.1.7"
+  resolved "https://registry.yarnpkg.com/@types/chai-as-promised/-/chai-as-promised-7.1.7.tgz#fd16a981ba9542c83d4e1d2f40c7899aae82aa38"
+  integrity sha512-APucaP5rlmTRYKtRA6FE5QPP87x76ejw5t5guRJ4y5OgMnwtsvigw7HHhKZlx2MGXLeZd6R/GNZR/IqDHcbtQw==
+  dependencies:
+    "@types/chai" "*"
+
 "@types/chai@*", "@types/chai@^4.2.0":
   version "4.3.6"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.6.tgz#7b489e8baf393d5dd1266fb203ddd4ea941259e6"
@@ -1683,7 +1690,7 @@
     tiny-invariant "^1.1.0"
     toformat "^2.0.0"
 
-"@uniswap/smart-order-router@^3.17.2":
+"@uniswap/smart-order-router@^3.13.7":
   version "3.17.2"
   resolved "https://registry.yarnpkg.com/@uniswap/smart-order-router/-/smart-order-router-3.17.2.tgz#06b6c921bb5f586940ad48282c96a1f5c9f6e31e"
   integrity sha512-N5AuS5WgzT8/P9bDCPv5OPWEB8RXkJLQEHAFFZKYrghOGdxkba8u0qPdSrE8tgYqhLTA8Babou1shrX5aS//Vw==
@@ -5328,7 +5335,7 @@ js-yaml@4.1.0, js-yaml@^4.1.0:
   dependencies:
     argparse "^2.0.1"
 
-jsbi@^3.1.4:
+jsbi@^3.1.4, jsbi@^3.2.0:
   version "3.2.5"
   resolved "https://registry.yarnpkg.com/jsbi/-/jsbi-3.2.5.tgz#b37bb90e0e5c2814c1c2a1bcd8c729888a2e37d6"
   integrity sha512-aBE4n43IPvjaddScbvWRA2YlTzKEynHzu7MqOyTipdHucf/VxS63ViCjxYRg86M8Rxwbt/GfzHl1kKERkt45fQ==
@@ -7826,10 +7833,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
-typescript@>=4.5.0:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.2.2.tgz#5ebb5e5a5b75f085f22bc3f8460fba308310fa78"
-  integrity sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==
+typescript@~5.0.0:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.0.4.tgz#b217fd20119bd61a94d4011274e0ab369058da3b"
+  integrity sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==
 
 typical@^4.0.0:
   version "4.0.0"
