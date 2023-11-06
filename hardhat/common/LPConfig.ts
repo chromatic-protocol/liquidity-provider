@@ -28,7 +28,7 @@ export function getDefaultDistribution(feeRates: number[]): number[] {
 export function getDefaultLPConfigs(): LPConfig[] {
   const infos = [
     {
-      lpName: 'Cresendo',
+      lpName: 'Crescendo',
       tag: 'Low Risk',
       utilizationTargetBPS: 2500,
       startLevel: 0,
