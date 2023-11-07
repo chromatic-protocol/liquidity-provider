@@ -118,7 +118,12 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             maxFee = receipt.amount - receipt.amount.mulDiv(s_config.utilizationTargetBPS, BPS);
         } else {
             uint256 balance = s_state.settlementToken().balanceOf(address(this));
-            maxFee = balance.mulDiv(receipt.amount, totalSupply());
+            if (receipt.amount == 0) {
+                // case of rebalanceRemove
+                maxFee = balance;
+            } else {
+                maxFee = balance.mulDiv(receipt.amount, totalSupply());
+            }
         }
     }
 
