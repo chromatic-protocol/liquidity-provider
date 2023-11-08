@@ -13,6 +13,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPLens} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPConfigLens} from "~/lp/interfaces/IChromaticLPConfigLens.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
@@ -117,15 +118,23 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         if (s_state.holdingValue() < s_config.automationFeeReserved) {
             return (false, bytes(""));
         }
-
         (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
         if (value == 0) return (false, bytes(""));
 
-        if (s_config.allocationStatus(currentUtility) == AllocationStatus.InRange) {
-            return (false, bytes(""));
-        } else {
-            return (true, abi.encodeCall(_rebalance, ()));
+        AllocationStatus status = s_config.allocationStatus(currentUtility);
+
+        if (status == AllocationStatus.OverUtilized) {
+            // estimate this remove rebalancing is meaningful for paying automationFee
+            if (_estimateRebalanceRemoveValue(currentUtility) >= s_config.automationFeeReserved) {
+                return (true, abi.encodeCall(_rebalance, ()));
+            }
+        } else if (status == AllocationStatus.UnderUtilized) {
+            // check if it could be settled by automation
+            if (_estimateRebalanceAddAmount(currentUtility) >= estimateMinAddLiquidityAmount()) {
+                return (true, abi.encodeCall(_rebalance, ()));
+            }
         }
+        return (false, bytes(""));
     }
 
     function _resolveSettle(
@@ -292,5 +301,21 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
                 ++i;
             }
         }
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLiquidity
+     */
+    function estimateMinAddLiquidityAmount() public view returns (uint256) {
+        return
+            s_config.automationFeeReserved +
+            s_config.automationFeeReserved.mulDiv(BPS, BPS - s_config.utilizationTargetBPS);
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLiquidity
+     */
+    function estimateMinRemoveLiquidityAmount() public view returns (uint256) {
+        return s_config.automationFeeReserved.mulDiv(totalSupply(), holdingValue());
     }
 }

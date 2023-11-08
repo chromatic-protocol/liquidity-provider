@@ -65,4 +65,9 @@ interface IChromaticLPErrors {
      * @dev Indicates that the functionality is not implemented in the logic contract.
      */
     error NotImplementedInLogicContract();
+
+    /**
+     * @dev Throws an error indicating that the amount to add liquidity is too small.
+     */
+    error TooSmallAmountToAddLiquidity();
 }

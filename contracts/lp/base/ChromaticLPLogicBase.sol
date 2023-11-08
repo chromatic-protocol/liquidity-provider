@@ -183,9 +183,12 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256 amount,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
+        if (amount <= s_config.automationFeeReserved) {
+            revert TooSmallAmountToAddLiquidity();
+        }
         receipt = s_state.addLiquidity(
             amount,
-            amount.mulDiv(s_config.utilizationTargetBPS, BPS),
+            (amount - s_config.automationFeeReserved).mulDiv(s_config.utilizationTargetBPS, BPS),
             recipient
         );
 
@@ -403,10 +406,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     }
 
     function _rebalanceAddLiquidity(uint256 currentUtility) private returns (uint256 receiptId) {
-        uint256 amount = (s_state.holdingValue()).mulDiv(
-            (BPS - currentUtility) - (BPS - s_config.utilizationTargetBPS),
-            BPS - currentUtility
-        );
+        uint256 amount = _estimateRebalanceAddAmount(currentUtility);
+
         ChromaticLPReceipt memory receipt = _addLiquidity(amount, address(this));
         //slither-disable-next-line reentrancy-events
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);

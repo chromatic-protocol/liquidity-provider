@@ -48,4 +48,16 @@ interface IChromaticLPLiquidity {
      * @return A data structure representing the liquidity receipt.
      */
     function getReceipt(uint256 id) external view returns (ChromaticLPReceipt memory);
+
+    /**
+     * @dev Estimates the minimum amount of liquidity that can be added by automation.
+     * @return The minimum amount of liquidity in the settlement token that can be added.
+     */
+    function estimateMinAddLiquidityAmount() external view returns (uint256);
+
+    /**
+     * @dev Estimates the minimum amount of liquidity that can be removed by automation.
+     * @return The minimum amount of liquidity in the LP token that can be removed.
+     */
+    function estimateMinRemoveLiquidityAmount() external view returns (uint256);
 }
