@@ -78,10 +78,11 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         AutomateParam memory automateParam
     ) ChromaticLPStorage(automateParam) ReentrancyGuard() {}
 
-    function cancelRebalanceTask() external {
+    function cancelRebalanceTask() external nonReentrant {
         if (s_task.rebalanceTaskId != 0) {
-            automate.cancelTask(s_task.rebalanceTaskId);
+            bytes32 rebalanceTaskId = s_task.rebalanceTaskId;
             s_task.rebalanceTaskId = 0;
+            automate.cancelTask(rebalanceTaskId);
         }
     }
 
@@ -97,8 +98,9 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
 
     function cancelSettleTask(uint256 receiptId) internal {
         if (s_task.settleTasks[receiptId] != 0) {
-            automate.cancelTask(s_task.settleTasks[receiptId]);
+            bytes32 settleTaskId = s_task.settleTasks[receiptId];
             delete s_task.settleTasks[receiptId];
+            automate.cancelTask(settleTaskId);
         }
     }
 
