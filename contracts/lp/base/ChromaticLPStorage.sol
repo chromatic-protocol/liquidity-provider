@@ -1,11 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
+import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
+import {BPS} from "~/lp/libraries/Constants.sol";
 
 abstract contract ChromaticLPStorage is ChromaticLPStorageCore, AutomateReady {
+    using Math for uint256;
+    using LPStateValueLib for LPState;
+
     /**
      * @title AutomateParam
      * @dev A struct representing the automation parameters for the Chromatic LP contract.
@@ -61,5 +68,21 @@ abstract contract ChromaticLPStorage is ChromaticLPStorageCore, AutomateReady {
     function _getFeeInfo() internal view override returns (uint256 fee, address feePayee) {
         (fee, ) = _getFeeDetails();
         feePayee = automate.gelato();
+    }
+
+    function _estimateRebalanceAddAmount(uint256 currentUtility) internal view returns (uint256) {
+        return
+            (s_state.holdingValue()).mulDiv(
+                (BPS - currentUtility) - (BPS - s_config.utilizationTargetBPS),
+                BPS - currentUtility
+            );
+    }
+
+    function _estimateRebalanceRemoveValue(uint256 currentUtility) internal view returns (uint256) {
+        return
+            s_state.holdingClbValue().mulDiv(
+                currentUtility - s_config.utilizationTargetBPS,
+                currentUtility
+            );
     }
 }

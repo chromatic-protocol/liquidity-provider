@@ -16,6 +16,11 @@ interface IChromaticLPErrors {
     error InvalidRebalanceBPS();
 
     /**
+     * @dev Signifies that an invalid minHoldingValueToRebalance value has been encountered.
+     */
+    error InvalidMinHoldingValueToRebalance();
+
+    /**
      * @dev Thrown when the lengths of the fee array and distribution array do not match.
      * @param feeLength The length of the fee array.
      * @param distributionLength The length of the distribution array.
@@ -65,4 +70,9 @@ interface IChromaticLPErrors {
      * @dev Indicates that the functionality is not implemented in the logic contract.
      */
     error NotImplementedInLogicContract();
+
+    /**
+     * @dev Throws an error indicating that the amount to add liquidity is too small.
+     */
+    error TooSmallAmountToAddLiquidity();
 }

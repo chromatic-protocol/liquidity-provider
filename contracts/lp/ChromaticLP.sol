@@ -64,9 +64,12 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
      * @inheritdoc IChromaticLPLiquidity
      */
     function addLiquidity(
-        uint256 /* amount */,
+        uint256 amount,
         address /* recipient */
     ) external override returns (ChromaticLPReceipt memory /* receipt */) {
+        if (amount < estimateMinAddLiquidityAmount()) {
+            revert TooSmallAmountToAddLiquidity();
+        }
         _fallback();
     }
 
@@ -77,6 +80,9 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         uint256 /* lpTokenAmount */,
         address /* recipient */
     ) external override returns (ChromaticLPReceipt memory /* receipt */) {
+        // NOTE:
+        // if lpTokenAmount is too small then settlement couldn't be completed by automation
+        // user should call manually `settle(receiptId)`
         _fallback();
     }
 
@@ -114,7 +120,21 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
     function setAutomationFeeReserved(
         uint256 _automationFeeReserved
     ) external override(IChromaticLPAdmin) onlyOwner {
+        emit SetAutomationFeeReserved(_automationFeeReserved);
         s_config.automationFeeReserved = _automationFeeReserved;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
+    function setMinHoldingValueToRebalance(
+        uint256 _minHoldingValueToRebalance
+    ) external override(IChromaticLPAdmin) onlyOwner {
+        if (_minHoldingValueToRebalance < s_config.automationFeeReserved) {
+            revert InvalidMinHoldingValueToRebalance();
+        }
+        emit SetMinHoldingValueToRebalance(_minHoldingValueToRebalance);
+        s_config.minHoldingValueToRebalance = _minHoldingValueToRebalance;
     }
 
     /**

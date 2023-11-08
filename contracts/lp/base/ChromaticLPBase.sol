@@ -6,6 +6,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
+import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
@@ -13,6 +14,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPLens} from "~/lp/interfaces/IChromaticLPLens.sol";
+import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPConfigLens} from "~/lp/interfaces/IChromaticLPConfigLens.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
@@ -52,6 +54,9 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             _feeRates,
             _distributionRates
         );
+        if (config.automationFeeReserved > config.minHoldingValueToRebalance) {
+            revert InvalidMinHoldingValueToRebalance();
+        }
 
         emit SetLpName(meta.lpName);
         emit SetLpTag(meta.tag);
@@ -63,7 +68,8 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             rebalanceBPS: config.rebalanceBPS,
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval,
-            automationFeeReserved: config.automationFeeReserved
+            automationFeeReserved: config.automationFeeReserved,
+            minHoldingValueToRebalance: config.minHoldingValueToRebalance
         });
         s_state.initialize(config.market, _feeRates, _distributionRates);
     }
@@ -114,18 +120,26 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     function _resolveRebalance(
         function() external _rebalance
     ) internal view returns (bool, bytes memory) {
-        if (s_state.holdingValue() < s_config.automationFeeReserved) {
+        if (s_state.holdingValue() < s_config.minHoldingValueToRebalance) {
             return (false, bytes(""));
         }
-
         (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
         if (value == 0) return (false, bytes(""));
 
-        if (s_config.allocationStatus(currentUtility) == AllocationStatus.InRange) {
-            return (false, bytes(""));
-        } else {
-            return (true, abi.encodeCall(_rebalance, ()));
+        AllocationStatus status = s_config.allocationStatus(currentUtility);
+
+        if (status == AllocationStatus.OverUtilized) {
+            // estimate this remove rebalancing is meaningful for paying automationFee
+            if (_estimateRebalanceRemoveValue(currentUtility) >= s_config.automationFeeReserved) {
+                return (true, abi.encodeCall(_rebalance, ()));
+            }
+        } else if (status == AllocationStatus.UnderUtilized) {
+            // check if it could be settled by automation
+            if (_estimateRebalanceAddAmount(currentUtility) >= estimateMinAddLiquidityAmount()) {
+                return (true, abi.encodeCall(_rebalance, ()));
+            }
         }
+        return (false, bytes(""));
     }
 
     function _resolveSettle(
@@ -277,6 +291,13 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPConfigLens
      */
+    function minHoldingValueToRebalance() external view returns (uint256) {
+        return s_config.minHoldingValueToRebalance;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
     function automationFeeReserved() external view returns (uint256) {
         return s_config.automationFeeReserved;
     }
@@ -292,5 +313,21 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
                 ++i;
             }
         }
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLiquidity
+     */
+    function estimateMinAddLiquidityAmount() public view returns (uint256) {
+        return
+            s_config.automationFeeReserved +
+            s_config.automationFeeReserved.mulDiv(BPS, BPS - s_config.utilizationTargetBPS);
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLiquidity
+     */
+    function estimateMinRemoveLiquidityAmount() public view returns (uint256) {
+        return s_config.automationFeeReserved.mulDiv(totalSupply(), holdingValue());
     }
 }
