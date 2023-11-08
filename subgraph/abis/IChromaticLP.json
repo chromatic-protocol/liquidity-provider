@@ -6,6 +6,11 @@
   },
   {
     "inputs": [],
+    "name": "InvalidMinHoldingValueToRebalance",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidRebalanceBPS",
     "type": "error"
   },
@@ -69,6 +74,11 @@
   {
     "inputs": [],
     "name": "OnlyBatchCall",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TooSmallAmountToAddLiquidity",
     "type": "error"
   },
   {
@@ -322,6 +332,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "newValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetAutomationFeeReserved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "string",
         "name": "name",
         "type": "string"
@@ -341,6 +364,19 @@
       }
     ],
     "name": "SetLpTag",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinHoldingValueToRebalance",
     "type": "event"
   },
   {
@@ -465,6 +501,32 @@
         "internalType": "uint16[]",
         "name": "",
         "type": "uint16[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "estimateMinAddLiquidityAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "estimateMinRemoveLiquidityAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -631,6 +693,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minHoldingValueToRebalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -839,6 +914,19 @@
       }
     ],
     "name": "setLpTag",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minHoldingValueToRebalance",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinHoldingValueToRebalance",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
