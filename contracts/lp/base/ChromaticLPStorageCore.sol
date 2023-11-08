@@ -38,6 +38,7 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
      * @param rebalanceCheckingInterval Time interval (in seconds) between checks for rebalance conditions.
      * @param settleCheckingInterval Time interval (in seconds) between checks for settlement conditions.
      * @param automationFeeReserved Amount reserved as automation fee, used for automated operations within the LP.
+     * @param minHoldingValueToRebalance The minimum holding value required to trigger rebalance.
      */
     struct ConfigParam {
         IChromaticMarket market;
@@ -46,6 +47,7 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
         uint256 rebalanceCheckingInterval;
         uint256 settleCheckingInterval;
         uint256 automationFeeReserved;
+        uint256 minHoldingValueToRebalance;
     }
 
     //slither-disable-next-line unused-state

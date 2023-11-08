@@ -16,6 +16,11 @@ interface IChromaticLPErrors {
     error InvalidRebalanceBPS();
 
     /**
+     * @dev Signifies that an invalid minHoldingValueToRebalance value has been encountered.
+     */
+    error InvalidMinHoldingValueToRebalance();
+
+    /**
      * @dev Thrown when the lengths of the fee array and distribution array do not match.
      * @param feeLength The length of the fee array.
      * @param distributionLength The length of the distribution array.

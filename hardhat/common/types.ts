@@ -23,6 +23,7 @@ export interface LPConfig {
     rebalanceCheckingInterval: BigNumberish
     settleCheckingInterval: BigNumberish
     automationFeeReserved: BigNumberish
+    minHoldingValueToRebalance: BigNumberish
   }
   feeRates: Array<number>
   distributionRates: Array<number>

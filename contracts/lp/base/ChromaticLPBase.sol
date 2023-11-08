@@ -6,6 +6,7 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBTokenLib.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
+import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
@@ -53,6 +54,9 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             _feeRates,
             _distributionRates
         );
+        if (config.automationFeeReserved > config.minHoldingValueToRebalance) {
+            revert InvalidMinHoldingValueToRebalance();
+        }
 
         emit SetLpName(meta.lpName);
         emit SetLpTag(meta.tag);
@@ -64,7 +68,8 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             rebalanceBPS: config.rebalanceBPS,
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
             settleCheckingInterval: config.settleCheckingInterval,
-            automationFeeReserved: config.automationFeeReserved
+            automationFeeReserved: config.automationFeeReserved,
+            minHoldingValueToRebalance: config.minHoldingValueToRebalance
         });
         s_state.initialize(config.market, _feeRates, _distributionRates);
     }
@@ -115,7 +120,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     function _resolveRebalance(
         function() external _rebalance
     ) internal view returns (bool, bytes memory) {
-        if (s_state.holdingValue() < s_config.automationFeeReserved) {
+        if (s_state.holdingValue() < s_config.minHoldingValueToRebalance) {
             return (false, bytes(""));
         }
         (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
@@ -281,6 +286,13 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
      */
     function settleCheckingInterval() external view returns (uint256) {
         return s_config.settleCheckingInterval;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPConfigLens
+     */
+    function minHoldingValueToRebalance() external view returns (uint256) {
+        return s_config.minHoldingValueToRebalance;
     }
 
     /**

@@ -41,4 +41,10 @@ interface IChromaticLPAdmin {
      * @param _automationFeeReserved The new value for the reserved automation fee.
      */
     function setAutomationFeeReserved(uint256 _automationFeeReserved) external;
+
+    /**
+     * @dev Additional data to be used in the rebalance process.
+     * @param _minHoldingValueToRebalance The new value for the required minimum amount to trigger rebalance.
+     */
+    function setMinHoldingValueToRebalance(uint256 _minHoldingValueToRebalance) external;
 }

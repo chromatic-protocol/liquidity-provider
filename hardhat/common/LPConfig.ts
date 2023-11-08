@@ -65,7 +65,8 @@ export function getDefaultLPConfigs(): LPConfig[] {
         rebalanceBPS: 500,
         rebalanceCheckingInterval: 24 * 60 * 60, // 24 hours
         settleCheckingInterval: 1 * 60, // 1 minutes
-        automationFeeReserved: parseEther('1.0')
+        automationFeeReserved: parseEther('2.0'),
+        minHoldingValueToRebalance: parseEther('100.0')
       },
       feeRates: FEE_RATES,
       distributionRates: distInfo.distributionRates

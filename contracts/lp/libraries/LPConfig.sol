@@ -9,6 +9,7 @@ pragma solidity >=0.8.0 <0.9.0;
  * @param rebalanceCheckingInterval Time interval (in seconds) between checks for rebalance conditions.
  * @param settleCheckingInterval Time interval (in seconds) between checks for settlement conditions.
  * @param automationFeeReserved Amount reserved as automation fee, used for automated operations within the liquidity pool.
+ * @param minHoldingValueToRebalance The minimum holding value required to trigger rebalance.
  */
 struct LPConfig {
     uint16 utilizationTargetBPS;
@@ -16,6 +17,7 @@ struct LPConfig {
     uint256 rebalanceCheckingInterval;
     uint256 settleCheckingInterval;
     uint256 automationFeeReserved;
+    uint256 minHoldingValueToRebalance;
 }
 
 /**
@@ -26,7 +28,6 @@ enum AllocationStatus {
     UnderUtilized,
     OverUtilized
 }
-
 
 /**
  * @title LPConfigLib

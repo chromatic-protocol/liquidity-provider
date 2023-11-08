@@ -7,6 +7,18 @@ pragma solidity >=0.8.0 <0.9.0;
  */
 interface IChromaticLPConfigLens {
     /**
+     * @dev Emitted when the automation fee reserved value is updated.
+     * @param newValue The new value of the automation fee reserved.
+     */
+    event SetAutomationFeeReserved(uint256 newValue);
+
+    /**
+     * @dev Emitted when the minimum holding value to trigger rebalance is updated.
+     * @param newValue The new value of the minimum holding value to rebalance.
+     */
+    event SetMinHoldingValueToRebalance(uint256 newValue);
+
+    /**
      * @dev Retrieves the target utilization rate in basis points (BPS) for the liquidity provider.
      * @return The target utilization rate in BPS.
      */
@@ -35,6 +47,12 @@ interface IChromaticLPConfigLens {
      * @return The automation fee reserved amount.
      */
     function automationFeeReserved() external view returns (uint256);
+
+    /**
+     * @dev Retrieves the minimum holding value required to trigger rebalance.
+     * @return The minimum holding value to rebalance.
+     */
+    function minHoldingValueToRebalance() external view returns (uint256);
 
     /**
      * @dev Retrieves an array of distribution rates associated with different fee rates.
