@@ -1,5 +1,6 @@
 import config from './hardhat.config'
 import './hardhat/repl'
+import './hardhat/tasks'
 
 const MNEMONIC_JUNK = 'test test test test test test test test test test test junk'
 
