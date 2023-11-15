@@ -5,7 +5,7 @@ import chalk from 'chalk'
 import { task } from 'hardhat/config'
 import { HardhatRuntimeEnvironment, TaskArguments } from 'hardhat/types'
 import { getSDKClient } from '~/hardhat/common'
-import { getWalletClientFromKey, listRemovableLiquidityExist } from './list-unregistered-lp'
+import { getWalletClientFromAccount, listRemovableLiquidityExist } from './list-unregistered-lp'
 
 export async function removeLiquidity(
   hre: HardhatRuntimeEnvironment,
@@ -20,11 +20,11 @@ export async function removeLiquidity(
 
 task('remove-liquidity-unregistered', 'remove liquidity from all lp unregistered from the registry')
   .addParam('address', 'The registry address')
-  .addOptionalParam('private', 'private key of wallet account')
+  .addOptionalParam('account', 'account address')
   .setAction(async (taskArgs: TaskArguments, hre: HardhatRuntimeEnvironment) => {
     let walletClient
-    if (taskArgs.private) {
-      walletClient = await getWalletClientFromKey(hre, taskArgs.private)
+    if (taskArgs.account) {
+      walletClient = await getWalletClientFromAccount(hre, taskArgs.account as AddressType)
     }
 
     const infos = await listRemovableLiquidityExist(hre, taskArgs.address, walletClient)
