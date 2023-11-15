@@ -28,12 +28,19 @@ export interface LPConfig {
   feeRates: Array<number>
   distributionRates: Array<number>
   automateConfig?: AutomateConfig
+  initialLiquidity?: BigNumberish
 }
 
+export interface SettlementToken {
+  name: string,
+  address: AddressType,
+  decimals: bigint
+}
 export interface MarketInfo {
   address: AddressType
   oracleValue: IOracleProvider.OracleVersionStructOutput
   description: string
+  settlementToken: SettlementToken
 }
 
 export interface LPContractAddress {

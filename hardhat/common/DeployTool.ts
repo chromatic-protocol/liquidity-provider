@@ -6,9 +6,17 @@ import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
 import { ChromaticLPRegistry } from '~/typechain-types'
 
+import { formatEther } from 'ethers'
+import { getSDKClient } from '~/hardhat/common/Client'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { getAutomateConfig } from './getAutomateConfig'
-import type { AutomateConfig, LPConfig, LPDeployedResultMap, MarketInfo } from './types'
+import type {
+  AddressType,
+  AutomateConfig,
+  LPConfig,
+  LPDeployedResultMap,
+  MarketInfo
+} from './types'
 
 export type * from './types'
 export type AutomateType = 'gelato' | 'mate2'
@@ -62,7 +70,7 @@ export class DeployTool {
     await this.deployRegistry()
     const result = await this.deployAllLP(this.defaultLPConfigs)
     for (let deployed of [].concat(...Object.values(result))) {
-      await this.registerLP(deployed.address)
+      await this.registerLP(deployed['address'])
     }
   }
 
@@ -113,9 +121,9 @@ export class DeployTool {
     for (let market of markets) {
       const deployedResults = []
       for (let lpConfig of lpConfigs) {
-        const config = this.getLPConfig(lpConfig)
+        const config = this.adjustLPConfig(market, lpConfig)
 
-        const deployed = await this.deployLP(market.address, config)
+        const deployed = await this.deployLP(market.address, config, false)
         deployedResults.push(deployed)
       }
 
@@ -124,17 +132,37 @@ export class DeployTool {
     return lpDeployed
   }
 
-  getLPConfig(lpConfig: LPConfig): LPConfig {
+  adjustLPConfig(marketInfo: MarketInfo, lpConfig: LPConfig): LPConfig {
+    const iscBTC = marketInfo.settlementToken.name == 'cBTC'
+    console.log('is cBTC?: ', iscBTC)
     let config = {
       ...lpConfig,
-      automateConfig: this.automateConfig
+      config: {
+        ...lpConfig.config,
+        automationFeeReserved: iscBTC
+          ? BigInt(lpConfig.config.automationFeeReserved) / 10n
+          : BigInt(lpConfig.config.automationFeeReserved)
+      },
+      automateConfig: this.automateConfig,
+      initialLiquidity:
+        iscBTC && lpConfig.initialLiquidity
+          ? BigInt(lpConfig.initialLiquidity) / 10n
+          : lpConfig.initialLiquidity
     }
     return config
   }
 
-  async deployLP(marketAddress: string, lpConfig: LPConfig): Promise<DeployResult> {
+  async deployLP(marketAddress: string, lpConfig: LPConfig, adjust = true): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying LP for market: ${marketAddress}`))
-    const config = this.getLPConfig(lpConfig)
+    let config = lpConfig
+    if (adjust) {
+      const marketInfo: MarketInfo = (await this.getMarkets()).find(
+        (x) => x.address == marketAddress
+      ) as MarketInfo
+
+      config = this.adjustLPConfig(marketInfo, lpConfig)
+    }
+
     if (!config.meta?.lpName) throw new Error('lpName not found')
     if (!config.meta?.tag) throw new Error('lp-tag not found')
 
@@ -161,7 +189,48 @@ export class DeployTool {
 
     DEPLOYED.saveLP(result.address, marketAddress)
 
+    if (config.initialLiquidity) {
+      try {
+        console.log(chalk.cyan(`add initial liqduitity: ${formatEther(config.initialLiquidity)}`))
+        await this.addLiquidity(result.address as AddressType, BigInt(config.initialLiquidity))
+      } catch {
+        console.log(chalk.redBright('failed to add liquidity initially'))
+      }
+    }
+
     return result
+  }
+
+  async addLiquidity(lpAddress: AddressType, amount: bigint) {
+    const client = await getSDKClient(this.hre)
+    const address = client.walletClient!.account!.address
+    let token = await client.lp().contracts().settlementToken(lpAddress)
+    const settlementTokenBalance = await token.read.balanceOf([address])
+    console.log(`  - settlementTokenBalance: ${settlementTokenBalance}`)
+    if (amount > settlementTokenBalance) {
+      // mint seperately
+      throw new Error('not enough token to add liquidity')
+    }
+
+    await client.lp().addLiquidity(lpAddress, amount)
+  }
+
+  async removeLiquidity(lpAddress: AddressType, amount: bigint) {
+    const client = await getSDKClient(this.hre)
+    const address = client.walletClient!.account!.address
+    let lpTokenBalance = await client.lp().balanceOf(lpAddress, address)
+
+    console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
+    await client.lp().removeLiquidity(lpAddress, amount)
+  }
+
+  async removeLiquidityAll(lpAddress: AddressType) {
+    const client = await getSDKClient(this.hre)
+    const address = client.walletClient!.account!.address
+    let lpTokenBalance = await client.lp().balanceOf(lpAddress, address)
+
+    console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
+    await client.lp().removeLiquidity(lpAddress, lpTokenBalance)
   }
 
   async getMarkets(): Promise<MarketInfo[]> {
@@ -179,7 +248,11 @@ export class DeployTool {
         chalk.green(`✨ registered token of marketFactory: ${token.name}, ${token.address}`)
       )
       const markets = await marketFactory.getMarkets(token.address)
-      allMarkets.push(...markets)
+      allMarkets.push(
+        ...markets.map((x) => {
+          return { ...x, settlementToken: token }
+        })
+      )
     }
 
     return allMarkets as MarketInfo[]

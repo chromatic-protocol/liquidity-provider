@@ -32,28 +32,34 @@ export function getDefaultLPConfigs(): LPConfig[] {
       tag: 'Low Risk',
       utilizationTargetBPS: 2500,
       startLevel: 0,
-      endLevel: 50
-    },
-    {
-      lpName: 'Semi-crescendo',
-      tag: 'Mid Risk',
-      utilizationTargetBPS: 5000,
-      startLevel: 25,
-      endLevel: 75
+      endLevel: 50,
+      initialLiquidity: parseEther('30000')
     },
     {
       lpName: 'Plateau',
+      tag: 'Mid Risk',
+      utilizationTargetBPS: 5000,
+      startLevel: 50,
+      endLevel: 50,
+      initialLiquidity: parseEther('15000')
+    },
+    {
+      lpName: 'Decresendo',
       tag: 'High Risk',
       utilizationTargetBPS: 7500,
-      startLevel: 75,
-      endLevel: 75
+      startLevel: 100,
+      endLevel: 50,
+      initialLiquidity: parseEther('10000')
     }
   ]
   const lpConfigs = []
   for (let info of infos) {
     const distInfo = getLinearDistributionConfig(info.startLevel, info.endLevel, _FEE_RATES.length)
     // console.log('linear distribution information:', distInfo)
-
+    console.assert(
+      distInfo.utilizationTargetBPS == info.utilizationTargetBPS,
+      'check utilization target is correct'
+    )
     const config = {
       meta: {
         lpName: info.lpName,
@@ -65,12 +71,12 @@ export function getDefaultLPConfigs(): LPConfig[] {
         rebalanceBPS: 500,
         rebalanceCheckingInterval: 24 * 60 * 60, // 24 hours
         settleCheckingInterval: 1 * 60, // 1 minutes
-        automationFeeReserved: parseEther('2.0'),
+        automationFeeReserved: parseEther('2.0'), // default
         minHoldingValueToRebalance: parseEther('100.0')
       },
       feeRates: FEE_RATES,
-      distributionRates: distInfo.distributionRates
-      // distributionRates: getDefaultDistribution(FEE_RATES)
+      distributionRates: distInfo.distributionRates,
+      initialLiquidity: info.initialLiquidity
     }
 
     lpConfigs.push(config)
