@@ -11,8 +11,7 @@ export async function getWalletClientFromAccount(
   hre: HardhatRuntimeEnvironment,
   accountAddress: AddressType
 ): Promise<WalletClient> {
-  let publicClient = await hre.viem.getPublicClient()
-  const walletClient = hre.viem.getWalletClient(accountAddress)
+  const walletClient = await hre.viem.getWalletClient(accountAddress)
 
   return walletClient
 }
