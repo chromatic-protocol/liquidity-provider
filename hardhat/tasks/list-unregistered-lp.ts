@@ -5,6 +5,7 @@ import { task } from 'hardhat/config'
 import { HardhatRuntimeEnvironment, TaskArguments } from 'hardhat/types'
 import type { WalletClient } from 'viem'
 import { parseAbiItem } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
 import { getSDKClient } from '~/hardhat/common'
 
 export async function listUnregisterEvent(
@@ -58,8 +59,17 @@ task(
   'List lp addresses that has removable liquidity exist from given registry'
 )
   .addParam('address', 'The registry address')
+  .addOptionalParam('private', 'The private key of wallet account')
   .setAction(async (taskArgs: TaskArguments, hre: HardhatRuntimeEnvironment) => {
-    const infos = await listRemovableLiquidityExist(hre, taskArgs.address)
+    let walletClient
+
+    if (taskArgs.private) {
+      ;[walletClient] = await hre.viem.getWalletClients({
+        account: privateKeyToAccount(taskArgs.private as any)
+      })
+    }
+
+    const infos = await listRemovableLiquidityExist(hre, taskArgs.address, walletClient)
     if (infos.length == 0) {
       console.log(chalk.yellow(`removable liquidity not found from registry ${taskArgs.address})`))
       return
