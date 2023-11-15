@@ -4,20 +4,15 @@ import chalk from 'chalk'
 import { task } from 'hardhat/config'
 import { HardhatRuntimeEnvironment, TaskArguments } from 'hardhat/types'
 import type { WalletClient } from 'viem'
-import { createWalletClient, http, parseAbiItem } from 'viem'
-import { privateKeyToAccount } from 'viem/accounts'
+import { parseAbiItem } from 'viem'
 import { getSDKClient } from '~/hardhat/common'
 
-export async function getWalletClientFromKey(
+export async function getWalletClientFromAccount(
   hre: HardhatRuntimeEnvironment,
-  key: string
+  accountAddress: AddressType
 ): Promise<WalletClient> {
   let publicClient = await hre.viem.getPublicClient()
-  const walletClient = createWalletClient({
-    account: privateKeyToAccount(key as any),
-    chain: publicClient.chain,
-    transport: http()
-  })
+  const walletClient = hre.viem.getWalletClient(accountAddress)
 
   return walletClient
 }
@@ -73,12 +68,12 @@ task(
   'List lp addresses that has removable liquidity exist from given registry'
 )
   .addParam('address', 'The registry address')
-  .addOptionalParam('private', 'The private key of wallet account')
+  .addOptionalParam('account', 'The wallet account')
   .setAction(async (taskArgs: TaskArguments, hre: HardhatRuntimeEnvironment) => {
     let walletClient
 
-    if (taskArgs.private) {
-      walletClient = await getWalletClientFromKey(hre, taskArgs.private)
+    if (taskArgs.account) {
+      walletClient = await getWalletClientFromAccount(hre, taskArgs.account)
     }
 
     const infos = await listRemovableLiquidityExist(hre, taskArgs.address, walletClient)
