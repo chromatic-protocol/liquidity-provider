@@ -61,10 +61,9 @@
     "jsbi": "^3.2.0"
   },
   "scripts": {
-    "repl": "hardhat console --config hardhat.repl.config.ts --no-compile",
-    "repl:anvil:arbitrum": "hardhat console --network anvil_arbitrum --config hardhat.repl.config.ts --no-compile",
-    "repl:anvil:mantle": "hardhat console --network anvil_mantle --config hardhat.repl.config.ts --no-compile",
-    "repl:arbitrum_goerli": "hardhat console --network arbitrum_goerli --config hardhat.repl.config.ts --no-compile",
-    "repl:mantle_testnet": "hardhat console --network mantle_testnet --config hardhat.repl.config.ts --no-compile"
+    "anvil:arbitrum": "hardhat --network anvil_arbitrum --config hardhat.repl.config.ts",
+    "anvil:mantle": "hardhat --network anvil_mantle --config hardhat.repl.config.ts",
+    "arbitrum_goerli": "hardhat --network arbitrum_goerli --config hardhat.repl.config.ts",
+    "mantle_testnet": "hardhat --network mantle_testnet --config hardhat.repl.config.ts"
   }
 }
