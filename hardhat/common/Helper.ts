@@ -104,7 +104,11 @@ export class Helper {
     const tokens = await this.settlementTokens()
     for (let token of tokens) {
       const markets = await this.marketFactory.getMarkets(token.address)
-      allMarkets.push(...markets)
+      allMarkets.push(
+        ...markets.map((x) => {
+          return { ...x, settlementToken: token }
+        })
+      )
     }
     return allMarkets as MarketInfo[]
   }
