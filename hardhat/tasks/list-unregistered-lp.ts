@@ -4,9 +4,23 @@ import chalk from 'chalk'
 import { task } from 'hardhat/config'
 import { HardhatRuntimeEnvironment, TaskArguments } from 'hardhat/types'
 import type { WalletClient } from 'viem'
-import { parseAbiItem } from 'viem'
+import { createWalletClient, http, parseAbiItem } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { getSDKClient } from '~/hardhat/common'
+
+export async function getWalletClientFromKey(
+  hre: HardhatRuntimeEnvironment,
+  key: string
+): Promise<WalletClient> {
+  let publicClient = await hre.viem.getPublicClient()
+  const walletClient = createWalletClient({
+    account: privateKeyToAccount(key as any),
+    chain: publicClient.chain,
+    transport: http()
+  })
+
+  return walletClient
+}
 
 export async function listUnregisterEvent(
   hre: HardhatRuntimeEnvironment,
@@ -64,9 +78,7 @@ task(
     let walletClient
 
     if (taskArgs.private) {
-      ;[walletClient] = await hre.viem.getWalletClients({
-        account: privateKeyToAccount(taskArgs.private as any)
-      })
+      walletClient = await getWalletClientFromKey(hre, taskArgs.private)
     }
 
     const infos = await listRemovableLiquidityExist(hre, taskArgs.address, walletClient)

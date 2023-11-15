@@ -4,9 +4,8 @@ import { Client } from '@chromatic-protocol/liquidity-provider-sdk'
 import chalk from 'chalk'
 import { task } from 'hardhat/config'
 import { HardhatRuntimeEnvironment, TaskArguments } from 'hardhat/types'
-import { privateKeyToAccount } from 'viem/accounts'
 import { getSDKClient } from '~/hardhat/common'
-import { listRemovableLiquidityExist } from './list-unregistered-lp'
+import { getWalletClientFromKey, listRemovableLiquidityExist } from './list-unregistered-lp'
 
 export async function removeLiquidity(
   hre: HardhatRuntimeEnvironment,
@@ -25,9 +24,7 @@ task('remove-liquidity-unregistered', 'remove liquidity from all lp unregistered
   .setAction(async (taskArgs: TaskArguments, hre: HardhatRuntimeEnvironment) => {
     let walletClient
     if (taskArgs.private) {
-      ;[walletClient] = await hre.viem.getWalletClients({
-        account: privateKeyToAccount(taskArgs.private as any)
-      })
+      walletClient = await getWalletClientFromKey(hre, taskArgs.private)
     }
 
     const infos = await listRemovableLiquidityExist(hre, taskArgs.address, walletClient)
