@@ -128,7 +128,7 @@ library LPBoostingStateLib {
         self.info.totalLPToken = amount;
     }
 
-    function updateBoostingSettleState(LPBoostingState storage self) internal {
+    function updateBoostingSettleState(LPBoostingState storage self) internal returns (bool updated) {
         if (boostingExecStatus(self) == LPBoostingExec.EXECUTED) {
             IChromaticLP lp = targetLP(self);
             uint256 receiptId = boostingReceiptId(self);
@@ -137,8 +137,10 @@ library LPBoostingStateLib {
                 // when it is settled
                 setTotalLPToken(self, IERC20(lp.lpToken()).balanceOf(address(this)));
                 setBoostingExecStatus(self, LPBoostingExec.SETTLED);
+                return true;
             }
         }
+        return false;
     }
 
     function totalLPToken(LPBoostingState storage self) internal view returns (uint256 amount) {

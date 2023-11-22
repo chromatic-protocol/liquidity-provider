@@ -108,7 +108,7 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
 
             uint256 depositAmount = maxDepositable >= amount ? amount : maxDepositable;
             if (depositAmount > 0) {
-                emit Deposited(msg.sender, depositAmount);
+                emit LPBoostingDeposited(msg.sender, depositAmount);
 
                 SafeERC20.safeTransferFrom(
                     settlementToken(),
@@ -135,7 +135,7 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         if (s_state.isRaisedOverMinTarget()) revert RefundError();
 
         uint256 amount = balanceOf(msg.sender);
-        emit Refunded(msg.sender, amount);
+        emit LPBoostingRefunded(msg.sender, amount);
         _burn(msg.sender, amount);
         SafeERC20.safeTransfer(settlementToken(), msg.sender, amount);
     }
@@ -144,11 +144,15 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
         if (s_state.boostingExecStatus() == LPBoostingExec.NOT_EXECUTED)
             revert BoostingNotExecuted();
-        s_state.updateBoostingSettleState();
+        if (s_state.updateBoostingSettleState())
+            emit LPBoostingSettleUpdated(s_state.totalLPToken());
         if (s_state.boostingExecStatus() == LPBoostingExec.EXECUTED) revert BoostingNotSettled();
 
         uint256 amount = balanceOf(msg.sender); // BLP amount to burn
+        if (amount == 0) revert ClaimBalanceZeroError();
+
         uint256 lpAmount = s_state.totalLPToken().mulDiv(amount, s_state.totalRaised());
+        emit LPBoostingClaimed(msg.sender, amount, lpAmount);
         _burn(msg.sender, amount);
         SafeERC20.safeTransfer(IERC20(s_state.targetLP().lpToken()), msg.sender, lpAmount);
     }
@@ -244,6 +248,7 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
 
         // lp.addLiquidity(s_state.totalRaised(), address(this));
         ChromaticLPReceipt memory receipt = lp.addLiquidity(balance, address(this));
+        emit LPBoostingExecuted();
         s_state.setBoostingReceiptId(receipt.id);
         s_state.setBoostingExecStatus(LPBoostingExec.EXECUTED);
         _cancelBoostLPTask();

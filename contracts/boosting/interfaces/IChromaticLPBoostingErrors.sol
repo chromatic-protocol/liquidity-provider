@@ -14,6 +14,7 @@ interface IChromaticLPBoostingErrors {
     error RefundError();
     error NotAutomationCalled();
     error ClaimTimeError();
+    error ClaimBalanceZeroError();
     error BoostingNotExecuted();
     error BoostingNotSettled();
 }
