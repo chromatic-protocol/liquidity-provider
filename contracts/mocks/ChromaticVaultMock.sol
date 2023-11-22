@@ -4,7 +4,6 @@ pragma solidity >=0.8.0 <0.9.0;
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IVaultEarningDistributor} from "@chromatic-protocol/contracts/core/interfaces/IVaultEarningDistributor.sol";
 import {ChromaticVault} from "@chromatic-protocol/contracts/core/ChromaticVault.sol";
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 
 contract ChromaticVaultMock is ChromaticVault {
     constructor(

@@ -3,7 +3,6 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {GelatoLiquidator} from "@chromatic-protocol/contracts/core/automation/GelatoLiquidator.sol";
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IMarketLiquidate} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketLiquidate.sol";
 
 contract GelatoLiquidatorMock is GelatoLiquidator {
