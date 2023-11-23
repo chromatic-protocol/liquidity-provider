@@ -14,7 +14,7 @@ import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
 import {IChromaticLPBoosting} from "~/boosting/interfaces/IChromaticLPBoosting.sol";
-import {LPBoostingConfig} from "~/boosting/libraries/LPBoostingConfig.sol";
+import {LPBoostingConfig, AutomateParam} from "~/boosting/libraries/LPBoostingConfig.sol";
 import {LPBoostingState, LPBoostingPeriod, LPBoostingExec} from "~/boosting/libraries/LPBoostingState.sol";
 import {LPBoostingStateLib} from "~/boosting/libraries/LPBoostingState.sol";
 
@@ -23,18 +23,7 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
     using Math for uint256;
 
     LPBoostingState s_state;
-    uint256 constant MIN_PERIOD = 24 * 60 * 60; // a day
-
-    /**
-     * @title AutomateParam
-     * @dev A struct representing the automation parameters for the Chromatic LP contract.
-     * @param automate The address of the automation contract.
-     * @param opsProxyFactory The address of the operations proxy factory contract.
-     */
-    struct AutomateParam {
-        address automate;
-        address opsProxyFactory;
-    }
+    uint256 constant MIN_PERIOD = 1 days; // a day
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
