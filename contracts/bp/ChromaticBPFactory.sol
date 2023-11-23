@@ -11,10 +11,10 @@ contract ChromaticBPFactory is Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     error OnlyAccessableByOwner();
-    event ChromaticBPCreated(address indexed lp, address boostingAddress);
+    event ChromaticBPCreated(address indexed lp, address bp);
 
-    mapping(address => EnumerableSet.AddressSet) _lpToBoosting;
-    EnumerableSet.AddressSet _boostingAll;
+    mapping(address => EnumerableSet.AddressSet) _lpToBpSet;
+    EnumerableSet.AddressSet _bpSet;
 
     constructor() {}
 
@@ -26,19 +26,19 @@ contract ChromaticBPFactory is Ownable {
         BPConfig memory config,
         AutomateParam memory automateParam
     ) external onlyOwner {
-        ChromaticBP newBoosting = new ChromaticBP(config, automateParam);
+        ChromaticBP bp = new ChromaticBP(config, automateParam);
 
-        emit ChromaticBPCreated(address(config.lp), address(newBoosting));
+        emit ChromaticBPCreated(address(config.lp), address(bp));
 
-        _lpToBoosting[address(config.lp)].add(address(newBoosting));
-        _boostingAll.add(address(newBoosting));
+        _lpToBpSet[address(config.lp)].add(address(bp));
+        _bpSet.add(address(bp));
     }
 
-    function boostingsOfLP(address lp) external view returns (address[] memory boostingAddresses) {
-        return _lpToBoosting[lp].values();
+    function boostingsOfLP(address lp) external view returns (address[] memory bpAddresses) {
+        return _lpToBpSet[lp].values();
     }
 
-    function allBoostings() external view returns (address[] memory boostingAddresses) {
-        return _boostingAll.values();
+    function allBoostings() external view returns (address[] memory bpAddresses) {
+        return _bpSet.values();
     }
 }
