@@ -34,11 +34,11 @@ contract ChromaticBPFactory is Ownable {
         _bpSet.add(address(bp));
     }
 
-    function boostingsOfLP(address lp) external view returns (address[] memory bpAddresses) {
+    function bpListByLP(address lp) external view returns (address[] memory bpAddresses) {
         return _lpToBpSet[lp].values();
     }
 
-    function allBoostings() external view returns (address[] memory bpAddresses) {
+    function bpList() external view returns (address[] memory bpAddresses) {
         return _bpSet.values();
     }
 }
