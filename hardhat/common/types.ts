@@ -32,8 +32,8 @@ export interface LPConfig {
 }
 
 export interface SettlementToken {
-  name: string,
-  address: AddressType,
+  name: string
+  address: AddressType
   decimals: bigint
 }
 export interface MarketInfo {
@@ -58,4 +58,13 @@ export interface LPDeployedResultMap {
 
 export interface RegistryDeployedResultMap {
   registry?: DeployResult
+}
+
+export interface BPConfig {
+  lp: AddressType
+  minRaisingTarget: bigint
+  maxRaisingTarget: bigint
+  startTimeOfWarmup: bigint
+  durationOfWarmup: bigint
+  durationOfLockup: bigint
 }

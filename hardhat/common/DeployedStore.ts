@@ -13,6 +13,7 @@ export interface RegistryDeployedResultMap {
 }
 export class DeployedStore {
   registryAddress: string = ''
+  bpFactoryAddress: string = ''
   marketToLPs: MarketToLPs = {}
 
   saveRegistry(result: string) {
@@ -25,9 +26,15 @@ export class DeployedStore {
       this.marketToLPs[marketAddress].push(lpAddress)
     }
   }
+  saveBPFactory(result: string) {
+    this.bpFactoryAddress = result
+  }
 
   get registry() {
     return this.registryAddress
+  }
+  get bpFactory() {
+    return this.bpFactoryAddress
   }
 
   lpOfMarket(marketAddress: string) {
