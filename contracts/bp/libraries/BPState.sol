@@ -9,6 +9,14 @@ import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IC
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
 
+/**
+ * @title BPPeriod
+ * @dev An enumeration representing the different periods in the lifecycle of a Chromatic Boosting Pool.
+ * @param PREWARMUP The period before the warm-up period begins.
+ * @param WARMUP The warm-up period.
+ * @param LOCKUP The lock-up period.
+ * @param POSTLOCKUP The period after the lock-up period.
+ */
 enum BPPeriod {
     PREWARMUP,
     WARMUP,
@@ -16,12 +24,29 @@ enum BPPeriod {
     POSTLOCKUP
 }
 
+/**
+ * @title BPExec
+ * @dev An enumeration representing the execution status of a boosting task in a Chromatic Boosting Pool.
+ * @param NOT_EXECUTED The boosting task has not been executed.
+ * @param EXECUTED The boosting task has been executed.
+ * @param SETTLED The boosting task has been settled.
+ */
 enum BPExec {
     NOT_EXECUTED,
     EXECUTED,
     SETTLED
 }
 
+
+/**
+ * @title BPInfo
+ * @dev A struct representing the information about a Chromatic Boosting Pool.
+ * @param totalRaised The total amount raised in the Boosting Pool.
+ * @param totalLPToken The total amount of LP tokens associated with the Boosting Pool.
+ * @param boostingTaskId The task ID associated with the boosting task.
+ * @param boostingReceiptId The receipt ID associated with the boosting execution.
+ * @param boostingExecStatus The execution status of the boosting task.
+ */
 struct BPInfo {
     uint256 totalRaised;
     uint256 totalLPToken;
@@ -30,6 +55,12 @@ struct BPInfo {
     BPExec boostingExecStatus;
 }
 
+/**
+ * @title BPState
+ * @dev A struct representing the state of a Chromatic Boosting Pool.
+ * @param config The configuration parameters of the Boosting Pool.
+ * @param info The information about the Boosting Pool.
+ */
 struct BPState {
     BPConfig config;
     BPInfo info;
@@ -43,10 +74,6 @@ library BPStateLib {
     function addRaised(BPState storage self, uint256 amount) internal {
         self.info.totalRaised += amount;
     }
-
-    // function removeRaised(BPState storage self, uint256 amount) internal {
-    //     self.info.totalRaised -= amount;
-    // }
 
     function market(BPState storage self) internal view returns (IChromaticMarket) {
         return IChromaticMarket(targetLP(self).market());
