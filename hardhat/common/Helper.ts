@@ -2,6 +2,8 @@ import { ChromaticMarketFactory, Client as ClientSDK } from '@chromatic-protocol
 import { Signer } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import {
+  ChromaticBPFactory,
+  ChromaticBPFactory__factory,
   ChromaticLPRegistry,
   ChromaticLPRegistry__factory,
   IChromaticLP__factory,
@@ -83,6 +85,12 @@ export class Helper {
     const address = this.deployed.registry
     if (!address) throw new Error('deployed registry not exist')
     return ChromaticLPRegistry__factory.connect(address, this.signer)
+  }
+
+  get bpFactory(): ChromaticBPFactory {
+    const address = this.deployed.bpFactory
+    if (!address) throw new Error('deployed bpFactory not exist')
+    return ChromaticBPFactory__factory.connect(address, this.signer)
   }
 
   lpOfMarket(marketAddress: string, index: number) {

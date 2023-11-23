@@ -3,7 +3,6 @@ pragma solidity >=0.8.0 <0.9.0;
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";

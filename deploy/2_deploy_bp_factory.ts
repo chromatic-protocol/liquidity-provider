@@ -1,0 +1,13 @@
+import type { DeployFunction } from 'hardhat-deploy/types'
+import type { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { DeployTool } from '~/hardhat/common/DeployTool'
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  const tool = await DeployTool.createAsync(hre)
+  await tool.deployBPFactory()
+}
+
+export default func
+
+func.id = 'deploy_bp_factory' // id required to prevent reexecution
+func.tags = ['bp_factory']

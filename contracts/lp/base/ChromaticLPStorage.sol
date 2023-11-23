@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";

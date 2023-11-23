@@ -9,6 +9,7 @@ import { ChromaticLPRegistry } from '~/typechain-types'
 import { formatEther } from 'ethers'
 import { getSDKClient } from '~/hardhat/common/Client'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
+import { AutomateParamStruct, BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
 import { getAutomateConfig } from './getAutomateConfig'
 import type {
   AddressType,
@@ -88,6 +89,31 @@ export class DeployTool {
     await this.verify({ address: res.address, constructorArguments: [factoryAddress] })
 
     return res
+  }
+
+  async deployBPFactory(): Promise<DeployResult> {
+    const res = await this.deploy('ChromaticBPFactory', {
+      from: this.deployer,
+      args: []
+    })
+    DEPLOYED.saveBPFactory(res.address)
+
+    await this.verify({ address: res.address, constructorArguments: [] })
+
+    return res
+  }
+
+  async deployBP(bpConfig: BPConfigStruct) {
+    console.log(chalk.cyan(`deploying BP:`), bpConfig)
+    const factory = await this.getBPFactory()
+    const tx = await factory.createBP(bpConfig, this.automateConfig as AutomateParamStruct)
+    await tx.wait()
+    const filter = factory.filters.ChromaticBPCreated(bpConfig.lp)
+    const logs = await factory.queryFilter(filter)
+    const bpAddress = logs[0].args[1]
+    console.log(chalk.cyan(`ChromaticBPCreated(lp: ${logs[0].args[0]}, bp:${bpAddress})`))
+
+    await this.verify({ address: bpAddress, constructorArguments: [bpConfig, this.automateConfig] })
   }
 
   get automateType(): AutomateType | undefined {
@@ -262,6 +288,10 @@ export class DeployTool {
     const registryDeployed = this.helper.deployed.registryAddress
     if (!registryDeployed) throw new Error('registry not found')
     return this.helper.registry
+  }
+
+  async getBPFactory() {
+    return this.helper.bpFactory
   }
 
   async registerAllLP() {
