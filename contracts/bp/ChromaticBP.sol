@@ -14,11 +14,15 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
-import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
+import {IChromaticBP, IChromaticBPAction, IChromaticBPLens, IChromaticBPTask} from "~/bp/interfaces/IChromaticBP.sol";
 import {BPConfig, AutomateParam} from "~/bp/libraries/BPConfig.sol";
 import {BPState, BPPeriod, BPExec} from "~/bp/libraries/BPState.sol";
 import {BPStateLib} from "~/bp/libraries/BPState.sol";
 
+/**
+ * @title ChromaticBP
+ * @dev ChromaticBP is a contract representing a BP (boosting pool) for boosting liquidity of LP in the Chromatic Protocol.
+ */
 contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
     using BPStateLib for BPState;
     using Math for uint256;
@@ -26,11 +30,19 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
     BPState s_state;
     uint256 constant MIN_PERIOD = 1 days;
 
+    /**
+     * @dev Modifier to restrict the execution of a function to only the designated automation account.
+     */
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
         _;
     }
 
+    /**
+     * @dev Constructs the ChromaticBP contract.
+     * @param config The configuration parameters for the ChromaticBP.
+     * @param automateParam The automation parameters for the ChromaticBP.
+     */
     constructor(
         BPConfig memory config,
         AutomateParam memory automateParam
@@ -42,6 +54,10 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         s_state.config = config;
     }
 
+    /**
+     * @dev Checks the validity of the configuration parameters.
+     * @param config The configuration parameters for the ChromaticBP.
+     */
     function _checkArgs(BPConfig memory config) internal view {
         if (config.startTimeOfWarmup <= block.timestamp) {
             revert StartTimeError();
@@ -60,6 +76,9 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         }
     }
 
+    /**
+     * @dev Creates a boost LP task to automate the boosting process.
+     */
     function _createBoostLPTask() internal {
         // check needToCreateBoostTask(s_state)
         ModuleData memory moduleData = ModuleData({modules: new Module[](3), args: new bytes[](3)});
@@ -79,6 +98,9 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         s_state.setBoostTask(taskId);
     }
 
+    /**
+     * @dev Cancels the existing boost LP task.
+     */
     function _cancelBoostLPTask() internal {
         bytes32 taskId = s_state.boostTaskId();
         if (taskId != 0) {
@@ -87,6 +109,9 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         }
     }
 
+    /**
+     * @inheritdoc IChromaticBPAction
+     */
     function deposit(uint256 amount) external override nonReentrant {
         if (amount == 0) revert ZeroDepositError();
 
@@ -117,6 +142,9 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         }
     }
 
+    /**
+     * @inheritdoc IChromaticBPAction
+     */
     function refund() external override nonReentrant {
         if (block.timestamp < s_state.startTimeOfWarmup()) revert NotRefundablePeriod();
         if (s_state.isRaisedOverMinTarget()) revert RefundError();
@@ -131,6 +159,9 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         }
     }
 
+    /**
+     * @inheritdoc IChromaticBPAction
+     */
     function claimLiquidity() external override nonReentrant {
         if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
         if (s_state.boostingExecStatus() == BPExec.NOT_EXECUTED) revert BoostingNotExecuted();
@@ -146,38 +177,65 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         SafeERC20.safeTransfer(IERC20(s_state.targetLP().lpToken()), msg.sender, lpAmount);
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function totalRaised() external view override returns (uint256 amount) {
         return s_state.totalRaised();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function minRaisingTarget() external view override returns (uint256 amount) {
         return s_state.minRaisingTarget();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function maxRaisingTarget() external view override returns (uint256 amount) {
         return s_state.maxRaisingTarget();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function startTimeOfWarmup() external view override returns (uint256 timestamp) {
         return s_state.startTimeOfWarmup();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function endTimeOfWarmup() external view override returns (uint256 timestamp) {
         return s_state.endTimeOfWarmup();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function endTimeOfLockup() external view override returns (uint256 timestamp) {
         return s_state.endTimeOfLockup();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function targetLP() external view override returns (IChromaticLP lpAddress) {
         return s_state.targetLP();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function settlementToken() public view override returns (IERC20 token) {
         return s_state.settlementToken();
     }
 
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
     function currentPeriod() public view override returns (BPPeriod status) {
         return s_state.currentPeriod();
     }
@@ -212,6 +270,9 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         return s_state.settlementToken().decimals();
     }
 
+    /**
+     * @inheritdoc IChromaticBPTask
+     */
     function resolveBoostLPTask()
         external
         view
@@ -225,6 +286,9 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         }
     }
 
+    /**
+     * @inheritdoc IChromaticBPAction
+     */
     function boostLP() external override nonReentrant {
         if (s_state.isBoostExecutable()) {
             _boostLP();
@@ -259,10 +323,34 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         feeInSettlementAmount = payer.payKeeperFee(address(token), fee, feePayee);
     }
 
+    /**
+     * @inheritdoc IChromaticBPTask
+     */
     function boostLPTask() external override nonReentrant onlyAutomation {
         if (s_state.isBoostExecutable()) {
             _payKeeperFee(s_state.targetLP().automationFeeReserved());
             _boostLP();
         }
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function isDepositable() external view returns (bool) {
+        return s_state.isDepositable();
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function isRefundable() external view returns (bool) {
+        return s_state.isRefundable();
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function isClaimable() external view returns (bool) {
+        return s_state.isClaimable();
     }
 }

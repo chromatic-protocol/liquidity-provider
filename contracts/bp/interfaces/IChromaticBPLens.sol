@@ -63,4 +63,22 @@ interface IChromaticBPLens {
      * @return period The current boosting pool period.
      */
     function currentPeriod() external view returns (BPPeriod period);
+
+    /**
+     * @dev Checks if it is possible to make a deposit.
+     * @return true if a deposit can be made, false otherwise.
+     */
+    function isDepositable() external view returns (bool);
+
+    /**
+     * @dev Checks if a refund can be initiated.
+     * @return true if a refund can be initiated, false otherwise.
+     */
+    function isRefundable() external view returns (bool);
+
+    /**
+     * @dev Checks if a claim can be made.
+     * @return true if a claim can be made, false otherwise.
+     */
+    function isClaimable() external view returns (bool);
 }

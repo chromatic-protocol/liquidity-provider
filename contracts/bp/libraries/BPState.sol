@@ -37,7 +37,6 @@ enum BPExec {
     SETTLED
 }
 
-
 /**
  * @title BPInfo
  * @dev A struct representing the information about a Chromatic Boosting Pool.
@@ -66,35 +65,79 @@ struct BPState {
     BPInfo info;
 }
 
+/**
+ * @title Chromatic Boosting Pool (BP) State Library
+ * @dev Library containing functions for managing the state of Chromatic Boosting Pool.
+ */
 library BPStateLib {
+    /**
+     * @dev Retrieves the total raised amount in the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The total raised amount.
+     */
     function totalRaised(BPState storage self) internal view returns (uint256) {
         return self.info.totalRaised;
     }
 
+    /**
+     * @dev Increases the total raised amount in the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @param amount The amount to add to the total raised.
+     */
     function addRaised(BPState storage self, uint256 amount) internal {
         self.info.totalRaised += amount;
     }
 
+    /**
+     * @dev Retrieves the Chromatic Market associated with the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The Chromatic Market instance.
+     */
     function market(BPState storage self) internal view returns (IChromaticMarket) {
         return IChromaticMarket(targetLP(self).market());
     }
 
+    /**
+     * @dev Retrieves the minimum raising target for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The minimum raising target.
+     */
     function minRaisingTarget(BPState storage self) internal view returns (uint256) {
         return self.config.minRaisingTarget;
     }
 
+    /**
+     * @dev Retrieves the maximum raising target for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The maximum raising target.
+     */
     function maxRaisingTarget(BPState storage self) internal view returns (uint256) {
         return self.config.maxRaisingTarget;
     }
 
+    /**
+     * @dev Retrieves the start time of the warm-up period for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The start time of the warm-up period.
+     */
     function startTimeOfWarmup(BPState storage self) internal view returns (uint256) {
         return self.config.startTimeOfWarmup;
     }
 
+    /**
+     * @dev Retrieves the end time of the warm-up period for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return timestamp The end time of the warm-up period.
+     */
     function endTimeOfWarmup(BPState storage self) internal view returns (uint256 timestamp) {
         return self.config.startTimeOfWarmup + self.config.durationOfWarmup;
     }
 
+    /**
+     * @dev Retrieves the end time of the lock-up period for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return timestamp The end time of the lock-up period.
+     */
     function endTimeOfLockup(BPState storage self) internal view returns (uint256 timestamp) {
         return
             self.config.startTimeOfWarmup +
@@ -102,49 +145,104 @@ library BPStateLib {
             self.config.durationOfLockup;
     }
 
+    /**
+     * @dev Retrieves the target Chromatic LP for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The target Chromatic LP instance.
+     */
     function targetLP(BPState storage self) internal view returns (IChromaticLP) {
         return self.config.lp;
     }
 
+    /**
+     * @dev Retrieves the settlement token for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The settlement token instance.
+     */
     function settlementToken(BPState storage self) internal view returns (IERC20Metadata) {
         return IERC20Metadata(self.config.lp.settlementToken());
     }
 
+    /**
+     * @dev Checks if the total raised amount in the Chromatic Boosting Pool is over the minimum raising target.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return True if over the minimum raising target, false otherwise.
+     */
     function isRaisedOverMinTarget(BPState storage self) internal view returns (bool) {
         // check amount only but timestamp
         return totalRaised(self) >= minRaisingTarget(self);
     }
 
+    /**
+     * @dev Checks if creating a boosting task is needed for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return True if needed, false otherwise.
+     */
     function needToCreateBoostTask(BPState storage self) internal view returns (bool) {
         return (boostTaskId(self) == 0 && isRaisedOverMinTarget(self));
     }
 
+    /**
+     * @dev Checks if boosting is executable for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return True if executable, false otherwise.
+     */
     function isBoostExecutable(BPState storage self) internal view returns (bool) {
         return (block.timestamp > endTimeOfWarmup(self) &&
             isRaisedOverMinTarget(self) &&
             boostingExecStatus(self) == BPExec.NOT_EXECUTED);
     }
 
+    /**
+     * @dev Retrieves the boosting execution status for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return status The boosting execution status (NOT_EXECUTED, EXECUTED, SETTLED).
+     */
     function boostingExecStatus(BPState storage self) internal view returns (BPExec status) {
         return self.info.boostingExecStatus;
     }
 
+    /**
+     * @dev Sets the boosting execution status for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @param execStatus The new boosting execution status.
+     */
     function setBoostingExecStatus(BPState storage self, BPExec execStatus) internal {
         self.info.boostingExecStatus = execStatus;
     }
 
+    /**
+     * @dev Retrieves the boosting receipt ID for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return receiptId The boosting receipt ID.
+     */
     function boostingReceiptId(BPState storage self) internal view returns (uint256 receiptId) {
         return self.info.boostingReceiptId;
     }
 
+    /**
+     * @dev Sets the boosting receipt ID for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @param receiptId The new boosting receipt ID.
+     */
     function setBoostingReceiptId(BPState storage self, uint256 receiptId) internal {
         self.info.boostingReceiptId = receiptId;
     }
 
+    /**
+     * @dev Sets the total LP token amount for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @param amount The new total LP token amount.
+     */
     function setTotalLPToken(BPState storage self, uint256 amount) internal {
         self.info.totalLPToken = amount;
     }
 
+    /**
+     * @dev Updates the boosting settlement state for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return updated True if updated, false otherwise.
+     */
     function updateBoostingSettleState(BPState storage self) internal returns (bool updated) {
         if (boostingExecStatus(self) == BPExec.EXECUTED) {
             IChromaticLP lp = targetLP(self);
@@ -160,23 +258,48 @@ library BPStateLib {
         return false;
     }
 
+    /**
+     * @dev Retrieves the total LP token amount for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return amount The total LP token amount.
+     */
     function totalLPToken(BPState storage self) internal view returns (uint256 amount) {
         return self.info.totalLPToken;
     }
 
+    /**
+     * @dev Checks if the Chromatic Boosting Pool is claimable.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return True if claimable, false otherwise.
+     */
     function isClaimable(BPState storage self) internal view returns (bool) {
         return
             block.timestamp > endTimeOfLockup(self) && boostingExecStatus(self) == BPExec.SETTLED;
     }
 
+    /**
+     * @dev Sets the boosting task ID for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @param taskId The new boosting task ID.
+     */
     function setBoostTask(BPState storage self, bytes32 taskId) internal {
         self.info.boostingTaskId = taskId;
     }
 
+    /**
+     * @dev Retrieves the boosting task ID for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The boosting task ID.
+     */
     function boostTaskId(BPState storage self) internal view returns (bytes32) {
         return self.info.boostingTaskId;
     }
 
+    /**
+     * @dev Retrieves the current period of the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return period The current period (PREWARMUP, WARMUP, LOCKUP, POSTLOCKUP).
+     */
     function currentPeriod(BPState storage self) internal view returns (BPPeriod period) {
         uint256 ts = block.timestamp;
         if (ts < startTimeOfWarmup(self)) {
@@ -190,15 +313,34 @@ library BPStateLib {
         }
     }
 
+    /**
+     * @dev Checks if the Chromatic Boosting Pool is refundable.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return True if refundable, false otherwise.
+     */
     function isRefundable(BPState storage self) internal view returns (bool) {
         return (block.timestamp > endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
     }
 
+    /**
+     * @dev Calculates the maximum depositable amount in the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The maximum depositable amount.
+     */
     function maxDepositable(BPState storage self) internal view returns (uint256) {
         if (totalRaised(self) < maxRaisingTarget(self)) {
             return maxRaisingTarget(self) - totalRaised(self);
         } else {
             return 0;
         }
+    }
+
+    /**
+     * @dev Checks if it is possible to make a deposit.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return true if a deposit can be made, false otherwise.
+     */
+    function isDepositable(BPState storage self) internal view returns (bool) {
+        return currentPeriod(self) == BPPeriod.WARMUP && maxDepositable(self) > 0;
     }
 }
