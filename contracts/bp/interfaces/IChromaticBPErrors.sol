@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-interface IChromaticLPBoostingErrors {
+interface IChromaticBPErrors {
     error StartTimeError();
-    error InvalidWarmupPeriod();
-    error InvalidLockupPeriod();
+    error InvalidWarmup();
+    error InvalidLockup();
     error InvalidRaisingTarget();
     error TooSmallMinRaisingTarget();
     error NotWarmupPeriod();

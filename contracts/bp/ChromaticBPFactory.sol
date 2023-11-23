@@ -4,14 +4,14 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import {LPBoostingConfig, AutomateParam} from "~/boosting/libraries/LPBoostingConfig.sol";
-import {ChromaticLPBoosting} from "~/boosting/ChromaticLPBoosting.sol";
+import {BPConfig, AutomateParam} from "~/bp/libraries/BPConfig.sol";
+import {ChromaticBP} from "~/bp/ChromaticBP.sol";
 
-contract ChromaticLPBoostingFactory is Ownable {
+contract ChromaticBPFactory is Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     error OnlyAccessableByOwner();
-    event ChromaticLPBoostingCreated(address indexed lp, address boostingAddress);
+    event ChromaticBPCreated(address indexed lp, address boostingAddress);
 
     mapping(address => EnumerableSet.AddressSet) _lpToBoosting;
     EnumerableSet.AddressSet _boostingAll;
@@ -22,13 +22,13 @@ contract ChromaticLPBoostingFactory is Ownable {
         if (owner() != _msgSender()) revert OnlyAccessableByOwner();
     }
 
-    function createLPBoosting(
-        LPBoostingConfig memory config,
+    function createBP(
+        BPConfig memory config,
         AutomateParam memory automateParam
     ) external onlyOwner {
-        ChromaticLPBoosting newBoosting = new ChromaticLPBoosting(config, automateParam);
+        ChromaticBP newBoosting = new ChromaticBP(config, automateParam);
 
-        emit ChromaticLPBoostingCreated(address(config.lp), address(newBoosting));
+        emit ChromaticBPCreated(address(config.lp), address(newBoosting));
 
         _lpToBoosting[address(config.lp)].add(address(newBoosting));
         _boostingAll.add(address(newBoosting));

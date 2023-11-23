@@ -2,28 +2,29 @@
 pragma solidity >=0.8.0 <0.9.0;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
-import {IAutomate, Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
-import {IChromaticLPBoosting} from "~/boosting/interfaces/IChromaticLPBoosting.sol";
-import {LPBoostingConfig, AutomateParam} from "~/boosting/libraries/LPBoostingConfig.sol";
-import {LPBoostingState, LPBoostingPeriod, LPBoostingExec} from "~/boosting/libraries/LPBoostingState.sol";
-import {LPBoostingStateLib} from "~/boosting/libraries/LPBoostingState.sol";
+import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
+import {BPConfig, AutomateParam} from "~/bp/libraries/BPConfig.sol";
+import {BPState, BPPeriod, BPExec} from "~/bp/libraries/BPState.sol";
+import {BPStateLib} from "~/bp/libraries/BPState.sol";
 
-contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromaticLPBoosting {
-    using LPBoostingStateLib for LPBoostingState;
+contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
+    using BPStateLib for BPState;
     using Math for uint256;
 
-    LPBoostingState s_state;
-    uint256 constant MIN_PERIOD = 1 days; // a day
+    BPState s_state;
+    uint256 constant MIN_PERIOD = 1 days;
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
@@ -31,7 +32,7 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
     }
 
     constructor(
-        LPBoostingConfig memory config,
+        BPConfig memory config,
         AutomateParam memory automateParam
     )
         ERC20("", "")
@@ -41,15 +42,15 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         s_state.config = config;
     }
 
-    function _checkArgs(LPBoostingConfig memory config) internal view {
+    function _checkArgs(BPConfig memory config) internal view {
         if (config.startTimeOfWarmup <= block.timestamp) {
             revert StartTimeError();
         }
-        if (config.periodOfWarmup < MIN_PERIOD) {
-            revert InvalidWarmupPeriod();
+        if (config.durationOfWarmup < MIN_PERIOD) {
+            revert InvalidWarmup();
         }
-        if (config.periodOfLockup < MIN_PERIOD) {
-            revert InvalidLockupPeriod();
+        if (config.durationOfLockup < MIN_PERIOD) {
+            revert InvalidLockup();
         }
         if (config.minRaisingTarget < config.lp.automationFeeReserved()) {
             revert TooSmallMinRaisingTarget();
@@ -57,12 +58,9 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         if (config.minRaisingTarget > config.maxRaisingTarget) {
             revert InvalidRaisingTarget();
         }
-        // TODO check lp pool is valid
-        // by checking registry or interface
     }
 
     function _createBoostLPTask() internal {
-        // create task when min requird raising gathered
         // check needToCreateBoostTask(s_state)
         ModuleData memory moduleData = ModuleData({modules: new Module[](3), args: new bytes[](3)});
         moduleData.modules[0] = Module.RESOLVER;
@@ -92,12 +90,12 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
     function deposit(uint256 amount) external override nonReentrant {
         if (amount == 0) revert ZeroDepositError();
 
-        if (currentPeriod() == LPBoostingPeriod.WARMUP) {
+        if (currentPeriod() == BPPeriod.WARMUP) {
             uint256 maxDepositable = s_state.maxDepositable();
 
             uint256 depositAmount = maxDepositable >= amount ? amount : maxDepositable;
             if (depositAmount > 0) {
-                emit LPBoostingDeposited(msg.sender, depositAmount);
+                emit BPDeposited(msg.sender, depositAmount);
 
                 SafeERC20.safeTransferFrom(
                     settlementToken(),
@@ -124,8 +122,8 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         if (s_state.isRaisedOverMinTarget()) revert RefundError();
 
         uint256 amount = balanceOf(msg.sender);
-        if(amount > 0 ) {
-            emit LPBoostingRefunded(msg.sender, amount);
+        if (amount > 0) {
+            emit BPRefunded(msg.sender, amount);
             _burn(msg.sender, amount);
             SafeERC20.safeTransfer(settlementToken(), msg.sender, amount);
         } else {
@@ -135,17 +133,15 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
 
     function claimLiquidity() external override nonReentrant {
         if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
-        if (s_state.boostingExecStatus() == LPBoostingExec.NOT_EXECUTED)
-            revert BoostingNotExecuted();
-        if (s_state.updateBoostingSettleState())
-            emit LPBoostingSettleUpdated(s_state.totalLPToken());
-        if (s_state.boostingExecStatus() == LPBoostingExec.EXECUTED) revert BoostingNotSettled();
+        if (s_state.boostingExecStatus() == BPExec.NOT_EXECUTED) revert BoostingNotExecuted();
+        if (s_state.updateBoostingSettleState()) emit BPSettleUpdated(s_state.totalLPToken());
+        if (s_state.boostingExecStatus() == BPExec.EXECUTED) revert BoostingNotSettled();
 
         uint256 amount = balanceOf(msg.sender); // BLP amount to burn
         if (amount == 0) revert ClaimBalanceZeroError();
 
         uint256 lpAmount = s_state.totalLPToken().mulDiv(amount, s_state.totalRaised());
-        emit LPBoostingClaimed(msg.sender, amount, lpAmount);
+        emit BPClaimed(msg.sender, amount, lpAmount);
         _burn(msg.sender, amount);
         SafeERC20.safeTransfer(IERC20(s_state.targetLP().lpToken()), msg.sender, lpAmount);
     }
@@ -182,18 +178,18 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         return s_state.settlementToken();
     }
 
-    function currentPeriod() public view override returns (LPBoostingPeriod status) {
+    function currentPeriod() public view override returns (BPPeriod status) {
         return s_state.currentPeriod();
     }
 
     /**
      * @inheritdoc ERC20
      */
-    function name() public view virtual override returns (string memory) {
+    function name() public view virtual override(IERC20Metadata, ERC20) returns (string memory) {
         return
             string(
                 abi.encodePacked(
-                    "ChromaticLPBoosting - ",
+                    "ChromaticBP - ",
                     TrimAddress.trimAddress(address(s_state.targetLP()), 4)
                 )
             );
@@ -202,7 +198,7 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
     /**
      * @inheritdoc ERC20
      */
-    function symbol() public view virtual override returns (string memory) {
+    function symbol() public view virtual override(IERC20Metadata, ERC20) returns (string memory) {
         return
             string(
                 abi.encodePacked("BLP-", TrimAddress.trimAddress(address(s_state.targetLP()), 4))
@@ -212,7 +208,7 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
     /**
      * @inheritdoc ERC20
      */
-    function decimals() public view virtual override returns (uint8) {
+    function decimals() public view virtual override(IERC20Metadata, ERC20) returns (uint8) {
         return s_state.settlementToken().decimals();
     }
 
@@ -240,9 +236,9 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         uint256 balance = s_state.settlementToken().balanceOf(address(this));
 
         ChromaticLPReceipt memory receipt = lp.addLiquidity(balance, address(this));
-        emit LPBoostingExecuted();
+        emit BPExecuted();
         s_state.setBoostingReceiptId(receipt.id);
-        s_state.setBoostingExecStatus(LPBoostingExec.EXECUTED);
+        s_state.setBoostingExecStatus(BPExec.EXECUTED);
         _cancelBoostLPTask();
     }
 
