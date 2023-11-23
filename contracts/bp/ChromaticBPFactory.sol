@@ -37,12 +37,17 @@ contract ChromaticBPFactory is Ownable {
      * @param config The configuration parameters for the ChromaticBP.
      * @param automateParam The automation parameters for the ChromaticBP.
      */
-    function createBP(BPConfig memory config, AutomateParam memory automateParam) external onlyOwner {
+    function createBP(
+        BPConfig memory config,
+        AutomateParam memory automateParam
+    ) external onlyOwner {
         ChromaticBP bp = new ChromaticBP(config, automateParam);
 
         emit ChromaticBPCreated(address(config.lp), address(bp));
 
+        //slither-disable-next-line unused-return
         _lpToBpSet[address(config.lp)].add(address(bp));
+        //slither-disable-next-line unused-return
         _bpSet.add(address(bp));
     }
 

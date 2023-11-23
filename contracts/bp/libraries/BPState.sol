@@ -188,6 +188,7 @@ library BPStateLib {
      * @return True if executable, false otherwise.
      */
     function isBoostExecutable(BPState storage self) internal view returns (bool) {
+        //slither-disable-next-line timestamp
         return (block.timestamp > endTimeOfWarmup(self) &&
             isRaisedOverMinTarget(self) &&
             boostingExecStatus(self) == BPExec.NOT_EXECUTED);
@@ -273,6 +274,7 @@ library BPStateLib {
      * @return True if claimable, false otherwise.
      */
     function isClaimable(BPState storage self) internal view returns (bool) {
+        //slither-disable-next-line timestamp
         return
             block.timestamp > endTimeOfLockup(self) && boostingExecStatus(self) == BPExec.SETTLED;
     }
@@ -302,6 +304,7 @@ library BPStateLib {
      */
     function currentPeriod(BPState storage self) internal view returns (BPPeriod period) {
         uint256 ts = block.timestamp;
+        //slither-disable-next-line timestamp
         if (ts < startTimeOfWarmup(self)) {
             return BPPeriod.PREWARMUP;
         } else if (ts <= endTimeOfWarmup(self)) {
@@ -319,6 +322,7 @@ library BPStateLib {
      * @return True if refundable, false otherwise.
      */
     function isRefundable(BPState storage self) internal view returns (bool) {
+        //slither-disable-next-line timestamp
         return (block.timestamp > endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
     }
 

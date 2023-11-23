@@ -59,6 +59,7 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
      * @param config The configuration parameters for the ChromaticBP.
      */
     function _checkArgs(BPConfig memory config) internal view {
+        //slither-disable-next-line timestamp
         if (config.startTimeOfWarmup <= block.timestamp) {
             revert StartTimeError();
         }
@@ -146,6 +147,7 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
      * @inheritdoc IChromaticBPAction
      */
     function refund() external override nonReentrant {
+        //slither-disable-next-line timestamp
         if (block.timestamp < s_state.startTimeOfWarmup()) revert NotRefundablePeriod();
         if (s_state.isRaisedOverMinTarget()) revert RefundError();
 
@@ -163,6 +165,7 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
      * @inheritdoc IChromaticBPAction
      */
     function claimLiquidity() external override nonReentrant {
+        //slither-disable-next-line timestamp
         if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
         if (s_state.boostingExecStatus() == BPExec.NOT_EXECUTED) revert BoostingNotExecuted();
         if (s_state.updateBoostingSettleState()) emit BPSettleUpdated(s_state.totalLPToken());
