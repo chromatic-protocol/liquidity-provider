@@ -135,9 +135,13 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         if (s_state.isRaisedOverMinTarget()) revert RefundError();
 
         uint256 amount = balanceOf(msg.sender);
-        emit LPBoostingRefunded(msg.sender, amount);
-        _burn(msg.sender, amount);
-        SafeERC20.safeTransfer(settlementToken(), msg.sender, amount);
+        if(amount > 0 ) {
+            emit LPBoostingRefunded(msg.sender, amount);
+            _burn(msg.sender, amount);
+            SafeERC20.safeTransfer(settlementToken(), msg.sender, amount);
+        } else {
+            revert RefundZeroAmountError();
+        }
     }
 
     function claimLiquidity() external override nonReentrant {
@@ -246,7 +250,6 @@ contract ChromaticLPBoosting is AutomateReady, ERC20, ReentrancyGuard, IChromati
         IChromaticLP lp = s_state.targetLP();
         uint256 balance = s_state.settlementToken().balanceOf(address(this));
 
-        // lp.addLiquidity(s_state.totalRaised(), address(this));
         ChromaticLPReceipt memory receipt = lp.addLiquidity(balance, address(this));
         emit LPBoostingExecuted();
         s_state.setBoostingReceiptId(receipt.id);

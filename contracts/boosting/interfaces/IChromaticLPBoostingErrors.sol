@@ -12,6 +12,7 @@ interface IChromaticLPBoostingErrors {
     error ZeroDepositError();
     error NotRefundablePeriod();
     error RefundError();
+    error RefundZeroAmountError();
     error NotAutomationCalled();
     error ClaimTimeError();
     error ClaimBalanceZeroError();
