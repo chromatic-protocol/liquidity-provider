@@ -3,13 +3,14 @@ schema:
   file: ./schema.graphql
 
 dataSources:
+
   - kind: ethereum/contract
     name: ChromaticLPRegistry
     network: '{{network}}'
     source:
       address: '{{ChromaticLPRegistry}}'
       abi: ChromaticLPRegistry
-      startBlock: {{blocknumber}}
+      startBlock: {{lpBlocknumber}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -24,7 +25,30 @@ dataSources:
           handler: handleChromaticLPRegistered
       file: ./src/chromatic-lp-registry.ts
 
+  - kind: ethereum/contract
+    name: ChromaticBPFactory
+    network: '{{network}}'
+    source:
+      address: '{{ChromaticBPFactory}}'
+      abi: ChromaticBPFactory
+      startBlock: {{bpBlocknumber}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ChromaticBPCreated
+      abis:
+        - name: ChromaticBPFactory
+          file: ./abis/ChromaticBPFactory.json
+      eventHandlers:
+        - event: ChromaticBPCreated(indexed address,address)
+          handler: handleChromaticBPCreated
+      file: ./src/chromatic-bp-factory.ts
+
+
 templates:
+
   - kind: ethereum/contract
     name: IChromaticLP
     network: '{{network}}'
@@ -61,3 +85,25 @@ templates:
         - event: RebalanceSettled(indexed uint256,uint256)
           handler: handleRebalanceSettled
       file: ./src/chromatic-lp.ts
+
+  - kind: ethereum/contract
+    name: IChromaticBP
+    network: '{{network}}'
+    source:
+      abi: IChromaticBP
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BPDeposited
+        - BPExecuted
+      abis:
+        - name: IChromaticBP
+          file: ./abis/IChromaticBP.json
+      eventHandlers:
+        - event: BPDeposited(indexed address,uint256)
+          handler: handleBPDeposited
+        - event: BPExecuted()
+          handler: handleBPExecuted
+      file: ./src/chromatic-bp.ts

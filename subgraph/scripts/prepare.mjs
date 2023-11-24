@@ -5,7 +5,6 @@ import { join } from 'path'
 
 const abiPath = join('.', 'abis')
 const deployments = join('..', '..', 'deployments')
-const interfacesPath = join(...'../../artifacts/contracts/lp/interfaces'.split('/'))
 
 async function loadDeployment(network, contract) {
   const json = await import(join(deployments, network, `${contract}.json`), {
@@ -19,16 +18,17 @@ function saveABI(contract, deployment) {
   fs.writeFileSync(join(abiPath, `${contract}.json`), JSON.stringify(deployment.abi, null, 2))
 }
 
-async function loadInterfaceABI(interfaceName) {
+async function loadInterfaceABI(interfaceName, path) {
+  const interfacesPath = join(...'../../artifacts/contracts'.split('/'), path, 'interfaces')
   const json = await import(join(interfacesPath, `${interfaceName}.sol`, `${interfaceName}.json`), {
     assert: { type: 'json' }
   })
   return json.default
 }
 
-async function saveInterfaceABI(interfaceName) {
+async function saveInterfaceABI(interfaceName, path) {
   if (!fs.existsSync(abiPath)) fs.mkdirSync(abiPath, { recursive: true })
-  const json = await loadInterfaceABI(interfaceName)
+  const json = await loadInterfaceABI(interfaceName, path)
 
   fs.writeFileSync(join(abiPath, `${interfaceName}.json`), JSON.stringify(json.abi, null, 2))
 }
@@ -38,16 +38,21 @@ async function main() {
   const templateFile = process.argv[3]
   const outputFile = process.argv[4]
 
-  const registry = await loadDeployment(network, 'ChromaticLPRegistry')
+  const lpRegistry = await loadDeployment(network, 'ChromaticLPRegistry')
+  saveABI('ChromaticLPRegistry', lpRegistry)
+  await saveInterfaceABI('IChromaticLP', 'lp')
 
-  saveABI('ChromaticLPRegistry', registry)
-  await saveInterfaceABI('IChromaticLP')
+  const bpFactory = await loadDeployment(network, 'ChromaticBPFactory')
+  saveABI('ChromaticBPFactory', bpFactory)
+  await saveInterfaceABI('IChromaticBP', 'bp')
 
   const template = fs.readFileSync(templateFile).toString()
   const output = Mustache.render(template, {
     network: network === 'mantle_testnet' ? 'testnet' : network,
-    blocknumber: registry.receipt.blockNumber,
-    ChromaticLPRegistry: registry.address
+    lpBlocknumber: lpRegistry.receipt.blockNumber,
+    bpBlocknumber: bpFactory.receipt.blockNumber,
+    ChromaticLPRegistry: lpRegistry.address,
+    ChromaticBPFactory: bpFactory.address
   })
   fs.writeFileSync(outputFile, output)
 

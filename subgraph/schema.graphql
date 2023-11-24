@@ -94,3 +94,30 @@ type RebalanceSettled @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+type ChromaticBPCreated @entity(immutable: true) {
+  id: Bytes!
+  lp: Bytes! # address
+  bp: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type BPDeposited @entity(immutable: true) {
+  id: Bytes!
+  bp: Bytes! # address
+  provider: Bytes! # address
+  amount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type BPExecuted @entity(immutable: true) {
+  id: Bytes!
+  bp: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
