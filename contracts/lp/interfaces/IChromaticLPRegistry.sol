@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
 /**
  * @title IChromaticLPRegistry
@@ -22,12 +21,6 @@ interface IChromaticLPRegistry {
      * @param lp The address of the unregistered Chromatic LP.
      */
     event ChromaticLPUnregistered(address indexed market, address indexed lp);
-
-    /**
-     * @notice Emitted when the AutomateLP address is set.
-     * @param automate The address of the AutomateLP contract.
-     */
-    event SetAutomateLP(address automate);
 
     /**
      * @notice Error thrown when a function is called by an unauthorized user.
@@ -78,15 +71,4 @@ interface IChromaticLPRegistry {
         address token
     ) external view returns (address[] memory lpAddresses);
 
-    /**
-     * @notice Sets the AutomateLP contract address.
-     * @param automate The address of the AutomateLP contract.
-     */
-    function setAutomateLP(IAutomateLP automate) external;
-
-    /**
-     * @notice Gets the current AutomateLP contract address.
-     * @return The address of the AutomateLP contract.
-     */
-    function getAutomateLP() external view returns (IAutomateLP);
 }

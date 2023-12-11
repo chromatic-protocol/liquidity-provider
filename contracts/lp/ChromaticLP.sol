@@ -16,7 +16,6 @@ import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {LPState, REBALANCE_ID} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
-import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
 import {IChromaticLPAutomate} from "~/lp/interfaces/IChromaticLPAutomate.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
@@ -32,8 +31,8 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory _distributionRates,
-        IChromaticLPRegistry registry
-    ) ChromaticLPBase(registry) {
+        IAutomateLP automate
+    ) ChromaticLPBase(automate) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(lpMeta, config, _feeRates, _distributionRates);
@@ -44,11 +43,8 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
      * @inheritdoc IChromaticLPAdmin
      */
     function createRebalanceTask() public onlyOwner {
-        // if (s_task[REBALANCE_ID] != address(0)) revert AlreadyRebalanceTaskExist();
-        IAutomateLP automate = s_registry.getAutomateLP();
-
-        s_task[REBALANCE_ID] = automate;
-        automate.createRebalanceTask();
+        s_task[REBALANCE_ID] = s_automate;
+        s_automate.createRebalanceTask();
     }
 
     /**
@@ -56,6 +52,7 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
      */
     function cancelRebalanceTask() external onlyOwner {
         IAutomateLP automate = s_task[REBALANCE_ID];
+        delete s_task[REBALANCE_ID];
         automate.cancelRebalanceTask();
     }
 
@@ -329,5 +326,20 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         uint256 /* keeperFee */
     ) external onlyAutomation(receiptId) {
         _fallback();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPAutomate
+     */
+    function setAutomateLP(IAutomateLP automate) external override onlyOwner {
+        emit SetAutomateLP(address(automate));
+        s_automate = automate;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPAutomate
+     */
+    function getAutomateLP() external view override returns (IAutomateLP) {
+        return s_automate;
     }
 }

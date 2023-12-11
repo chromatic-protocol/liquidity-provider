@@ -7,12 +7,12 @@ import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.
 
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
-import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
 
 contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;
@@ -20,7 +20,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     using LPStateValueLib for LPState;
     using LPConfigLib for LPConfig;
 
-    constructor(IChromaticLPRegistry registry) ChromaticLPLogicBase(registry) {}
+    constructor(IAutomateLP automate) ChromaticLPLogicBase(automate) {}
 
     /**
      * @dev implementation of IChromaticLP

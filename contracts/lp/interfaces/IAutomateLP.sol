@@ -18,6 +18,11 @@ interface IAutomateLP {
     error AlreadyRebalanceTaskExist();
 
     /**
+     * @dev Signifies that the function is only accessible by the owner
+     */
+    error OnlyAccessableByOwner();
+
+    /**
      * @dev Initiates the creation of a rebalance task for the specified LP (msg.sender).
      */
     function createRebalanceTask() external;
@@ -88,4 +93,10 @@ interface IAutomateLP {
      * @return The task ID of the settle task.
      */
     function getSettleTaskId(IChromaticLP lp, uint256 receiptId) external view returns (bytes32);
+
+    /**
+     * @dev Cancels the existing task for a specific task ID.
+     * @param taskId The unique identifier of the task.
+     */
+    function cancelTask(bytes32 taskId) external;
 }

@@ -1,19 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
 /**
  * @title IChromaticLPAutomate
  * @dev Interface for automating tasks related to Chromatic Liquidity Providers (LPs).
  */
 interface IChromaticLPAutomate {
-    /**
-     * @dev Retrieves the LP registry associated with the ChromaticLP.
-     * @return The address of the Chromatic LP Registry.
-     */
-    function getRegistry() external view returns (IChromaticLPRegistry);
-
     /**
      * @dev Checks whether a rebalance task is needed.
      * @return A boolean indicating whether a rebalance task is needed.
@@ -41,4 +35,16 @@ interface IChromaticLPAutomate {
      * @param keeperFee The amount of native tokens to be paid as keeper fees.
      */
     function settleTask(uint256 receiptId, address feePayee, uint256 keeperFee) external;
+
+    /**
+     * @notice Sets the AutomateLP contract address.
+     * @param automate The address of the AutomateLP contract.
+     */
+    function setAutomateLP(IAutomateLP automate) external;
+
+    /**
+     * @notice Gets the current AutomateLP contract address.
+     * @return The address of the AutomateLP contract.
+     */
+    function getAutomateLP() external view returns (IAutomateLP);
 }

@@ -24,7 +24,6 @@ import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
-import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
@@ -71,16 +70,15 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         _;
     }
 
-    constructor(IChromaticLPRegistry registry) ChromaticLPStorage(registry) ReentrancyGuard() {}
+    constructor(IAutomateLP automate) ChromaticLPStorage(automate) ReentrancyGuard() {}
 
     function _createSettleTask(uint256 receiptId) internal {
-        IAutomateLP automate = s_registry.getAutomateLP();
-        automate.createSettleTask(receiptId);
-        s_task[receiptId] = automate;
+        s_automate.createSettleTask(receiptId);
+        s_task[receiptId] = s_automate;
     }
 
     function _cancelSettleTask(uint256 receiptId) internal {
-        IAutomateLP automate = s_registry.getAutomateLP();
+        IAutomateLP automate = s_task[receiptId];
         automate.cancelSettleTask(receiptId);
         delete s_task[receiptId];
     }

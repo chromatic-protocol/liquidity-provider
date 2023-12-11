@@ -83,18 +83,4 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
         return _lpsBySettlementToken[token].values();
     }
 
-    /**
-     * @inheritdoc IChromaticLPRegistry
-     */
-    function setAutomateLP(IAutomateLP automate) external override onlyOwner {
-        emit SetAutomateLP(address(automate));
-        _automate = automate;
-    }
-
-    /**
-     * @inheritdoc IChromaticLPRegistry
-     */
-    function getAutomateLP() external view override returns (IAutomateLP) {
-        return _automate;
-    }
 }

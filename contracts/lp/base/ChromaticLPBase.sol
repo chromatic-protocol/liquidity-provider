@@ -17,8 +17,8 @@ import {IChromaticLPLens} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPConfigLens} from "~/lp/interfaces/IChromaticLPConfigLens.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
-import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
 import {IChromaticLPAutomate} from "~/lp/interfaces/IChromaticLPAutomate.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
@@ -40,7 +40,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         _;
     }
 
-    constructor(IChromaticLPRegistry registry) ChromaticLPStorage(registry) {
+    constructor(IAutomateLP automate) ChromaticLPStorage(automate) {
         _owner = msg.sender;
     }
 
@@ -332,12 +332,5 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
      */
     function estimateMinRemoveLiquidityAmount() public view returns (uint256) {
         return s_config.automationFeeReserved.mulDiv(totalSupply(), holdingValue());
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAutomate
-     */
-    function getRegistry() external view returns (IChromaticLPRegistry) {
-        return s_registry;
     }
 }

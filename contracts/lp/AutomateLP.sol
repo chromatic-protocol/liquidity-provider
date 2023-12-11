@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 
-contract AutomateLP is ReentrancyGuard, AutomateReady, IAutomateLP {
+contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
     /**
      * @title AutomateParam
      * @dev A struct representing the automation parameters for the Chromatic LP contract.
@@ -37,11 +38,19 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, IAutomateLP {
     )
         ReentrancyGuard()
         AutomateReady(automateParam.automate, address(this), automateParam.opsProxyFactory)
+        Ownable()
     {}
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
         _;
+    }
+
+    /**
+     * @dev Checks if the caller is the owner of the contract.
+     */
+    function _checkOwner() internal view override {
+        if (owner() != _msgSender()) revert OnlyAccessableByOwner();
     }
 
     /**
@@ -166,6 +175,13 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, IAutomateLP {
             return (true, abi.encodeCall(this.settle, (lp, receiptId)));
         }
         return (false, bytes(""));
+    }
+
+    /**
+     * @inheritdoc IAutomateLP
+     */
+    function cancelTask(bytes32 taskId) external onlyOwner {
+        automate.cancelTask(taskId);
     }
 
     function _createTask(

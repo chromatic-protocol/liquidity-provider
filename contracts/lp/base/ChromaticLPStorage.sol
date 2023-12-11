@@ -20,12 +20,11 @@ abstract contract ChromaticLPStorage is ChromaticLPStorageCore {
     }
 
     mapping(uint256 => IAutomateLP) internal s_task;
-    IChromaticLPRegistry internal s_registry;
+    IAutomateLP internal s_automate;
 
-    constructor(IChromaticLPRegistry registy) ChromaticLPStorageCore() {
-        s_registry = registy;
+    constructor(IAutomateLP automate) ChromaticLPStorageCore() {
+        s_automate = automate;
     }
-
 
     function _estimateRebalanceAddAmount(uint256 currentUtility) internal view returns (uint256) {
         return
