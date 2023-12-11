@@ -12,6 +12,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
+import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
 
 contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;
@@ -19,16 +20,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     using LPStateValueLib for LPState;
     using LPConfigLib for LPConfig;
 
-    constructor(
-        AutomateParam memory automateParam
-    )
-        ChromaticLPLogicBase(
-            AutomateParam({
-                automate: automateParam.automate,
-                opsProxyFactory: automateParam.opsProxyFactory
-            })
-        )
-    {}
+    constructor(IChromaticLPRegistry registry) ChromaticLPLogicBase(registry) {}
 
     /**
      * @dev implementation of IChromaticLP
@@ -78,7 +70,10 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     /**
      * @dev implementation of IChromaticLP
      */
-    function rebalance() external override nonReentrant {
+    function rebalance(
+        address feePayee,
+        uint256 keeperFee // native token amount
+    ) external nonReentrant {
         (uint256 currentUtility, uint256 valueTotal) = s_state.utilizationInfo();
         if (valueTotal == 0) return;
 
@@ -86,7 +81,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
 
         if (status != AllocationStatus.InRange) {
             uint256 balance = s_state.settlementToken().balanceOf(address(this));
-            _payKeeperFee(balance);
+            _payKeeperFee(balance, feePayee, keeperFee);
             _rebalance();
         }
     }

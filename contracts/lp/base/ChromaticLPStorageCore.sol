@@ -57,6 +57,4 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
     LPState internal s_state;
 
     constructor() ERC20("", "") {}
-
-    function _getFeeInfo() internal view virtual returns (uint256 fee, address feePayee);
 }

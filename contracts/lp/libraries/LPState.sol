@@ -32,3 +32,5 @@ struct LPState {
     mapping(int16 => uint256) pendingRemoveClbAmounts; // feeRate => pending remove
     uint256 receiptId;
 }
+
+uint256 constant REBALANCE_ID = 1;

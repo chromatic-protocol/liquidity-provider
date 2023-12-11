@@ -13,9 +13,12 @@ import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
 import {ChromaticLPBase} from "~/lp/base/ChromaticLPBase.sol";
 import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPState, REBALANCE_ID} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
+import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
+import {IChromaticLPAutomate} from "~/lp/interfaces/IChromaticLPAutomate.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
 contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, ChromaticLPBase, Proxy {
     using EnumerableSet for EnumerableSet.UintSet;
@@ -29,8 +32,8 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory _distributionRates,
-        AutomateParam memory automateParam
-    ) ChromaticLPBase(automateParam) {
+        IChromaticLPRegistry registry
+    ) ChromaticLPBase(registry) {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(lpMeta, config, _feeRates, _distributionRates);
@@ -41,16 +44,19 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
      * @inheritdoc IChromaticLPAdmin
      */
     function createRebalanceTask() public onlyOwner {
-        if (s_task.rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
-        s_task.rebalanceTaskId = _createTask(
-            abi.encodeCall(this.resolveRebalance, ()),
-            abi.encodeCall(this.rebalance, ()),
-            s_config.rebalanceCheckingInterval
-        );
+        // if (s_task[REBALANCE_ID] != address(0)) revert AlreadyRebalanceTaskExist();
+        IAutomateLP automate = s_registry.getAutomateLP();
+
+        s_task[REBALANCE_ID] = automate;
+        automate.createRebalanceTask();
     }
 
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
     function cancelRebalanceTask() external onlyOwner {
-        _fallback();
+        IAutomateLP automate = s_task[REBALANCE_ID];
+        automate.cancelRebalanceTask();
     }
 
     /**
@@ -91,27 +97,6 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
      */
     function settle(uint256 /* receiptId */) external override returns (bool) {
         _fallback();
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function resolveSettle(
-        uint256 receiptId
-    ) external view override(IChromaticLPAdmin) returns (bool, bytes memory) {
-        return _resolveSettle(receiptId, this.settleTask);
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function resolveRebalance()
-        external
-        view
-        override(IChromaticLPAdmin)
-        returns (bool, bytes memory)
-    {
-        return _resolveRebalance(this.rebalance);
     }
 
     /**
@@ -328,14 +313,21 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
     /**
      * @dev called by automation only
      */
-    function rebalance() external onlyAutomation {
+    function rebalance(
+        address /* feePayee */,
+        uint256 /* keeperFee */
+    ) external onlyAutomation(REBALANCE_ID) {
         _fallback();
     }
 
     /**
      * @dev called by automation only
      */
-    function settleTask(uint256 /* receiptId */) external onlyAutomation {
+    function settleTask(
+        uint256 receiptId,
+        address /* feePayee */,
+        uint256 /* keeperFee */
+    ) external onlyAutomation(receiptId) {
         _fallback();
     }
 }

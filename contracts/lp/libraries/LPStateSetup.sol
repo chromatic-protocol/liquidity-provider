@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {LPState} from "~/lp/libraries/LPState.sol";
+import {LPState, REBALANCE_ID} from "~/lp/libraries/LPState.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
@@ -51,6 +51,7 @@ library LPStateSetupLib {
         }
         s_state.totalRate = totalRate;
         s_state.feeRates = feeRates;
+        s_state.receiptId = REBALANCE_ID; // reserved 1 for rebalance task id
 
         _setupClbTokenIds(s_state, feeRates);
     }

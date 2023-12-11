@@ -51,10 +51,6 @@ interface IChromaticLPErrors {
      * @dev Thrown when the keeper is not called.
      */
     error NotKeeperCalled();
-    /**
-     * @dev Denotes that a rebalance task already exists
-     */
-    error AlreadyRebalanceTaskExist();
 
     /**
      * @dev Signifies that the function is only accessible by the owner
