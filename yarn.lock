@@ -44,6 +44,16 @@
     "@openzeppelin/contracts-upgradeable" "^4.7.3"
     "@openzeppelin/contracts-v0.7" "npm:@openzeppelin/contracts@v3.4.2"
 
+"@chainlink/contracts@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.8.0.tgz#4050c83c8b1603ffb0fd6ab99f1d9ea9db2c37de"
+  integrity sha512-nUv1Uxw5Mn92wgLs2bgPYmo8hpdQ3s9jB/lcbdU0LmNOVu0hbfmouVnqwRLa28Ll50q6GczUA+eO0ikNIKLZsA==
+  dependencies:
+    "@eth-optimism/contracts" "^0.5.21"
+    "@openzeppelin/contracts" "~4.3.3"
+    "@openzeppelin/contracts-upgradeable-4.7.3" "npm:@openzeppelin/contracts-upgradeable@v4.7.3"
+    "@openzeppelin/contracts-v0.7" "npm:@openzeppelin/contracts@v3.4.2"
+
 "@chainsafe/as-sha256@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@chainsafe/as-sha256/-/as-sha256-0.3.1.tgz#3639df0e1435cab03f4d9870cc3ac079e57a6fc9"
@@ -80,15 +90,15 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.274":
-  version "0.0.1-rc.274"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.274.tgz#459861d4b085a28317c266951b20e661cb4200b0"
-  integrity sha512-n/vRGt43BfJm8mNr1ZHqIil1NA6+R0y8KI2UIYXApxL3ZXrjE5ZyYMk7CPWqAoTlN2eof1HFJIAUAl2Vpb7ycw==
+"@chromatic-protocol/contracts@^0.0.1-rc.279":
+  version "0.0.1-rc.279"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.279.tgz#a7d7adb1059d8205a13597e05237e551337bba11"
+  integrity sha512-f2hsaZeLNAv/t/yrS1teOPh7fXgIG1jpOaErHJuItJF7jhNp5r9jTIGjpU1Weq5eUDaY59B4iZyeV8BHhcnSrw==
   dependencies:
-    "@chainlink/contracts" "^0.6.1"
+    "@chainlink/contracts" "^0.8.0"
     "@openzeppelin/contracts" "^4.9.3"
     "@pythnetwork/pyth-sdk-solidity" "^2.2.1"
-    "@uniswap/v3-periphery" "^1.4.3"
+    "@uniswap/v3-periphery" "^1.4.4"
 
 "@chromatic-protocol/hardhat-package@^0.0.1-dev.18":
   version "0.0.1-dev.18"
@@ -1162,6 +1172,11 @@
     chalk "^4"
     fast-levenshtein "^3.0.0"
 
+"@openzeppelin/contracts-upgradeable-4.7.3@npm:@openzeppelin/contracts-upgradeable@v4.7.3":
+  version "4.7.3"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.7.3.tgz#f1d606e2827d409053f3e908ba4eb8adb1dd6995"
+  integrity sha512-+wuegAMaLcZnLCJIvrVUDzA9z/Wp93f0Dla/4jJvIhijRrPabjQbZe6fWiECLaJyfn5ci9fqf9vTw3xpQOad2A==
+
 "@openzeppelin/contracts-upgradeable@^4.7.3", "@openzeppelin/contracts-upgradeable@^4.9.3":
   version "4.9.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.9.3.tgz#ff17a80fb945f5102571f8efecb5ce5915cc4811"
@@ -1830,7 +1845,7 @@
     base64-sol "1.0.1"
     hardhat-watcher "^2.1.1"
 
-"@uniswap/v3-periphery@^1.0.1", "@uniswap/v3-periphery@^1.1.1", "@uniswap/v3-periphery@^1.4.3":
+"@uniswap/v3-periphery@^1.0.1", "@uniswap/v3-periphery@^1.1.1":
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/@uniswap/v3-periphery/-/v3-periphery-1.4.3.tgz#a6da4632dbd46b139cc13a410e4ec09ad22bd19f"
   integrity sha512-80c+wtVzl5JJT8UQskxVYYG3oZb4pkhY0zDe0ab/RX4+8f9+W5d8wI4BT0wLB0wFQTSnbW+QdBSpkHA/vRyGBA==

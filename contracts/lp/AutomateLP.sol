@@ -5,7 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
-import {Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 
 contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
@@ -35,11 +35,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
 
     constructor(
         AutomateParam memory automateParam
-    )
-        ReentrancyGuard()
-        AutomateReady(automateParam.automate, address(this), automateParam.opsProxyFactory)
-        Ownable()
-    {}
+    ) ReentrancyGuard() AutomateReady(automateParam.automate, address(this)) Ownable() {}
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
@@ -83,7 +79,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
         bytes32 rebalanceTaskId = getRebalanceTaskId(lp);
         if (rebalanceTaskId != 0) revert AlreadyRebalanceTaskExist();
         //slither-disable-next-line reentrancy-no-eth
-        rebalanceTaskId = _createTask(
+        rebalanceTaskId = _createTimeTask(
             abi.encodeCall(this.resolveRebalance, (msg.sender)),
             abi.encodeCall(this.rebalance, (msg.sender)),
             IChromaticLP(msg.sender).rebalanceCheckingInterval()
@@ -130,16 +126,35 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
      * @inheritdoc IAutomateLP
      */
     function createSettleTask(uint256 receiptId) external nonReentrant {
-        IChromaticLP lp = IChromaticLP(msg.sender);
+        IChromaticLP lp = IChromaticLP(msg.sender); // called by LP
+
         if (getSettleTaskId(lp, receiptId) == 0) {
             //slither-disable-next-line reentrancy-no-eth
-            bytes32 taskId = _createTask(
+
+            bytes32 taskId = _createSingleExecTask(
                 abi.encodeCall(this.resolveSettle, (msg.sender, receiptId)),
-                abi.encodeCall(this.settle, (msg.sender, receiptId)),
-                lp.settleCheckingInterval()
+                abi.encodeCall(this.settle, (msg.sender, receiptId))
             );
             _setSettleTaskId(lp, receiptId, taskId);
         }
+    }
+
+    function _createSingleExecTask(
+        bytes memory resolver,
+        bytes memory execSelector
+    ) internal returns (bytes32) {
+        ModuleData memory moduleData = ModuleData({modules: new Module[](4), args: new bytes[](4)});
+
+        moduleData.modules[0] = Module.RESOLVER;
+        moduleData.modules[1] = Module.PROXY;
+        moduleData.modules[2] = Module.SINGLE_EXEC;
+        moduleData.modules[3] = Module.TRIGGER;
+        moduleData.args[0] = abi.encode(address(this), resolver);
+        moduleData.args[1] = bytes("");
+        moduleData.args[2] = bytes("");
+        moduleData.args[3] = abi.encode(TriggerType.BLOCK, bytes(""));
+
+        return automate.createTask(address(this), execSelector, moduleData, ETH);
     }
 
     /**
@@ -184,20 +199,28 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
         automate.cancelTask(taskId);
     }
 
-    function _createTask(
+    function _createTimeTask(
         bytes memory resolver,
         bytes memory execSelector,
         uint256 interval
     ) internal returns (bytes32) {
         ModuleData memory moduleData = ModuleData({modules: new Module[](3), args: new bytes[](3)});
         moduleData.modules[0] = Module.RESOLVER;
-        moduleData.modules[1] = Module.TIME;
-        moduleData.modules[2] = Module.PROXY;
-        moduleData.args[0] = abi.encode(address(this), resolver); // abi.encodeCall(this.resolveRebalance, ()));
-        moduleData.args[1] = abi.encode(uint128(block.timestamp + interval), uint128(interval));
-        moduleData.args[2] = bytes("");
+        moduleData.modules[1] = Module.PROXY;
+        moduleData.modules[2] = Module.TRIGGER;
+        moduleData.args[0] = abi.encode(address(this), resolver);
+        moduleData.args[1] = bytes("");
+        moduleData.args[2] = _timeTriggerModuleArg(block.timestamp, interval);
 
         return automate.createTask(address(this), execSelector, moduleData, ETH);
+    }
+
+    function _timeTriggerModuleArg(
+        uint256 _startTime,
+        uint256 _interval
+    ) internal pure returns (bytes memory) {
+        bytes memory triggerConfig = abi.encode(uint128(_startTime), uint128(_interval));
+        return abi.encode(TriggerType.TIME, triggerConfig);
     }
 
     function _getFeeInfo() internal view returns (uint256 fee, address feePayee) {

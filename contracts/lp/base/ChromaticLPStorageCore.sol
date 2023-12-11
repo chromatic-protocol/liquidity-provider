@@ -36,7 +36,6 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
      * @param utilizationTargetBPS Target utilization rate for the LP, represented in basis points (BPS).
      * @param rebalanceBPS Rebalance basis points, indicating the percentage change that triggers a rebalance.
      * @param rebalanceCheckingInterval Time interval (in seconds) between checks for rebalance conditions.
-     * @param settleCheckingInterval Time interval (in seconds) between checks for settlement conditions.
      * @param automationFeeReserved Amount reserved as automation fee, used for automated operations within the LP.
      * @param minHoldingValueToRebalance The minimum holding value required to trigger rebalance.
      */
@@ -45,7 +44,6 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
         uint16 utilizationTargetBPS;
         uint16 rebalanceBPS;
         uint256 rebalanceCheckingInterval;
-        uint256 settleCheckingInterval;
         uint256 automationFeeReserved;
         uint256 minHoldingValueToRebalance;
     }

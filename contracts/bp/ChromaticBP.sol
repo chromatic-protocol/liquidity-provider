@@ -46,10 +46,7 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
     constructor(
         BPConfig memory config,
         AutomateParam memory automateParam
-    )
-        ERC20("", "")
-        AutomateReady(automateParam.automate, address(this), automateParam.opsProxyFactory)
-    {
+    ) ERC20("", "") AutomateReady(automateParam.automate, address(this)) {
         _checkArgs(config);
         s_state.config = config;
     }

@@ -69,7 +69,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
-            settleCheckingInterval: config.settleCheckingInterval,
             automationFeeReserved: config.automationFeeReserved,
             minHoldingValueToRebalance: config.minHoldingValueToRebalance
         });
@@ -284,12 +283,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         return s_config.rebalanceCheckingInterval;
     }
 
-    /**
-     * @inheritdoc IChromaticLPConfigLens
-     */
-    function settleCheckingInterval() external view returns (uint256) {
-        return s_config.settleCheckingInterval;
-    }
 
     /**
      * @inheritdoc IChromaticLPConfigLens

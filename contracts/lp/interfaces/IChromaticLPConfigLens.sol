@@ -37,12 +37,6 @@ interface IChromaticLPConfigLens {
     function rebalanceCheckingInterval() external view returns (uint256);
 
     /**
-     * @dev Retrieves the time interval in seconds between checks for settlement conditions.
-     * @return The settle checking interval in seconds.
-     */
-    function settleCheckingInterval() external view returns (uint256);
-
-    /**
      * @dev Retrieves the amount reserved as automation fee for automated operations within the liquidity provider.
      * @return The automation fee reserved amount.
      */
