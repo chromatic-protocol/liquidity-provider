@@ -9,16 +9,6 @@ import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/cor
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 
 contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
-    /**
-     * @title AutomateParam
-     * @dev A struct representing the automation parameters for the Chromatic LP contract.
-     * @param automate The address of the automation contract.
-     * @param opsProxyFactory The address of the operations proxy factory contract.
-     */
-    struct AutomateParam {
-        address automate;
-        address opsProxyFactory;
-    }
 
     /**
      * @title LPTasks
@@ -34,8 +24,8 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
     mapping(IChromaticLP => LPTasks) internal _taskMap;
 
     constructor(
-        AutomateParam memory automateParam
-    ) ReentrancyGuard() AutomateReady(automateParam.automate, address(this)) Ownable() {}
+        address gelatoAutomate
+    ) ReentrancyGuard() AutomateReady(gelatoAutomate, address(this)) Ownable() {}
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();

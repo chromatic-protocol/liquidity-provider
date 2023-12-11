@@ -7,6 +7,7 @@ import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
 
 /**
@@ -42,14 +43,14 @@ enum BPExec {
  * @dev A struct representing the information about a Chromatic Boosting Pool.
  * @param totalRaised The total amount raised in the Boosting Pool.
  * @param totalLPToken The total amount of LP tokens associated with the Boosting Pool.
- * @param boostingTaskId The task ID associated with the boosting task.
+ * @param automateBP The AutomateBP with the boosting task.
  * @param boostingReceiptId The receipt ID associated with the boosting execution.
  * @param boostingExecStatus The execution status of the boosting task.
  */
 struct BPInfo {
     uint256 totalRaised;
     uint256 totalLPToken;
-    bytes32 boostingTaskId;
+    IAutomateBP automateBP;
     uint256 boostingReceiptId;
     BPExec boostingExecStatus;
 }
@@ -179,7 +180,7 @@ library BPStateLib {
      * @return True if needed, false otherwise.
      */
     function needToCreateBoostTask(BPState storage self) internal view returns (bool) {
-        return (boostTaskId(self) == 0 && isRaisedOverMinTarget(self));
+        return (address(getAutomateBP(self)) == address(0) && isRaisedOverMinTarget(self));
     }
 
     /**
@@ -280,21 +281,21 @@ library BPStateLib {
     }
 
     /**
-     * @dev Sets the boosting task ID for the Chromatic Boosting Pool.
+     * @dev Sets AutomateBP.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @param taskId The new boosting task ID.
+     * @param automateBP The address of AutomateBP to handle boosting task.
      */
-    function setBoostTask(BPState storage self, bytes32 taskId) internal {
-        self.info.boostingTaskId = taskId;
+    function setAutomateBP(BPState storage self, IAutomateBP automateBP) internal {
+        self.info.automateBP = automateBP;
     }
 
     /**
-     * @dev Retrieves the boosting task ID for the Chromatic Boosting Pool.
+     * @dev Retrieves the AutomateBP.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @return The boosting task ID.
+     * @return The address of AutomateBP to handle boosting task.
      */
-    function boostTaskId(BPState storage self) internal view returns (bytes32) {
-        return self.info.boostingTaskId;
+    function getAutomateBP(BPState storage self) internal view returns (IAutomateBP) {
+        return self.info.automateBP;
     }
 
     /**
