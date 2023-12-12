@@ -9,8 +9,8 @@ import { ChromaticLPRegistry } from '~/typechain-types'
 import { formatEther } from 'ethers'
 import { getSDKClient } from '~/hardhat/common/Client'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
-import { AutomateParamStruct, BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
-import { getAutomateConfig } from './getAutomateConfig'
+import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
+import { getAutomateAddress, getAutomateConfig } from './getAutomateConfig'
 import type {
   AddressType,
   AutomateConfig,
@@ -20,7 +20,6 @@ import type {
 } from './types'
 
 export type * from './types'
-export type AutomateType = 'gelato' | 'mate2'
 export class DeployTool {
   constructor(
     public readonly hre: HardhatRuntimeEnvironment,
@@ -69,6 +68,9 @@ export class DeployTool {
 
   async deployAll() {
     await this.deployRegistry()
+
+    await this.deployAutomateLP()
+
     const result = await this.deployAllLP(this.defaultLPConfigs)
     for (let deployed of [].concat(...Object.values(result))) {
       await this.registerLP(deployed['address'])
@@ -85,18 +87,23 @@ export class DeployTool {
       args: [factoryAddress]
     })
 
-    DEPLOYED.saveRegistry(res.address)
+    DEPLOYED.saveRegistry(res.address as AddressType)
     await this.verify({ address: res.address, constructorArguments: [factoryAddress] })
 
     return res
   }
 
   async deployBPFactory(): Promise<DeployResult> {
+    console.log(chalk.cyan(`deploying ChromaticBPFactory:`))
+    if (!DEPLOYED.automateBP) {
+      throw new Error('deploy AutomateBP first')
+    }
+
     const res = await this.deploy('ChromaticBPFactory', {
       from: this.deployer,
-      args: []
+      args: [DEPLOYED.automateBP]
     })
-    DEPLOYED.saveBPFactory(res.address)
+    DEPLOYED.saveBPFactory(res.address as AddressType)
 
     await this.verify({ address: res.address, constructorArguments: [] })
 
@@ -106,7 +113,7 @@ export class DeployTool {
   async deployBP(bpConfig: BPConfigStruct) {
     console.log(chalk.cyan(`deploying BP:`), bpConfig)
     const factory = await this.getBPFactory()
-    const tx = await factory.createBP(bpConfig, this.automateConfig as AutomateParamStruct)
+    const tx = await factory.createBP(bpConfig)
     await tx.wait()
     const filter = factory.filters.ChromaticBPCreated(bpConfig.lp)
     const logs = await factory.queryFilter(filter)
@@ -116,34 +123,15 @@ export class DeployTool {
     await this.verify({ address: bpAddress, constructorArguments: [bpConfig, this.automateConfig] })
   }
 
-  get automateType(): AutomateType | undefined {
-    if (this.hre.network.tags.gelato) return 'gelato'
-    else if (this.hre.network.tags.mate2) return 'mate2'
-    else return undefined
-  }
-
   get automateConfig(): AutomateConfig {
     return getAutomateConfig(this.hre)
-  }
-
-  get lpLogicContractName() {
-    if (this.automateType == 'gelato') return 'ChromaticLPLogic'
-    else {
-      throw new Error('unknown automateType')
-    }
-  }
-
-  get lpContractName() {
-    if (this.automateType == 'gelato') return 'ChromaticLP'
-    else {
-      throw new Error('unknown automateType')
-    }
   }
 
   async deployAllLP(lpConfigs?: LPConfig[]): Promise<LPDeployedResultMap> {
     const markets = await this.getMarkets()
     lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
     const lpDeployed: LPDeployedResultMap = {}
+
     for (let market of markets) {
       const deployedResults = []
       for (let lpConfig of lpConfigs) {
@@ -161,6 +149,7 @@ export class DeployTool {
   adjustLPConfig(marketInfo: MarketInfo, lpConfig: LPConfig): LPConfig {
     const iscBTC = marketInfo.settlementToken.name == 'cBTC'
     console.log('is cBTC?: ', iscBTC)
+
     let config = {
       ...lpConfig,
       config: {
@@ -169,13 +158,39 @@ export class DeployTool {
           ? BigInt(lpConfig.config.automationFeeReserved) / 10n
           : BigInt(lpConfig.config.automationFeeReserved)
       },
-      automateConfig: this.automateConfig,
+      automateConfig: DEPLOYED.automateLP,
       initialLiquidity:
         iscBTC && lpConfig.initialLiquidity
           ? BigInt(lpConfig.initialLiquidity) / 10n
           : lpConfig.initialLiquidity
     }
     return config
+  }
+
+  async deployAutomateLP(): Promise<DeployResult> {
+    console.log(chalk.green(`✨ deploying AutomateLP`))
+    const args = [getAutomateAddress(this.hre)]
+    const result = await this.deploy('AutomateLP', {
+      from: this.deployer,
+      args: args
+    })
+    await this.verify({ address: result.address, constructorArguments: args })
+    DEPLOYED.saveAutomateLP(result.address as AddressType)
+
+    return result
+  }
+
+  async deployAutomateBP(): Promise<DeployResult> {
+    console.log(chalk.green(`✨ deploying AutomateBP`))
+    const args = [getAutomateAddress(this.hre)]
+    const result = await this.deploy('AutomateBP', {
+      from: this.deployer,
+      args: args
+    })
+    await this.verify({ address: result.address, constructorArguments: args })
+    DEPLOYED.saveAutomateBP(result.address as AddressType)
+
+    return result
   }
 
   async deployLP(marketAddress: string, lpConfig: LPConfig, adjust = true): Promise<DeployResult> {
@@ -189,13 +204,15 @@ export class DeployTool {
       config = this.adjustLPConfig(marketInfo, lpConfig)
     }
 
+    if (!config.automateConfig) throw new Error('AutomateLP not found')
     if (!config.meta?.lpName) throw new Error('lpName not found')
     if (!config.meta?.tag) throw new Error('lp-tag not found')
 
-    const { address: logicAddress } = await this.deploy(this.lpLogicContractName, {
+    const { address: logicAddress } = await this.deploy('ChromaticLPLogic', {
       from: this.deployer,
       args: [config.automateConfig]
     })
+
     const args = [
       logicAddress,
       config.meta,
@@ -207,13 +224,13 @@ export class DeployTool {
       config.distributionRates,
       config.automateConfig
     ]
-    const result = await this.deploy(this.lpContractName, {
+    const result = await this.deploy('ChromaticLP', {
       from: this.deployer,
       args: args
     })
     await this.verify({ address: result.address, constructorArguments: args })
 
-    DEPLOYED.saveLP(result.address, marketAddress)
+    DEPLOYED.saveLP(result.address as AddressType, marketAddress as AddressType)
 
     if (config.initialLiquidity) {
       try {
@@ -356,28 +373,5 @@ export class DeployTool {
     const lp = this.helper.lp(lpAddress)
     console.log(chalk.yellow(`🔧 cancelRebalanceTask...: ${lpAddress}`))
     await (await lp.cancelRebalanceTask()).wait()
-  }
-
-  async registerAutomationAllLP() {
-    for (let lpAddress of this.helper.lpAddresses) {
-      await this.addWhitelistedRegistrar(lpAddress)
-    }
-  }
-  async unregisterAutomationAllLP() {
-    for (let lpAddress of this.helper.lpAddresses) {
-      await this.removeWhitelistedRegistrar(lpAddress)
-    }
-  }
-
-  async addWhitelistedRegistrar(lpAddress: string) {
-    const mate2Registry = this.helper.automationRegistry
-    console.log(chalk.yellow(`🔧 addWhitelistedRegistrar...: ${lpAddress}`))
-    await (await mate2Registry.addWhitelistedRegistrar(lpAddress)).wait()
-  }
-
-  async removeWhitelistedRegistrar(lpAddress: string) {
-    const mate2Registry = this.helper.automationRegistry
-    console.log(chalk.yellow(`🔧 removeWhitelistedRegistrar...: ${lpAddress}`))
-    await (await mate2Registry.removeWhitelistedRegistrar(lpAddress)).wait()
   }
 }

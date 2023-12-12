@@ -21,13 +21,12 @@ export interface LPConfig {
     utilizationTargetBPS: number
     rebalanceBPS: number
     rebalanceCheckingInterval: BigNumberish
-    settleCheckingInterval: BigNumberish
     automationFeeReserved: BigNumberish
     minHoldingValueToRebalance: BigNumberish
   }
   feeRates: Array<number>
   distributionRates: Array<number>
-  automateConfig?: AutomateConfig
+  automateConfig?: AddressType
   initialLiquidity?: BigNumberish
 }
 

@@ -4,11 +4,6 @@ import '@nomicfoundation/hardhat-toolbox'
 import '@nomicfoundation/hardhat-toolbox-viem'
 import * as dotenv from 'dotenv'
 
-import { JsonRpcProvider, Network } from 'ethers'
-import { extendProvider } from 'hardhat/config'
-import { ProviderWrapper } from 'hardhat/plugins'
-import { EIP1193Provider, HttpNetworkConfig, RequestArguments } from 'hardhat/types'
-
 import 'hardhat-contract-sizer'
 import 'hardhat-deploy'
 import type { HardhatUserConfig } from 'hardhat/config'
@@ -56,35 +51,30 @@ const config: HardhatUserConfig = {
     hardhat: {
       ...localCommon,
       forking: {
-        url: `https://arb-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
-        blockNumber: 19474553
+        url: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
+        blockNumber: 2618307
       },
       tags: ['local', 'arbitrum', 'gelato']
     },
-    anvil_arbitrum: {
+    anvil_sepolia: {
       ...localCommon,
       url: 'http://127.0.0.1:8545',
       chainId: 31337,
       tags: ['local', 'arbitrum', 'gelato']
     },
-    anvil_mantle: {
-      ...localCommon,
-      url: 'http://127.0.0.1:8545',
-      chainId: 31338,
-      tags: ['local', 'mantle', 'mate2']
-    },
-    arbitrum_goerli: {
+    arbitrum_sepolia: {
       // testnet
       ...common,
-      url: `https://arb-goerli.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
-      chainId: 421613,
+      url: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
+      chainId: 421614,
       tags: ['testnet', 'arbitrum', 'gelato']
     },
-    mantle_testnet: {
+    arbitrum_one: {
+      // mainnet
       ...common,
-      url: `https://lb.drpc.org/ogrpc?network=mantle-testnet&dkey=${process.env.DRPC_KEY}`,
-      chainId: 5001,
-      tags: ['testnet', 'mantle', 'mate2']
+      url: 'https://arb1.arbitrum.io/rpc',
+      chainId: 42161,
+      tags: ['mainnet', 'arbitrum', 'gelato']
     }
   },
   namedAccounts: {
@@ -103,45 +93,9 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      arbitrumGoerli: process.env.ARBISCAN_GOERLI_API_KEY!,
-      mantleTestnet: 'test' // prevent MissingApiKeyError
-    },
-    customChains: [
-      {
-        network: 'mantleTestnet',
-        chainId: 5001,
-        urls: {
-          apiURL: 'https://explorer.testnet.mantle.xyz/api',
-          browserURL: 'https://explorer.testnet.mantle.xyz/'
-        }
-      }
-    ]
-  }
-}
-
-class MantleProvider extends ProviderWrapper {
-  private _jsonRpcProvider: JsonRpcProvider
-
-  constructor(network: string, config: HttpNetworkConfig, _wrappedProvider: EIP1193Provider) {
-    super(_wrappedProvider)
-    this._jsonRpcProvider = new JsonRpcProvider(config.url, config.chainId, {
-      staticNetwork: new Network(network, config.chainId!)
-    })
-  }
-
-  public async request(args: RequestArguments) {
-    if (args.method === 'eth_estimateGas') {
-      return this._jsonRpcProvider.send(args.method, [(args.params as unknown[])[0]])
+      arbitrumSepolia: process.env.ARBISCAN_SEPOLIA_API_KEY!
     }
-
-    return this._wrappedProvider.request(args)
   }
 }
-
-extendProvider(async (provider, config, network) => {
-  return network.startsWith('mantle')
-    ? new MantleProvider(network, config.networks[network] as HttpNetworkConfig, provider)
-    : provider
-})
 
 export default config
