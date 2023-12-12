@@ -242,6 +242,13 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPLens
      */
+    function clbTokenValues() public view override returns (uint256[] memory _clbTokenBalances) {
+        return s_state.clbTokenValues();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingRemoveClbBalances() public view override returns (uint256[] memory) {
         return s_state.pendingRemoveClbBalances();
     }

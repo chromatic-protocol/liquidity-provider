@@ -79,6 +79,12 @@ interface IChromaticLPLens is IChromaticLPConfigLens {
     function clbTokenBalances() external view returns (uint256[] memory balances);
 
     /**
+     * @dev Retrieves the values of CLB tokens held in the liquidity provider.
+     * @return values An array of CLB token value held in the liquidity provider.
+     */
+    function clbTokenValues() external view returns (uint256[] memory values);
+
+    /**
      * @dev An array of pending CLB token balances for removal.
      * Retrieves the pending CLB token balances that are pending removal from the liquidity provider.
      */
