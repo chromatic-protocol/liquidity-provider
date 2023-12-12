@@ -98,7 +98,6 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
             uint256 depositAmount = maxDepositable >= amount ? amount : maxDepositable;
             if (depositAmount > 0) {
                 emit BPDeposited(msg.sender, depositAmount);
-
                 SafeERC20.safeTransferFrom(
                     settlementToken(),
                     msg.sender,
@@ -108,7 +107,13 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
                 _mint(msg.sender, depositAmount);
                 s_state.addRaised(depositAmount);
 
+                if (depositAmount < amount) {
+                    emit BPFullyRaised(s_state.totalRaised());
+                    s_state.setStartTimeOfLockup(block.timestamp);
+                }
+
                 if (s_state.needToCreateBoostTask()) {
+                    emit BPBoostTaskCreated();
                     _createBoostTask();
                 }
             } else {
@@ -263,9 +268,11 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
     /**
      * @inheritdoc IChromaticBPAction
      */
-    function boostLP() external override nonReentrant {
+    function boost() external override nonReentrant {
         if (s_state.isBoostExecutable()) {
             _boostLP();
+        } else {
+            revert NotBoostable();
         }
     }
 
@@ -274,10 +281,9 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
         uint256 balance = s_state.settlementToken().balanceOf(address(this));
 
         ChromaticLPReceipt memory receipt = lp.addLiquidity(balance, address(this));
-        emit BPExecuted();
+        emit BPBoostTaskExecuted();
         s_state.setBoostingReceiptId(receipt.id);
         s_state.setBoostingExecStatus(BPExec.EXECUTED);
-        s_state.setStartTimeOfLockup(block.timestamp);
     }
 
     function _payKeeperFee(
@@ -296,7 +302,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
     /**
      * @inheritdoc IChromaticBPAutomate
      */
-    function boost(
+    function boostTask(
         address feePayee,
         uint256 keeperFee
     ) external override nonReentrant onlyAutomation {

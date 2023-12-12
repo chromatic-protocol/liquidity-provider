@@ -73,6 +73,11 @@ interface IChromaticBPErrors {
     error ClaimBalanceZeroError();
 
     /**
+     * @dev Error indicating that boosting cannot be executed.
+     */
+    error NotBoostable();
+
+    /**
      * @dev Error indicating that boosting has not been executed.
      */
     error BoostingNotExecuted();

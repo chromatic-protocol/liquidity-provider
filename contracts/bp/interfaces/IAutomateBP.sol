@@ -25,14 +25,22 @@ interface IAutomateBP {
     error AlreadyBoostTaskExist();
 
     /**
+     * @dev Emitted when attempting to cancel a boost task not existing.
+     */
+    error TaskNotExist();
+
+    event CancleBoostTaskSucceeded(address bp, bytes32 taskId);
+    event CancleBoostTaskFailed(address bp, bytes32 taskId);
+
+    /**
      * @dev Initiates the creation of a boost task for the specified BP (msg.sender).
      */
     function createBoostTask() external;
 
     /**
-     * @dev Cancels the existing boost task for the specified BP (msg.sender).
+     * @dev Cancels the existing boost task for the specified BP.
      */
-    function cancelBoostTask() external;
+    function cancelBoostTask(IChromaticBP bp) external;
 
     /**
      * @dev Checks whether a boost task is needed for the specified BP.
@@ -56,10 +64,4 @@ interface IAutomateBP {
      * @return The task ID of the boost task.
      */
     function getBoostTaskId(IChromaticBP bp) external view returns (bytes32);
-
-    /**
-     * @dev Cancels the existing task for a specific task ID.
-     * @param taskId The unique identifier of the task.
-     */
-    function cancelTask(bytes32 taskId) external;
 }

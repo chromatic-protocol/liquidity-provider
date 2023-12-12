@@ -56,14 +56,18 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateBP {
     /**
      * @inheritdoc IAutomateBP
      */
-    function cancelBoostTask() external {
-        IChromaticBP bp = IChromaticBP(msg.sender);
-
+    function cancelBoostTask(IChromaticBP bp) external onlyOwner {
         bytes32 taskId = getBoostTaskId(bp);
 
         if (taskId != 0) {
             _setBoostTaskId(bp, 0);
-            automate.cancelTask(taskId);
+            try automate.cancelTask(taskId) {
+                emit CancleBoostTaskSucceeded(address(bp), taskId);
+            } catch {
+                emit CancleBoostTaskFailed(address(bp), taskId);
+            }
+        } else {
+            revert TaskNotExist();
         }
     }
 
@@ -84,7 +88,8 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateBP {
      */
     function boost(address bp) external onlyAutomation {
         (uint256 fee, address feePayee) = _getFeeInfo();
-        IChromaticBP(bp).boost(feePayee, fee);
+        _setBoostTaskId(IChromaticBP(bp), 0);
+        IChromaticBP(bp).boostTask(feePayee, fee);
     }
 
     function _createSingleExecTask(
@@ -103,13 +108,6 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateBP {
         moduleData.args[3] = abi.encode(TriggerType.BLOCK, bytes(""));
 
         return automate.createTask(address(this), execSelector, moduleData, ETH);
-    }
-
-    /**
-     * @inheritdoc IAutomateBP
-     */
-    function cancelTask(bytes32 taskId) external onlyOwner {
-        automate.cancelTask(taskId);
     }
 
     function _timeTriggerModuleArg(
