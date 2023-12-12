@@ -77,12 +77,6 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         s_task[receiptId] = s_automate;
     }
 
-    function _cancelSettleTask(uint256 receiptId) internal {
-        IAutomateLP automate = s_task[receiptId];
-        automate.cancelSettleTask(receiptId);
-        delete s_task[receiptId];
-    }
-
     function settleTask(
         uint256 receiptId,
         address feePayee,
@@ -138,7 +132,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 revert UnknownLPAction();
             }
             // finally remove settle task
-            _cancelSettleTask(receiptId);
+            delete s_task[receiptId];
             return true;
         } else {
             return false;
@@ -152,12 +146,6 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     }
 
     function resolveRebalance() external view virtual returns (bool, bytes memory) {
-        revert NotImplementedInLogicContract();
-    }
-
-    function resolveSettle(
-        uint256 /* receiptId */
-    ) external view virtual returns (bool, bytes memory) {
         revert NotImplementedInLogicContract();
     }
 

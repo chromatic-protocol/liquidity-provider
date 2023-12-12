@@ -9,7 +9,6 @@ import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/cor
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 
 contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
-
     /**
      * @title LPTasks
      * @dev A struct representing tasks associated with Chromatic LP operations.
@@ -87,7 +86,11 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
 
         if (rebalanceTaskId != 0) {
             _setRebalanceTaskId(lp, 0);
-            automate.cancelTask(rebalanceTaskId);
+            try automate.cancelTask(rebalanceTaskId) {
+                emit CancleRebalanceTaskSucceeded(address(lp), rebalanceTaskId);
+            } catch {
+                emit CancleRebalanceTaskFailed(address(lp), rebalanceTaskId);
+            }
         }
     }
 
@@ -156,7 +159,11 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
         bytes32 taskId = getSettleTaskId(lp, receiptId);
         if (taskId != 0) {
             _setSettleTaskId(lp, receiptId, 0);
-            automate.cancelTask(taskId);
+            try automate.cancelTask(taskId) {
+                emit CancleSettleTaskSucceeded(address(lp), receiptId, taskId);
+            } catch {
+                emit CancleSettleTaskFailed(address(lp), receiptId, taskId);
+            }
         }
     }
 

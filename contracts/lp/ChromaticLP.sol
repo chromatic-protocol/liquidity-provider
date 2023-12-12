@@ -57,6 +57,15 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
     }
 
     /**
+     * @inheritdoc IChromaticLPAdmin
+     */
+    function cancelSettleTask(uint256 receiptId) external onlyOwner {
+        IAutomateLP automate = s_task[receiptId];
+        delete s_task[receiptId];
+        automate.cancelSettleTask(receiptId);
+    }
+
+    /**
      * @dev This is the address to which proxy functions are delegated to
      */
     function _implementation() internal view virtual override returns (address) {

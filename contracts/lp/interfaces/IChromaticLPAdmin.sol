@@ -19,6 +19,12 @@ interface IChromaticLPAdmin {
      */
     function cancelRebalanceTask() external;
 
+    /**
+     * @dev Cancels the settle task in the liquidity provider.
+     * This is allowed for the owner of LP contract to call
+     * @param  receiptId The receipt ID associated with the settle execution.
+     */
+    function cancelSettleTask(uint256 receiptId) external;
 
     /**
      * @dev Additional data to be used in the rebalance process.

@@ -22,6 +22,11 @@ interface IAutomateLP {
      */
     error OnlyAccessableByOwner();
 
+    event CancleRebalanceTaskSucceeded(address lp, bytes32 taskId);
+    event CancleRebalanceTaskFailed(address lp, bytes32 taskId);
+    event CancleSettleTaskSucceeded(address lp, uint256 receiptId, bytes32 taskId);
+    event CancleSettleTaskFailed(address lp, uint256 receiptId, bytes32 taskId);
+
     /**
      * @dev Initiates the creation of a rebalance task for the specified LP (msg.sender).
      */
