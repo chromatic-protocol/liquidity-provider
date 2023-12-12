@@ -63,7 +63,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
         if (config.startTimeOfWarmup <= block.timestamp) {
             revert StartTimeError();
         }
-        if (config.durationOfWarmup < MIN_PERIOD) {
+        if (config.maxDurationOfWarmup < MIN_PERIOD) {
             revert InvalidWarmup();
         }
         if (config.durationOfLockup < MIN_PERIOD) {
@@ -144,11 +144,11 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
      * @inheritdoc IChromaticBPAction
      */
     function claimLiquidity() external override nonReentrant {
-        //slither-disable-next-line timestamp
-        if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
         if (s_state.boostingExecStatus() == BPExec.NOT_EXECUTED) revert BoostingNotExecuted();
         if (s_state.updateBoostingSettleState()) emit BPSettleUpdated(s_state.totalLPToken());
         if (s_state.boostingExecStatus() == BPExec.EXECUTED) revert BoostingNotSettled();
+        //slither-disable-next-line timestamp
+        if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
 
         uint256 amount = balanceOf(msg.sender); // BLP amount to burn
         if (amount == 0) revert ClaimBalanceZeroError();
@@ -280,6 +280,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
         emit BPExecuted();
         s_state.setBoostingReceiptId(receipt.id);
         s_state.setBoostingExecStatus(BPExec.EXECUTED);
+        s_state.setStartTimeOfLockup(block.timestamp);
     }
 
     function _payKeeperFee(

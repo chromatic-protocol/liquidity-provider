@@ -10,7 +10,7 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
  * @param minRaisingTarget The minimum raising target amount.
  * @param maxRaisingTarget The maximum raising target amount.
  * @param startTimeOfWarmup The start time of the warmup period.
- * @param durationOfWarmup The duration of the warmup period.
+ * @param maxDurationOfWarmup The max duration of the warmup period.
  * @param durationOfLockup The duration of the lockup period.
  */
 struct BPConfig {
@@ -18,17 +18,6 @@ struct BPConfig {
     uint256 minRaisingTarget;
     uint256 maxRaisingTarget;
     uint256 startTimeOfWarmup;
-    uint256 durationOfWarmup;
+    uint256 maxDurationOfWarmup;
     uint256 durationOfLockup;
-}
-
-/**
- * @title AutomateParam
- * @dev A struct representing the automation parameters for the Chromatic LP contract.
- * @param automate The address of the automation contract.
- * @param opsProxyFactory The address of the operations proxy factory contract.
- */
-struct AutomateParam {
-    address automate;
-    address opsProxyFactory;
 }
