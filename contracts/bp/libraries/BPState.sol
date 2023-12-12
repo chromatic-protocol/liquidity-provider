@@ -73,7 +73,6 @@ struct BPState {
  * @dev Library containing functions for managing the state of Chromatic Boosting Pool.
  */
 library BPStateLib {
-
     /**
      * @dev Initialize the state of the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
@@ -299,7 +298,8 @@ library BPStateLib {
      */
     function isClaimable(BPState storage self) internal view returns (bool) {
         return
-            boostingExecStatus(self) == BPExec.SETTLED && block.timestamp > endTimeOfLockup(self);
+            boostingExecStatus(self) != BPExec.NOT_EXECUTED &&
+            block.timestamp > endTimeOfLockup(self);
     }
 
     /**
