@@ -50,7 +50,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
      */
     constructor(BPConfig memory config, IChromaticBPFactory bpFactory) ERC20("", "") {
         _checkArgs(config);
-        s_state.config = config;
+        s_state.init(config);
         _factory = bpFactory;
     }
 

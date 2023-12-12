@@ -73,6 +73,17 @@ struct BPState {
  * @dev Library containing functions for managing the state of Chromatic Boosting Pool.
  */
 library BPStateLib {
+
+    /**
+     * @dev Initialize the state of the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @param config The configuration parameters for the ChromaticBP.
+     */
+    function init(BPState storage self, BPConfig memory config) internal {
+        self.config = config;
+        self.info.startTimeOfLockup = config.startTimeOfWarmup + config.maxDurationOfWarmup;
+    }
+
     /**
      * @dev Retrieves the total raised amount in the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
@@ -141,37 +152,12 @@ library BPStateLib {
     }
 
     /**
-     * @dev Retrieves the max end time of the warm-up period for the Chromatic Boosting Pool.
-     * @param self The storage state of the Chromatic Boosting Pool.
-     * @return timestamp The end time of the warm-up period.
-     */
-    function maxEndTimeOfWarmup(BPState storage self) internal view returns (uint256 timestamp) {
-        return self.config.startTimeOfWarmup + self.config.maxDurationOfWarmup;
-    }
-
-    /**
      * @dev Retrieves the end time of the warm-up period for the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
      * @return timestamp The end time of the warm-up period.
      */
     function endTimeOfWarmup(BPState storage self) internal view returns (uint256 timestamp) {
-        if (self.info.startTimeOfLockup != 0) {
-            return self.info.startTimeOfLockup;
-        } else {
-            return maxEndTimeOfWarmup(self);
-        }
-    }
-
-    /**
-     * @dev Retrieves the max end time of the lock-up period for the Chromatic Boosting Pool.
-     * @param self The storage state of the Chromatic Boosting Pool.
-     * @return timestamp The end time of the lock-up period.
-     */
-    function maxEndTimeOfLockup(BPState storage self) internal view returns (uint256 timestamp) {
-        return
-            self.config.startTimeOfWarmup +
-            self.config.maxDurationOfWarmup +
-            self.config.durationOfLockup;
+        return startTimeOfLockup(self);
     }
 
     /**
@@ -180,11 +166,7 @@ library BPStateLib {
      * @return timestamp The end time of the lock-up period.
      */
     function endTimeOfLockup(BPState storage self) internal view returns (uint256 timestamp) {
-        if (self.info.startTimeOfLockup != 0) {
-            return self.info.startTimeOfLockup + self.config.durationOfLockup;
-        } else {
-            return maxEndTimeOfLockup(self);
-        }
+        return startTimeOfLockup(self) + self.config.durationOfLockup;
     }
 
     /**
@@ -233,7 +215,7 @@ library BPStateLib {
         if (boostingExecStatus(self) != BPExec.NOT_EXECUTED) return false;
         if (totalRaised(self) >= maxRaisingTarget(self)) return true;
         //slither-disable-next-line timestamp
-        return (block.timestamp > maxEndTimeOfWarmup(self) && isRaisedOverMinTarget(self));
+        return (block.timestamp > endTimeOfWarmup(self) && isRaisedOverMinTarget(self));
     }
 
     /**
@@ -364,7 +346,7 @@ library BPStateLib {
      */
     function isRefundable(BPState storage self) internal view returns (bool) {
         //slither-disable-next-line timestamp
-        return (block.timestamp > maxEndTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
+        return (block.timestamp > endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
     }
 
     /**
