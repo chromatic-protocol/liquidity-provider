@@ -33,13 +33,12 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
     BPState s_state;
     uint256 constant MIN_PERIOD = 1 days;
     IChromaticBPFactory immutable _factory;
-    IAutomateBP _automate;
 
     /**
      * @dev Modifier to restrict the execution of a function to only the designated automation account.
      */
     modifier onlyAutomation() virtual {
-        if (msg.sender != address(_automate)) revert NotAutomationCalled();
+        if (msg.sender != address(s_state.getAutomateBP())) revert NotAutomationCalled();
         _;
     }
 
@@ -83,11 +82,9 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
     function _createBoostTask() internal {
         // check needToCreateBoostTask(s_state)
         IAutomateBP automate = _factory.getAutomateBP();
-        _automate = automate;
-        automate.createBoostTask();
         s_state.setAutomateBP(automate);
+        automate.createBoostTask();
     }
-
 
     /**
      * @inheritdoc IChromaticBPAction
