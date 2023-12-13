@@ -86,6 +86,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
 
         if (rebalanceTaskId != 0) {
             _setRebalanceTaskId(lp, 0);
+            // slither-disable-next-line reentrancy-events
             try automate.cancelTask(rebalanceTaskId) {
                 emit CancleRebalanceTaskSucceeded(address(lp), rebalanceTaskId);
             } catch {
@@ -123,7 +124,6 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
 
         if (getSettleTaskId(lp, receiptId) == 0) {
             //slither-disable-next-line reentrancy-no-eth
-
             bytes32 taskId = _createSingleExecTask(
                 abi.encodeCall(this.resolveSettle, (msg.sender, receiptId)),
                 abi.encodeCall(this.settle, (msg.sender, receiptId))
@@ -159,6 +159,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
         bytes32 taskId = getSettleTaskId(lp, receiptId);
         if (taskId != 0) {
             _setSettleTaskId(lp, receiptId, 0);
+            // slither-disable-next-line reentrancy-events
             try automate.cancelTask(taskId) {
                 emit CancleSettleTaskSucceeded(address(lp), receiptId, taskId);
             } catch {

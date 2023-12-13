@@ -61,6 +61,7 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateBP {
 
         if (taskId != 0) {
             _setBoostTaskId(bp, 0);
+            // slither-disable-next-line reentrancy-events
             try automate.cancelTask(taskId) {
                 emit CancleBoostTaskSucceeded(address(bp), taskId);
             } catch {
@@ -108,14 +109,6 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateBP {
         moduleData.args[3] = abi.encode(TriggerType.BLOCK, bytes(""));
 
         return automate.createTask(address(this), execSelector, moduleData, ETH);
-    }
-
-    function _timeTriggerModuleArg(
-        uint256 _startTime,
-        uint256 _interval
-    ) internal pure returns (bytes memory) {
-        bytes memory triggerConfig = abi.encode(uint128(_startTime), uint128(_interval));
-        return abi.encode(TriggerType.TIME, triggerConfig);
     }
 
     function _getFeeInfo() internal view returns (uint256 fee, address feePayee) {

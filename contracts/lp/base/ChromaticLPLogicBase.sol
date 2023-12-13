@@ -73,8 +73,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     constructor(IAutomateLP automate) ChromaticLPStorage(automate) ReentrancyGuard() {}
 
     function _createSettleTask(uint256 receiptId) internal {
-        s_automate.createSettleTask(receiptId);
         s_task[receiptId] = s_automate;
+        s_automate.createSettleTask(receiptId);
     }
 
     function settleTask(
@@ -122,8 +122,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function _settle(uint256 receiptId, uint256 keeperFee) internal returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
 
-        // TODO check receipt
         if (receipt.oracleVersion < s_state.oracleVersion()) {
+            delete s_task[receiptId];
             if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
                 s_state.claimLiquidity(receipt, keeperFee);
             } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
@@ -131,8 +131,6 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             } else {
                 revert UnknownLPAction();
             }
-            // finally remove settle task
-            delete s_task[receiptId];
             return true;
         } else {
             return false;
@@ -164,6 +162,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             recipient
         );
 
+        // slither-disable-next-line reentrancy-benign
         _createSettleTask(receipt.id);
     }
 
@@ -174,6 +173,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     ) internal returns (ChromaticLPReceipt memory receipt) {
         receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
 
+        // slither-disable-next-line reentrancy-benign
         _createSettleTask(receipt.id);
     }
 

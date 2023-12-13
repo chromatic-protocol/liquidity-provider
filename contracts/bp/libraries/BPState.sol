@@ -297,6 +297,7 @@ library BPStateLib {
      * @return True if claimable, false otherwise.
      */
     function isClaimable(BPState storage self) internal view returns (bool) {
+        //slither-disable-next-line timestamp
         return
             boostingExecStatus(self) != BPExec.NOT_EXECUTED &&
             block.timestamp > endTimeOfLockup(self);

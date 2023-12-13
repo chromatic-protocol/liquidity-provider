@@ -7,7 +7,6 @@ import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interf
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
-import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
 contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -17,8 +16,6 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     mapping(address => EnumerableSet.AddressSet) _lpsByMarket;
     mapping(address => EnumerableSet.AddressSet) _lpsBySettlementToken;
     EnumerableSet.AddressSet _lpsAll;
-
-    IAutomateLP _automate;
 
     constructor(IChromaticMarketFactory _factory) Ownable() {
         factory = _factory;

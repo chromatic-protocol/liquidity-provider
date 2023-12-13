@@ -342,7 +342,7 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
      */
     function setAutomateLP(IAutomateLP automate) external override onlyOwner {
         emit SetAutomateLP(address(automate));
-        s_automate = automate;
+        _setAutomateLP(automate);
     }
 
     /**
