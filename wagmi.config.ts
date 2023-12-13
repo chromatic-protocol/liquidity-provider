@@ -1,7 +1,7 @@
 import { defineConfig } from '@wagmi/cli'
 import { hardhat } from '@wagmi/cli/plugins'
-import { address as bpFactoryArbitrumGoerli } from '~/deployments/arbitrum_goerli/ChromaticBPFactory.json'
-import { address as registryArbitrumGoerli } from '~/deployments/arbitrum_goerli/ChromaticLPRegistry.json'
+import { address as bpFactoryArbitrumSepolia } from '~/deployments/arbitrum_sepolia/ChromaticBPFactory.json'
+import { address as registryArbitrumSepolia } from '~/deployments/arbitrum_sepolia/ChromaticLPRegistry.json'
 
 export default defineConfig({
   out: 'wagmi/index.ts',
@@ -17,10 +17,10 @@ export default defineConfig({
       ],
       deployments: {
         ChromaticLPRegistry: {
-          421613: registryArbitrumGoerli as `0x${string}`
+          421614: registryArbitrumSepolia as `0x${string}`
         },
         ChromaticBPFactory: {
-          421613: bpFactoryArbitrumGoerli as `0x${string}`
+          421614: bpFactoryArbitrumSepolia as `0x${string}`
         }
       }
     })

@@ -56,7 +56,7 @@ const config: HardhatUserConfig = {
       },
       tags: ['local', 'arbitrum', 'gelato']
     },
-    anvil_sepolia: {
+    anvil_arbitrum: {
       ...localCommon,
       url: 'http://127.0.0.1:8545',
       chainId: 31337,
@@ -94,7 +94,17 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       arbitrumSepolia: process.env.ARBISCAN_SEPOLIA_API_KEY!
-    }
+    },
+    customChains: [
+      {
+        network: 'arbitrumSepolia',
+        chainId: 421614,
+        urls: {
+          apiURL: 'https://api-sepolia.arbiscan.io/api',
+          browserURL: 'https://sepolia.arbiscan.io/'
+        }
+      }
+    ]
   }
 }
 
