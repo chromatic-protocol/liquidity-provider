@@ -38,6 +38,16 @@ enum BPExec {
     SETTLED
 }
 
+enum BPStatus {
+    UPCOMING,
+    DEPOSITABLE,
+    WAIT_BOOST,
+    WAIT_SETTLE,
+    LOCKUP,
+    CLAIMABLE,
+    REFUNDABLE
+}
+
 /**
  * @title BPInfo
  * @dev A struct representing the information about a Chromatic Boosting Pool.
@@ -220,9 +230,9 @@ library BPStateLib {
     /**
      * @dev Retrieves the boosting execution status for the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @return status The boosting execution status (NOT_EXECUTED, EXECUTED, SETTLED).
+     * @return execStatus The boosting execution status (NOT_EXECUTED, EXECUTED, SETTLED).
      */
-    function boostingExecStatus(BPState storage self) internal view returns (BPExec status) {
+    function boostingExecStatus(BPState storage self) internal view returns (BPExec execStatus) {
         return self.info.boostingExecStatus;
     }
 
@@ -265,21 +275,13 @@ library BPStateLib {
     /**
      * @dev Updates the boosting settlement state for the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @return updated True if updated, false otherwise.
+     * @param lpToken The amount of lp token.
      */
-    function updateBoostingSettleState(BPState storage self) internal returns (bool updated) {
-        if (boostingExecStatus(self) == BPExec.EXECUTED) {
-            IChromaticLP lp = targetLP(self);
-            uint256 receiptId = boostingReceiptId(self);
-            ChromaticLPReceipt memory receipt = lp.getReceipt(receiptId);
-            if (receipt.id == 0) {
-                // when it is settled
-                setTotalLPToken(self, IERC20(lp.lpToken()).balanceOf(address(this)));
-                setBoostingExecStatus(self, BPExec.SETTLED);
-                return true;
-            }
-        }
-        return false;
+    function updateBoostingSettleState(BPState storage self, uint256 lpToken) internal {
+        // when it is settled
+        require(boostingExecStatus(self) == BPExec.EXECUTED);
+        setTotalLPToken(self, lpToken);
+        setBoostingExecStatus(self, BPExec.SETTLED);
     }
 
     /**
@@ -299,8 +301,7 @@ library BPStateLib {
     function isClaimable(BPState storage self) internal view returns (bool) {
         //slither-disable-next-line timestamp
         return
-            boostingExecStatus(self) != BPExec.NOT_EXECUTED &&
-            block.timestamp > endTimeOfLockup(self);
+            boostingExecStatus(self) == BPExec.SETTLED && block.timestamp > endTimeOfLockup(self);
     }
 
     /**
@@ -331,9 +332,9 @@ library BPStateLib {
         //slither-disable-next-line timestamp
         if (ts < startTimeOfWarmup(self)) {
             return BPPeriod.PREWARMUP;
-        } else if (ts <= endTimeOfWarmup(self)) {
+        } else if (ts < endTimeOfWarmup(self)) {
             return BPPeriod.WARMUP;
-        } else if (ts <= endTimeOfLockup(self)) {
+        } else if (ts < endTimeOfLockup(self)) {
             return BPPeriod.LOCKUP;
         } else {
             return BPPeriod.POSTLOCKUP;
@@ -347,7 +348,7 @@ library BPStateLib {
      */
     function isRefundable(BPState storage self) internal view returns (bool) {
         //slither-disable-next-line timestamp
-        return (block.timestamp > endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
+        return (block.timestamp >= endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
     }
 
     /**
@@ -369,10 +370,34 @@ library BPStateLib {
      * @return true if a deposit can be made, false otherwise.
      */
     function isDepositable(BPState storage self) internal view returns (bool) {
-        return currentPeriod(self) == BPPeriod.WARMUP && maxDepositable(self) > 0;
+        return currentPeriod(self) == BPPeriod.WARMUP; // && maxDepositable(self) > 0;
     }
 
     function totalReward(BPState storage self) internal view returns (uint256) {
         return self.config.totalReward;
+    }
+
+    function status(BPState storage self) internal view returns (BPStatus) {
+        BPPeriod period = currentPeriod(self);
+        if (period == BPPeriod.PREWARMUP) {
+            return BPStatus.UPCOMING;
+        } else if (period == BPPeriod.WARMUP) {
+            return BPStatus.DEPOSITABLE;
+        } else if (isRefundable(self)) {
+            return BPStatus.REFUNDABLE;
+        } else if (period == BPPeriod.LOCKUP) {
+            BPExec execStatus = boostingExecStatus(self);
+            if (execStatus == BPExec.NOT_EXECUTED) {
+                return BPStatus.WAIT_BOOST;
+            } else if (execStatus == BPExec.EXECUTED) {
+                return BPStatus.WAIT_SETTLE;
+            } else {
+                // BPExec.SETTLED
+                return BPStatus.LOCKUP;
+            }
+        } else {
+            // (period == BPPeriod.POSTLOCKUP)
+            return BPStatus.CLAIMABLE;
+        }
     }
 }

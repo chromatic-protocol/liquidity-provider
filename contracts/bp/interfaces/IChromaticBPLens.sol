@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {BPPeriod} from "~/bp/libraries/BPState.sol";
+import {BPPeriod, BPStatus} from "~/bp/libraries/BPState.sol";
 
 /**
  * @title IChromaticBPLens
@@ -84,4 +84,6 @@ interface IChromaticBPLens {
 
 
     function totalReward() external view returns (uint256);
+
+    function status() external view returns (BPStatus);
 }

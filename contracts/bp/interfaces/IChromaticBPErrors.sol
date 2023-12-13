@@ -87,7 +87,7 @@ interface IChromaticBPErrors {
      */
     error BoostingNotSettled();
 
-
     error NonTransferable();
 
+    error NotLPCalled();
 }

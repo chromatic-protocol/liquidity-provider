@@ -11,6 +11,7 @@ import {Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
@@ -19,14 +20,14 @@ import {IChromaticBPFactory} from "~/bp/interfaces/IChromaticBPFactory.sol";
 import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
-import {BPState, BPPeriod, BPExec} from "~/bp/libraries/BPState.sol";
+import {BPState, BPPeriod, BPExec, BPStatus} from "~/bp/libraries/BPState.sol";
 import {BPStateLib} from "~/bp/libraries/BPState.sol";
 
 /**
  * @title ChromaticBP
  * @dev ChromaticBP is a contract representing a BP (boosting pool) for boosting liquidity of LP in the Chromatic Protocol.
  */
-contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
+contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallback {
     using BPStateLib for BPState;
     using Math for uint256;
 
@@ -39,6 +40,11 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
      */
     modifier onlyAutomation() virtual {
         if (msg.sender != address(s_state.getAutomateBP())) revert NotAutomationCalled();
+        _;
+    }
+
+    modifier verifyCallback() virtual {
+        if (address(s_state.targetLP()) != msg.sender) revert NotLPCalled();
         _;
     }
 
@@ -150,8 +156,8 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
      */
     function claimLiquidity() external override nonReentrant {
         if (s_state.boostingExecStatus() == BPExec.NOT_EXECUTED) revert BoostingNotExecuted();
-        if (s_state.updateBoostingSettleState()) emit BPSettleUpdated(s_state.totalLPToken());
         if (s_state.boostingExecStatus() == BPExec.EXECUTED) revert BoostingNotSettled();
+
         //slither-disable-next-line timestamp
         if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
 
@@ -159,6 +165,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
         if (amount == 0) revert ClaimBalanceZeroError();
 
         uint256 lpAmount = s_state.totalLPToken().mulDiv(amount, s_state.totalRaised());
+
         emit BPClaimed(msg.sender, amount, lpAmount);
         _burn(msg.sender, amount);
         SafeERC20.safeTransfer(IERC20(s_state.targetLP().lpToken()), msg.sender, lpAmount);
@@ -223,7 +230,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
     /**
      * @inheritdoc IChromaticBPLens
      */
-    function currentPeriod() public view override returns (BPPeriod status) {
+    function currentPeriod() public view override returns (BPPeriod period) {
         return s_state.currentPeriod();
     }
 
@@ -351,5 +358,39 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
      */
     function totalReward() external view returns (uint256) {
         return s_state.totalReward();
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function status() external view returns (BPStatus) {
+        return s_state.status();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPCallback
+     */
+    function claimedCallback(
+        uint256 /* receiptId */,
+        uint256 /* addedLiquidity */,
+        uint256 lpTokenMint,
+        uint256 /* keeperFee */
+    ) external override verifyCallback {
+        // when boost settled
+        emit BPSettleUpdated(lpTokenMint);
+        s_state.updateBoostingSettleState(lpTokenMint);
+    }
+
+    /**
+     * @inheritdoc IChromaticLPCallback
+     */
+    function withdrawnCallback(
+        uint256 receiptId,
+        uint256 burnedAmount,
+        uint256 withdrawnAmount,
+        uint256 refundedAmount,
+        uint256 keeperFee
+    ) external override {
+        // not used
     }
 }
