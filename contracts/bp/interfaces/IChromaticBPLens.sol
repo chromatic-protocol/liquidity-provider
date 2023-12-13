@@ -81,4 +81,7 @@ interface IChromaticBPLens {
      * @return true if a claim can be made, false otherwise.
      */
     function isClaimable() external view returns (bool);
+
+
+    function totalReward() external view returns (uint256);
 }

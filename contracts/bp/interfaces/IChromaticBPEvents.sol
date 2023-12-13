@@ -50,4 +50,6 @@ interface IChromaticBPEvents {
      * @param totalLPToken The updated total LP token amount.
      */
     event BPSettleUpdated(uint256 totalLPToken);
+
+    event SetTotalReward(uint256 totalReward);
 }

@@ -49,6 +49,9 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
      */
     constructor(BPConfig memory config, IChromaticBPFactory bpFactory) ERC20("", "") {
         _checkArgs(config);
+
+        emit SetTotalReward(config.totalReward);
+
         s_state.init(config);
         _factory = bpFactory;
     }
@@ -331,5 +334,12 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
      */
     function isClaimable() external view returns (bool) {
         return s_state.isClaimable();
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function totalReward() external view returns (uint256) {
+        return s_state.totalReward();
     }
 }

@@ -371,4 +371,8 @@ library BPStateLib {
     function isDepositable(BPState storage self) internal view returns (bool) {
         return currentPeriod(self) == BPPeriod.WARMUP && maxDepositable(self) > 0;
     }
+
+    function totalReward(BPState storage self) internal view returns (uint256) {
+        return self.config.totalReward;
+    }
 }
