@@ -22,9 +22,34 @@ interface IAutomateLP {
      */
     error OnlyAccessableByOwner();
 
+   /**
+     * @dev Emitted when a rebalance task cancellation is successful.
+     * @param lp The address of the liquidity provider.
+     * @param taskId The unique identifier of the cancelled rebalance task.
+     */
     event CancleRebalanceTaskSucceeded(address lp, bytes32 taskId);
+
+    /**
+     * @dev Emitted when a rebalance task cancellation fails.
+     * @param lp The address of the liquidity provider.
+     * @param taskId The unique identifier of the cancelled rebalance task.
+     */
     event CancleRebalanceTaskFailed(address lp, bytes32 taskId);
+
+    /**
+     * @dev Emitted when a settle task cancellation is successful.
+     * @param lp The address of the liquidity provider.
+     * @param receiptId The unique identifier of the cancelled settle task.
+     * @param taskId The unique identifier of the cancelled settle task.
+     */
     event CancleSettleTaskSucceeded(address lp, uint256 receiptId, bytes32 taskId);
+
+    /**
+     * @dev Emitted when a settle task cancellation fails.
+     * @param lp The address of the liquidity provider.
+     * @param receiptId The unique identifier of the cancelled settle task.
+     * @param taskId The unique identifier of the cancelled settle task.
+     */
     event CancleSettleTaskFailed(address lp, uint256 receiptId, bytes32 taskId);
 
     /**

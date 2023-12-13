@@ -29,7 +29,18 @@ interface IAutomateBP {
      */
     error TaskNotExist();
 
+    /**
+     * @dev Emitted when a boost task cancellation is successful.
+     * @param bp The address of the boosting pool.
+     * @param taskId The unique identifier of the cancelled rebalance task.
+     */
     event CancleBoostTaskSucceeded(address bp, bytes32 taskId);
+
+    /**
+     * @dev Emitted when a boost task cancellation is successful.
+     * @param bp The address of the boosting pool.
+     * @param taskId The unique identifier of the cancelled rebalance task.
+     */
     event CancleBoostTaskFailed(address bp, bytes32 taskId);
 
     /**
