@@ -257,6 +257,16 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP {
         return s_state.settlementToken().decimals();
     }
 
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 /* amount */
+    ) internal virtual override(ERC20) {
+        if (from != address(0) && to != address(0)) {
+            revert NonTransferable();
+        }
+    }
+
     /**
      * @inheritdoc IChromaticBPAutomate
      */

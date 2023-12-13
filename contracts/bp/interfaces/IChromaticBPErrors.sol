@@ -86,4 +86,8 @@ interface IChromaticBPErrors {
      * @dev Error indicating that boosting has not been settled.
      */
     error BoostingNotSettled();
+
+
+    error NonTransferable();
+
 }
