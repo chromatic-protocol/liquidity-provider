@@ -25,6 +25,7 @@ import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
+import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
@@ -240,6 +241,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 lpTokenAmount: lpTokenMint,
                 keeperFee: keeperFee
             });
+            try
+                IChromaticLPCallback(receipt.provider).claimedCallback(
+                    receipt.id,
+                    netAmount,
+                    lpTokenMint,
+                    keeperFee
+                )
+            {} catch {}
         } else {
             emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }
@@ -331,13 +340,22 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
 
             SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawingAmount);
 
-            // burn LPToken requested\
+            // burn LPToken requested
             if (burningAmount > 0) {
                 _burn(address(this), burningAmount);
             }
             if (remainingAmount > 0) {
                 SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
             }
+            try
+                IChromaticLPCallback(receipt.provider).withdrawnCallback(
+                    receipt.id,
+                    burningAmount,
+                    withdrawingAmount,
+                    remainingAmount,
+                    keeperFee
+                )
+            {} catch {}
         } else {
             emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }
