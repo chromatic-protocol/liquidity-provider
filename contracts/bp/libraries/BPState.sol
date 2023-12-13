@@ -38,6 +38,18 @@ enum BPExec {
     SETTLED
 }
 
+/**
+ * @title BPStatus
+ * @dev An enumeration representing the status of a Chromatic Boosting Pool.
+ *
+ * @param UPCOMING The boosting pool is in the upcoming status.
+ * @param DEPOSITABLE Deposits can be made to the boosting pool.
+ * @param WAIT_BOOST Waiting for boosting task execution.
+ * @param WAIT_SETTLE Waiting for settling boosting tasks.
+ * @param LOCKUP The lock-up period is active.
+ * @param CLAIMABLE The boosting pool is in the claimable status.
+ * @param REFUNDABLE Refunds can be initiated.
+ */
 enum BPStatus {
     UPCOMING,
     DEPOSITABLE,

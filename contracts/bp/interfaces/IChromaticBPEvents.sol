@@ -34,7 +34,6 @@ interface IChromaticBPEvents {
      */
     event BPFullyRaised(uint256 totalRaised);
 
-
     /**
      * @dev Emitted when the task of boosting LP is created.
      */
@@ -51,5 +50,9 @@ interface IChromaticBPEvents {
      */
     event BPSettleUpdated(uint256 totalLPToken);
 
+    /**
+     * @dev Emitted when the total reward is set.
+     * @param totalReward The total reward amount.
+     */
     event SetTotalReward(uint256 totalReward);
 }

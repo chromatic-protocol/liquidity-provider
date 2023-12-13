@@ -66,11 +66,17 @@ contract ChromaticBPFactory is Ownable, IChromaticBPFactory {
         return _bpSet.values();
     }
 
+    /**
+     * @inheritdoc IChromaticBPFactory
+     */
     function setAutomateBP(IAutomateBP automate) public override onlyOwner {
         emit SetAutomateBP(address(automate));
         _automateBP = automate;
     }
 
+    /**
+     * @inheritdoc IChromaticBPFactory
+     */
     function getAutomateBP() external view override returns (IAutomateBP automate) {
         return _automateBP;
     }

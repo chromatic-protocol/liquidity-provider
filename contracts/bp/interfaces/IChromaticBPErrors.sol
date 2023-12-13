@@ -87,7 +87,13 @@ interface IChromaticBPErrors {
      */
     error BoostingNotSettled();
 
+    /**
+     * @dev Error indicating that tokens are non-transferable.
+     */
     error NonTransferable();
 
+    /**
+     * @dev Error indicating that LP-related function is not called.
+     */
     error NotLPCalled();
 }
