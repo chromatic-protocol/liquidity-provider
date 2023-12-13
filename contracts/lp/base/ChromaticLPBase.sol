@@ -254,6 +254,13 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     }
 
     /**
+     * @inheritdoc IChromaticLPLens
+     */
+    function longShortInfo() external view returns (int8) {
+        return s_state.longShortInfo();
+    }
+
+    /**
      * @inheritdoc IChromaticLPMeta
      */
     function setLpName(string memory newName) external onlyOwner {

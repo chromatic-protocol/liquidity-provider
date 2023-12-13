@@ -89,4 +89,10 @@ interface IChromaticLPLens is IChromaticLPConfigLens {
      * Retrieves the pending CLB token balances that are pending removal from the liquidity provider.
      */
     function pendingRemoveClbBalances() external view returns (uint256[] memory pendingBalances);
+
+    /**
+     * @dev Retrieves information about the target of liquidity.
+     * @return longShortInfo An integer representing long (1), short (-1), or both side(0).
+     */
+    function longShortInfo() external view returns (int8);
 }

@@ -207,4 +207,24 @@ library LPStateValueLib {
             }
         }
     }
+
+    /**
+     * @dev Retrieves information about the target of liquidity with the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return An integer representing long (1), short (-1), or both side(0).
+     */
+    function longShortInfo(LPState storage s_state) internal view returns (int8) {
+        //slither-disable-next-line uninitialized-local
+        int8 long; // = 0
+        //slither-disable-next-line uninitialized-local
+        int8 short; // = 0
+        for (uint256 i; i < s_state.binCount(); ) {
+            if (s_state.feeRates[i] > 0) long = 1;
+            else if (s_state.feeRates[i] < 0) short = -1;
+            unchecked {
+                ++i;
+            }
+        }
+        return long + short;
+    }
 }
