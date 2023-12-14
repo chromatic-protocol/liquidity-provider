@@ -347,8 +347,7 @@ export class DeployTool {
   }
 
   async verify(options: any) {
-    // FIXME
-    if (!this.hre.network.tags.local && !this.hre.network.tags.mantle) {
+    if (!this.hre.network.tags.local) {
       try {
         await this.hre.run('verify:verify', options)
       } catch (e) {

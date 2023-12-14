@@ -62,8 +62,6 @@
   },
   "scripts": {
     "anvil:arbitrum": "hardhat --network anvil_arbitrum --config hardhat.repl.config.ts",
-    "anvil:mantle": "hardhat --network anvil_mantle --config hardhat.repl.config.ts",
-    "arbitrum_goerli": "hardhat --network arbitrum_goerli --config hardhat.repl.config.ts",
-    "mantle_testnet": "hardhat --network mantle_testnet --config hardhat.repl.config.ts"
+    "arbitrum_sepolia": "hardhat --network arbitrum_sepolia --config hardhat.repl.config.ts"
   }
 }
