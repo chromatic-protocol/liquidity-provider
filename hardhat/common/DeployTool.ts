@@ -212,7 +212,13 @@ export class DeployTool {
       from: this.deployer,
       args: [config.automateConfig]
     })
-
+    if (config.feeRates.length != config.distributionRates.length) {
+      console.log('feeRates:\n', chalk.red(JSON.stringify(config.feeRates, null)))
+      console.log('distributionRates:\n', chalk.red(JSON.stringify(config.distributionRates, null)))
+      throw new Error(
+        `check feeRates and distributionRates pair, ${config.feeRates.length}, ${config.distributionRates.length}`
+      )
+    }
     const args = [
       logicAddress,
       config.meta,

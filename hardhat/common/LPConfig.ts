@@ -53,9 +53,10 @@ export function getDefaultLPConfigs(): LPConfig[] {
       const distInfo = getSqrtDistributionConfig(
         info.startLevel,
         info.endLevel,
-        feeRates.length,
-        info.isLongShorts[i]
+        info.isLongShorts[i],
+        info.isLongShorts[i] === 0 ? feeRates.length / 2 : feeRates.length
       )
+      console.assert(feeRates.length === distInfo.distributionRates.length)
       const config = {
         meta: {
           lpName: info.lpName,
