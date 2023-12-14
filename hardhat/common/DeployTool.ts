@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
+const prompt = require('prompt-sync')({ sigint: true })
 
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
 import { DEPLOYED } from '~/hardhat/common/DeployedStore'
@@ -132,13 +133,19 @@ export class DeployTool {
     lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
     const lpDeployed: LPDeployedResultMap = {}
 
+    let i = 0
     for (let market of markets) {
       const deployedResults = []
       for (let lpConfig of lpConfigs) {
         const config = this.adjustLPConfig(market, lpConfig)
-
-        const deployed = await this.deployLP(market.address, config, false)
-        deployedResults.push(deployed)
+        console.log(`\n\n${i++}th LP`)
+        try {
+          const deployed = await this.deployLP(market.address, config, false)
+          deployedResults.push(deployed)
+        } catch {
+          console.log(`skipped`)
+          continue
+        }
       }
 
       lpDeployed[market.address] = deployedResults
@@ -230,6 +237,12 @@ export class DeployTool {
       config.distributionRates,
       config.automateConfig
     ]
+
+    const input = prompt('proceed? (y/n)', 'y')
+    if (input?.toLowerCase() === 'n') {
+      throw new Error('user rejected')
+    }
+
     const result = await this.deploy('ChromaticLP', {
       from: this.deployer,
       args: args
