@@ -36,7 +36,6 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
         _initialize(lpMeta, config, _feeRates, _distributionRates);
-        createRebalanceTask();
     }
 
     /**

@@ -4,7 +4,7 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
 import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
-import { ChromaticLPRegistry } from '~/typechain-types'
+import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
 
 import { formatEther } from 'ethers'
 import { getSDKClient } from '~/hardhat/common/Client'
@@ -237,6 +237,11 @@ export class DeployTool {
     await this.verify({ address: result.address, constructorArguments: args })
 
     DEPLOYED.saveLP(result.address as AddressType, marketAddress as AddressType)
+
+    const lpContract = ChromaticLP__factory.connect(result.address, this.signer)
+
+    console.log(chalk.cyan(`createRebalanceTask`))
+    await (await lpContract.createRebalanceTask()).wait()
 
     if (config.initialLiquidity) {
       try {
