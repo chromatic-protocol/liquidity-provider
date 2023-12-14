@@ -34,16 +34,6 @@
     chalk "^2.4.2"
     js-tokens "^4.0.0"
 
-"@chainlink/contracts@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.6.1.tgz#8842b57e755793cbdbcbc45277fb5d179c993e19"
-  integrity sha512-EuwijGexttw0UjfrW+HygwhQIrGAbqpf1ue28R55HhWMHBzphEH0PhWm8DQmFfj5OZNy8Io66N4L0nStkZ3QKQ==
-  dependencies:
-    "@eth-optimism/contracts" "^0.5.21"
-    "@openzeppelin/contracts" "~4.3.3"
-    "@openzeppelin/contracts-upgradeable" "^4.7.3"
-    "@openzeppelin/contracts-v0.7" "npm:@openzeppelin/contracts@v3.4.2"
-
 "@chainlink/contracts@^0.8.0":
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.8.0.tgz#4050c83c8b1603ffb0fd6ab99f1d9ea9db2c37de"
@@ -90,10 +80,10 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.279":
-  version "0.0.1-rc.279"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.279.tgz#a7d7adb1059d8205a13597e05237e551337bba11"
-  integrity sha512-f2hsaZeLNAv/t/yrS1teOPh7fXgIG1jpOaErHJuItJF7jhNp5r9jTIGjpU1Weq5eUDaY59B4iZyeV8BHhcnSrw==
+"@chromatic-protocol/contracts@^0.0.1-rc.283":
+  version "0.0.1-rc.283"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.283.tgz#85a8dc9970e3ce268dc0e64644602b793c35ba47"
+  integrity sha512-OiVR6qXh8JaAyWq9VjXQsNxqwVOV0ptxjl8LIpUekNug/Bbrg9wT4q6KS4D8fDVWbiiaBkdcrPHaV1USgAfv8w==
   dependencies:
     "@chainlink/contracts" "^0.8.0"
     "@openzeppelin/contracts" "^4.9.3"
@@ -116,10 +106,10 @@
   dependencies:
     viem "^1.5.0"
 
-"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.165":
-  version "0.1.0-rc.165"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.165.tgz#b4036c524b37b501388b777d1a5b38cd01793440"
-  integrity sha512-vxMsqyTXsrKe4U1h47TGbjztyFjDGmnsrQXN7IBnWfuRUsQM+a0YRbz1fCsS/E3joDeGrFBR1sgdFJE0wwki9w==
+"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.167":
+  version "0.1.0-rc.167"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.167.tgz#aead2481e8e7c4b92950e69ddf87d3cda097a8fb"
+  integrity sha512-XGX5UwzXrAl2aOsrF13JLxfXTSN3X/6Qam2bpRR5lGCZJDpZhNCgi/dJZ2pHIX1YLL3sQm3pu6TENVU1lVwMXQ==
 
 "@colors/colors@1.5.0":
   version "1.5.0"
@@ -996,10 +986,10 @@
   resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-toolbox/-/hardhat-toolbox-3.0.0.tgz#83e2c28a745aa4eb1236072166367b0de68b4c76"
   integrity sha512-MsteDXd0UagMksqm9KvcFG6gNKYNa3GGNCy73iQ6bEasEgg2v8Qjl6XA5hjs8o5UD5A3153B6W2BIVJ8SxYUtA==
 
-"@nomicfoundation/hardhat-verify@^1.0.4":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-verify/-/hardhat-verify-1.1.1.tgz#6a433d777ce0172d1f0edf7f2d3e1df14b3ecfc1"
-  integrity sha512-9QsTYD7pcZaQFEA3tBb/D/oCStYDiEVDN7Dxeo/4SCyHRSm86APypxxdOMEPlGmXsAvd+p1j/dTODcpxb8aztA==
+"@nomicfoundation/hardhat-verify@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-verify/-/hardhat-verify-2.0.2.tgz#085f8509a335db44ea3bf39a8561f1ce0462fea2"
+  integrity sha512-SXmLPHrfh801m0Dj/8v4stAM6OI0tFktDlWe1pn3k43bCCjn5TGqcVy7hCtauG8/AlQWNZhR+01qTovSSVTvXQ==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@ethersproject/address" "^5.0.2"
@@ -1177,7 +1167,7 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.7.3.tgz#f1d606e2827d409053f3e908ba4eb8adb1dd6995"
   integrity sha512-+wuegAMaLcZnLCJIvrVUDzA9z/Wp93f0Dla/4jJvIhijRrPabjQbZe6fWiECLaJyfn5ci9fqf9vTw3xpQOad2A==
 
-"@openzeppelin/contracts-upgradeable@^4.7.3", "@openzeppelin/contracts-upgradeable@^4.9.3":
+"@openzeppelin/contracts-upgradeable@^4.9.3":
   version "4.9.3"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.9.3.tgz#ff17a80fb945f5102571f8efecb5ce5915cc4811"
   integrity sha512-jjaHAVRMrE4UuZNfDwjlLGDxTHWIOwTJS2ldnc278a0gevfXfPr8hxKEVBGFBE96kl2G3VHDZhUimw/+G3TG2A==

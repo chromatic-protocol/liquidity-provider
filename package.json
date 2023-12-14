@@ -3,15 +3,15 @@
   "version": "0.0.1-rc.43",
   "license": "MIT",
   "dependencies": {
-    "@chainlink/contracts": "^0.6.1",
-    "@chromatic-protocol/contracts": "^0.0.1-rc.279",
+    "@chainlink/contracts": "^0.8.0",
+    "@chromatic-protocol/contracts": "^0.0.1-rc.283",
     "@openzeppelin/contracts": "^4.9.3",
     "@uniswap/v3-periphery": "^1.4.4"
   },
   "devDependencies": {
     "@chromatic-protocol/hardhat-package": "^0.0.1-dev.18",
     "@chromatic-protocol/liquidity-provider-sdk": "^1.0.1-rc.30",
-    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.165",
+    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.167",
     "@gelatonetwork/automate-sdk": "^3.0.0",
     "@graphprotocol/graph-cli": "^0.58.0",
     "@graphprotocol/graph-ts": "^0.31.0",
@@ -21,7 +21,7 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^1.0.0",
-    "@nomicfoundation/hardhat-verify": "^1.0.4",
+    "@nomicfoundation/hardhat-verify": "^2.0.2",
     "@nomicfoundation/hardhat-viem": "^1.0.0",
     "@typechain/ethers-v6": "^0.4.2",
     "@typechain/hardhat": "^8.0.2",
