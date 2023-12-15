@@ -21,6 +21,28 @@ import type {
 } from './types'
 
 export type * from './types'
+
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms))
+}
+
+function retry(f: any, maxRetry = 10) {
+  async function _retry(...args: any[]) {
+    let waitInterval = 1000
+    await sleep(100)
+    for (let i = 0; i < maxRetry; i++) {
+      try {
+        return f(...args)
+      } catch {
+        await sleep(waitInterval)
+        waitInterval *= 2
+        continue
+      }
+    }
+  }
+  return _retry
+}
+
 export class DeployTool {
   constructor(
     public readonly hre: HardhatRuntimeEnvironment,
@@ -49,7 +71,7 @@ export class DeployTool {
   }
 
   private get _deploy() {
-    return this.hre.deployments.deploy
+    return retry(this.hre.deployments.deploy)
   }
 
   private async deploy(name: string, options: DeployOptions): Promise<DeployResult> {
@@ -89,6 +111,7 @@ export class DeployTool {
     })
 
     DEPLOYED.saveRegistry(res.address as AddressType)
+    if (res.newlyDeployed)
     await this.verify({ address: res.address, constructorArguments: [factoryAddress] })
 
     return res
@@ -106,7 +129,7 @@ export class DeployTool {
     })
     DEPLOYED.saveBPFactory(res.address as AddressType)
 
-    await this.verify({ address: res.address, constructorArguments: [] })
+    if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: [] })
 
     return res
   }
@@ -114,7 +137,7 @@ export class DeployTool {
   async deployBP(bpConfig: BPConfigStruct) {
     console.log(chalk.cyan(`deploying BP:`), bpConfig)
     const factory = await this.getBPFactory()
-    const tx = await factory.createBP(bpConfig)
+    const tx = await retry(factory.createBP)(bpConfig)
     await tx.wait()
     const filter = factory.filters.ChromaticBPCreated(bpConfig.lp)
     const logs = await factory.queryFilter(filter)
@@ -177,27 +200,27 @@ export class DeployTool {
   async deployAutomateLP(): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying AutomateLP`))
     const args = [getAutomateAddress(this.hre)]
-    const result = await this.deploy('AutomateLP', {
+    const res = await this.deploy('AutomateLP', {
       from: this.deployer,
       args: args
     })
-    await this.verify({ address: result.address, constructorArguments: args })
-    DEPLOYED.saveAutomateLP(result.address as AddressType)
+    if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: args })
+    DEPLOYED.saveAutomateLP(res.address as AddressType)
 
-    return result
+    return res
   }
 
   async deployAutomateBP(): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying AutomateBP`))
     const args = [getAutomateAddress(this.hre)]
-    const result = await this.deploy('AutomateBP', {
+    const res = await this.deploy('AutomateBP', {
       from: this.deployer,
       args: args
     })
-    await this.verify({ address: result.address, constructorArguments: args })
-    DEPLOYED.saveAutomateBP(result.address as AddressType)
+    if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: args })
+    DEPLOYED.saveAutomateBP(res.address as AddressType)
 
-    return result
+    return res
   }
 
   async deployLP(marketAddress: string, lpConfig: LPConfig, adjust = true): Promise<DeployResult> {
@@ -254,7 +277,7 @@ export class DeployTool {
     const lpContract = ChromaticLP__factory.connect(result.address, this.signer)
 
     console.log(chalk.cyan(`createRebalanceTask`))
-    await (await lpContract.createRebalanceTask()).wait()
+    await (await retry(lpContract.createRebalanceTask)()).wait()
 
     if (config.initialLiquidity) {
       try {
@@ -279,7 +302,7 @@ export class DeployTool {
       throw new Error('not enough token to add liquidity')
     }
 
-    await client.lp().addLiquidity(lpAddress, amount)
+    await retry(client.lp().addLiquidity)(lpAddress, amount)
   }
 
   async removeLiquidity(lpAddress: AddressType, amount: bigint) {
@@ -288,7 +311,7 @@ export class DeployTool {
     let lpTokenBalance = await client.lp().balanceOf(lpAddress, address)
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
-    await client.lp().removeLiquidity(lpAddress, amount)
+    await retry(client.lp().removeLiquidity)(lpAddress, amount)
   }
 
   async removeLiquidityAll(lpAddress: AddressType) {
@@ -362,12 +385,12 @@ export class DeployTool {
     if (!registry) registry = await this.getRegistry()
 
     console.log(chalk.green(`✨ registering lpAddress to registry: ${lpAddress}`))
-    await (await registry.register(lpAddress)).wait()
+    await (await retry(registry.register)(lpAddress)).wait()
   }
 
   async unregisterLP(lpAddress: string, registry?: ChromaticLPRegistry) {
     if (!registry) registry = await this.getRegistry()
-    await (await registry.unregister(lpAddress)).wait()
+    await (await retry(registry.unregister)(lpAddress)).wait()
   }
 
   async verify(options: any) {
