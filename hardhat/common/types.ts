@@ -37,8 +37,6 @@ export interface SettlementToken {
 }
 export interface MarketInfo {
   address: AddressType
-  oracleValue: IOracleProvider.OracleVersionStructOutput
-  description: string
   settlementToken: SettlementToken
 }
 

@@ -8,7 +8,6 @@ import { Helper } from '~/hardhat/common/Helper'
 import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
 
 import { formatEther } from 'ethers'
-import { getSDKClient } from '~/hardhat/common/Client'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
 import { getAutomateAddress, getAutomateConfig } from './getAutomateConfig'
@@ -59,15 +58,14 @@ export class DeployTool {
     await tool.initialize()
     return tool
   }
-
+  get c() {
+    return this.helper.c
+  }
   get deployer() {
     return this.helper.signerAddress
   }
   get signer() {
     return this.helper.signer
-  }
-  get sdk() {
-    return this.helper.sdk
   }
 
   private get _deploy() {
@@ -98,10 +96,12 @@ export class DeployTool {
     for (let deployed of [].concat(...Object.values(result))) {
       await this.registerLP(deployed['address'])
     }
+    await this.deployAutomateBP()
+    await this.deployBPFactory()
   }
 
   async deployRegistry(): Promise<DeployResult> {
-    const factory = this.helper.marketFactory.contracts().marketFactory
+    const factory = this.c.marketFactory
     const factoryAddress = await factory.getAddress()
     console.log(`factoryAddress: ${factoryAddress}`)
 
@@ -136,7 +136,7 @@ export class DeployTool {
 
   async deployBP(bpConfig: BPConfigStruct) {
     console.log(chalk.cyan(`deploying BP:`), bpConfig)
-    const factory = await this.getBPFactory()
+    const factory = await this.c.bpFactory
     const tx = await retry(factory.createBP)(bpConfig)
     await tx.wait()
     const filter = factory.filters.ChromaticBPCreated(bpConfig.lp)
@@ -152,7 +152,7 @@ export class DeployTool {
   }
 
   async deployAllLP(lpConfigs?: LPConfig[]): Promise<LPDeployedResultMap> {
-    const markets = await this.getMarkets()
+    const markets = await this.helper.markets()
     lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
     const lpDeployed: LPDeployedResultMap = {}
 
@@ -163,7 +163,7 @@ export class DeployTool {
         const config = this.adjustLPConfig(market, lpConfig)
         console.log(`\n\n${i++}th LP`)
         try {
-          const deployed = await this.deployLP(market.address, config, false)
+          const deployed = await this.deployLP(market.address, config, false, market)
           deployedResults.push(deployed)
         } catch {
           console.log(`skipped`)
@@ -223,14 +223,20 @@ export class DeployTool {
     return res
   }
 
-  async deployLP(marketAddress: string, lpConfig: LPConfig, adjust = true): Promise<DeployResult> {
+  async deployLP(
+    marketAddress: string,
+    lpConfig: LPConfig,
+    adjust = true,
+    marketInfo: MarketInfo | undefined = undefined
+  ): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying LP for market: ${marketAddress}`))
     let config = lpConfig
-    if (adjust) {
-      const marketInfo: MarketInfo = (await this.getMarkets()).find(
+    if (!marketInfo) {
+      marketInfo = (await this.helper.markets()).find(
         (x) => x.address == marketAddress
       ) as MarketInfo
-
+    }
+    if (adjust) {
       config = this.adjustLPConfig(marketInfo, lpConfig)
     }
 
@@ -292,74 +298,48 @@ export class DeployTool {
   }
 
   async addLiquidity(lpAddress: AddressType, amount: bigint) {
-    const client = await getSDKClient(this.hre)
-    const address = client.walletClient!.account!.address
-    let token = await client.lp().contracts().settlementToken(lpAddress)
-    const settlementTokenBalance = await token.read.balanceOf([address])
-    console.log(`  - settlementTokenBalance: ${settlementTokenBalance}`)
-    if (amount > settlementTokenBalance) {
+    const lp = this.c.lp(lpAddress)
+    const tokenAddress = await lp.settlementToken()
+    const token = this.c.erc20(tokenAddress)
+    const balance = await token.balanceOf(this.deployer)
+
+    console.log(` - settlementTokenBalance: ${balance}`)
+    if (amount > balance) {
       // mint seperately
       throw new Error('not enough token to add liquidity')
+    } else {
+      console.log('enough balance')
     }
 
-    await retry(client.lp().addLiquidity)(lpAddress, amount)
+    await (await retry(token.approve)(lpAddress, amount)).wait()
+
+    const tx = await retry(lp.addLiquidity)(amount, this.deployer)
+    await tx.wait()
   }
 
   async removeLiquidity(lpAddress: AddressType, amount: bigint) {
-    const client = await getSDKClient(this.hre)
-    const address = client.walletClient!.account!.address
-    let lpTokenBalance = await client.lp().balanceOf(lpAddress, address)
+    const lp = this.c.lp(lpAddress)
+    // const tokenAddress = await lp.lpToken()
+    const token = this.c.erc20(lpAddress) // lp token
+    const lpTokenBalance = await token.balanceOf(this.deployer)
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
-    await retry(client.lp().removeLiquidity)(lpAddress, amount)
+    const tx = await retry(lp.removeLiquidity)(amount, this.deployer)
+    await tx.wait()
   }
 
   async removeLiquidityAll(lpAddress: AddressType) {
-    const client = await getSDKClient(this.hre)
-    const address = client.walletClient!.account!.address
-    let lpTokenBalance = await client.lp().balanceOf(lpAddress, address)
+    const lp = this.c.lp(lpAddress)
+    const token = this.c.erc20(lpAddress) // lp token
+    const lpTokenBalance = await token.balanceOf(this.deployer)
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
-    await client.lp().removeLiquidity(lpAddress, lpTokenBalance)
-  }
-
-  async getMarkets(): Promise<MarketInfo[]> {
-    const marketFactory = this.sdk.marketFactory()
-
-    const allMarkets = []
-    const tokens = await marketFactory.registeredSettlementTokens()
-    // console.log(chalk.green(`✨ registered tokens of marketFactory: ${tokens}`))
-    if (tokens.length == 0) {
-      throw new Error('settlementToken not found')
-    }
-
-    for (let token of tokens) {
-      console.log(
-        chalk.green(`✨ registered token of marketFactory: ${token.name}, ${token.address}`)
-      )
-      const markets = await marketFactory.getMarkets(token.address)
-      allMarkets.push(
-        ...markets.map((x) => {
-          return { ...x, settlementToken: token }
-        })
-      )
-    }
-
-    return allMarkets as MarketInfo[]
-  }
-
-  async getRegistry() {
-    const registryDeployed = this.helper.deployed.registryAddress
-    if (!registryDeployed) throw new Error('registry not found')
-    return this.helper.registry
-  }
-
-  async getBPFactory() {
-    return this.helper.bpFactory
+    const tx = await retry(lp.removeLiquidity)(lpTokenBalance, this.deployer)
+    await tx.wait()
   }
 
   async registerAllLP() {
-    let registry = await this.getRegistry()
+    let registry = this.c.lpRegistry
 
     if (!this.hre.network.name.startsWith('anvil')) throw new Error('local network only')
     for (const lpAddress of this.helper.lpAddresses) {
@@ -368,7 +348,7 @@ export class DeployTool {
   }
 
   async unregisterAllLP() {
-    let registry = await this.getRegistry()
+    let registry = await this.c.lpRegistry
 
     for (const lpAddress of this.helper.lpAddresses) {
       await this.unregisterLP(lpAddress, registry)
@@ -382,14 +362,14 @@ export class DeployTool {
   }
 
   async registerLP(lpAddress: string, registry?: ChromaticLPRegistry) {
-    if (!registry) registry = await this.getRegistry()
+    if (!registry) registry = this.c.lpRegistry
 
     console.log(chalk.green(`✨ registering lpAddress to registry: ${lpAddress}`))
     await (await retry(registry.register)(lpAddress)).wait()
   }
 
   async unregisterLP(lpAddress: string, registry?: ChromaticLPRegistry) {
-    if (!registry) registry = await this.getRegistry()
+    if (!registry) registry = await this.c.lpRegistry
     await (await retry(registry.unregister)(lpAddress)).wait()
   }
 
@@ -410,13 +390,13 @@ export class DeployTool {
   }
 
   async createRebalanceTask(lpAddress: string) {
-    const lp = this.helper.lp(lpAddress)
+    const lp = this.c.lp(lpAddress)
     console.log(chalk.yellow(`🔧 createRebalanceTask...: ${lpAddress}`))
     await (await lp.createRebalanceTask()).wait()
   }
 
   async cancelRebalanceTask(lpAddress: string) {
-    const lp = this.helper.lp(lpAddress)
+    const lp = this.c.lp(lpAddress)
     console.log(chalk.yellow(`🔧 cancelRebalanceTask...: ${lpAddress}`))
     await (await lp.cancelRebalanceTask()).wait()
   }

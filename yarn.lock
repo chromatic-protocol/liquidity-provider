@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@adraffy/ens-normalize@1.10.0":
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.0.tgz#d2a39395c587e092d77cbbc80acf956a54f38bf7"
+  integrity sha512-nA9XHtlAkYfJxY7bce8DcN7eKxWWCWkU+1GR9d+U6MbNpfwQp8TI7vqOsBsMcHoT4mBu2kypKoSKnghEzOOq5Q==
+
 "@adraffy/ens-normalize@1.9.2":
   version "1.9.2"
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.9.2.tgz#60111a5d9db45b2e5cbb6231b0bb8d97e8659316"
@@ -100,16 +105,16 @@
     solidity-docgen "^0.6.0-beta.35"
 
 "@chromatic-protocol/liquidity-provider-sdk@^1.0.1-rc.30":
-  version "1.0.1-rc.30"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/liquidity-provider-sdk/-/liquidity-provider-sdk-1.0.1-rc.30.tgz#edeab6d2a5b45c4dd0751475c32dbea472bbe66a"
-  integrity sha512-TM4z8IEJwDMhgrcXy5l5sxgchIWLN8M8cLqVij6ZoPsv+IjFh5imIOn1GjJOclPQEw+DXw0T583MnOE5is3TfA==
+  version "1.0.1-rc.38"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/liquidity-provider-sdk/-/liquidity-provider-sdk-1.0.1-rc.38.tgz#139e1232e59b45b525026a6d3cb06322d4168247"
+  integrity sha512-4Hdls420Ns0xgUGpcM73nLugM+2VnEibdWJO5AHDxZ++AFZWjJeKE5/IldFZFWu71UnE58jRnLvQCg/GL9c5Pw==
   dependencies:
     viem "^1.5.0"
 
-"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.167":
-  version "0.1.0-rc.167"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.167.tgz#aead2481e8e7c4b92950e69ddf87d3cda097a8fb"
-  integrity sha512-XGX5UwzXrAl2aOsrF13JLxfXTSN3X/6Qam2bpRR5lGCZJDpZhNCgi/dJZ2pHIX1YLL3sQm3pu6TENVU1lVwMXQ==
+"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.168":
+  version "0.1.0-rc.168"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.168.tgz#46a3bd23f16d88368e37902a5fde4d827a5c2a0c"
+  integrity sha512-mganJncHkEvmO4sv5P+ao7ix59rv54P6YsHCoit5GN/PGvaolNHl53VTNdnOw+1JwsxpF9InkM036uykMcuBKA==
 
 "@colors/colors@1.5.0":
   version "1.5.0"
@@ -8019,12 +8024,26 @@ viem@^1.0.0:
     isomorphic-ws "5.0.0"
     ws "8.13.0"
 
-viem@^1.15.1, viem@^1.5.0:
+viem@^1.15.1:
   version "1.16.6"
   resolved "https://registry.yarnpkg.com/viem/-/viem-1.16.6.tgz#78118c9269506a59e2bc4deab13f1646e113d3fc"
   integrity sha512-jcWcFQ+xzIfDwexwPJRvCuCRJKEkK9iHTStG7mpU5MmuSBpACs4nATBDyXNFtUiyYTFzLlVEwWkt68K0nCSImg==
   dependencies:
     "@adraffy/ens-normalize" "1.9.4"
+    "@noble/curves" "1.2.0"
+    "@noble/hashes" "1.3.2"
+    "@scure/bip32" "1.3.2"
+    "@scure/bip39" "1.2.1"
+    abitype "0.9.8"
+    isows "1.0.3"
+    ws "8.13.0"
+
+viem@^1.5.0:
+  version "1.20.0"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-1.20.0.tgz#25cb019831f46aeecf2c8c5cdbad41e4f79b2e32"
+  integrity sha512-yPjV9pJr10xi28C/9LEvs5zdZNEMiru3Kz7nufghVYABJAfeSkoZQXb6b23n7MscS7c55JO5nmUI3xKkd9g6Yg==
+  dependencies:
+    "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
     "@noble/hashes" "1.3.2"
     "@scure/bip32" "1.3.2"
