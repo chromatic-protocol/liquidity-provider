@@ -112,7 +112,7 @@ export class DeployTool {
 
     DEPLOYED.saveRegistry(res.address as AddressType)
     if (res.newlyDeployed)
-    await this.verify({ address: res.address, constructorArguments: [factoryAddress] })
+      await this.verify({ address: res.address, constructorArguments: [factoryAddress] })
 
     return res
   }
@@ -122,14 +122,14 @@ export class DeployTool {
     if (!DEPLOYED.automateBP) {
       throw new Error('deploy AutomateBP first')
     }
-
+    const args = [DEPLOYED.automateBP]
     const res = await this.deploy('ChromaticBPFactory', {
       from: this.deployer,
-      args: [DEPLOYED.automateBP]
+      args: args
     })
     DEPLOYED.saveBPFactory(res.address as AddressType)
 
-    if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: [] })
+    if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: args })
 
     return res
   }
