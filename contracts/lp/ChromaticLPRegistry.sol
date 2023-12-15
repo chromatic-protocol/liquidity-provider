@@ -28,7 +28,7 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     /**
      * @inheritdoc IChromaticLPRegistry
      */
-    function register(IChromaticLP lp) external onlyOwner {
+    function register(IChromaticLP lp) external override onlyOwner {
         address market = lp.market();
 
         bool success = _lpsByMarket[market].add(address(lp));
@@ -44,7 +44,7 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     /**
      * @inheritdoc IChromaticLPRegistry
      */
-    function unregister(IChromaticLP lp) external onlyOwner {
+    function unregister(IChromaticLP lp) external override onlyOwner {
         address market = lp.market();
 
         bool success = _lpsByMarket[market].remove(address(lp));
@@ -60,21 +60,24 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     /**
      * @inheritdoc IChromaticLPRegistry
      */
-    function lpList() external view returns (address[] memory lpAddresses) {
+    function lpList() external view override returns (address[] memory lpAddresses) {
         return _lpsAll.values();
     }
 
     /**
      * @inheritdoc IChromaticLPRegistry
      */
-    function lpListByMarket(address market) external view returns (address[] memory) {
+    function lpListByMarket(address market) external view override returns (address[] memory) {
         return _lpsByMarket[market].values();
     }
 
     /**
      * @inheritdoc IChromaticLPRegistry
      */
-    function lpListBySettlementToken(address token) external view returns (address[] memory) {
+    function lpListBySettlementToken(
+        address token
+    ) external view override returns (address[] memory) {
         return _lpsBySettlementToken[token].values();
     }
+
 }

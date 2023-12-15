@@ -70,4 +70,5 @@ interface IChromaticLPRegistry {
     function lpListBySettlementToken(
         address token
     ) external view returns (address[] memory lpAddresses);
+
 }

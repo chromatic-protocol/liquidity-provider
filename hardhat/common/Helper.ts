@@ -1,21 +1,12 @@
-import { ChromaticMarketFactory, Client as ClientSDK } from '@chromatic-protocol/sdk-ethers-v6'
+import chalk from 'chalk'
 import { Signer } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
-import {
-  ChromaticBPFactory,
-  ChromaticBPFactory__factory,
-  ChromaticLPRegistry,
-  ChromaticLPRegistry__factory,
-  IChromaticLP__factory,
-  IMate2AutomationRegistry__factory,
-  type IMate2AutomationRegistry
-} from '~/typechain-types'
+import { Contracts } from './Contracts'
 import { DEPLOYED, DeployedStore } from './DeployedStore'
-import { getAutomateAddress } from './getAutomateConfig'
-import { MarketInfo } from './types'
+import { AddressType, MarketInfo } from './types'
 export class Helper {
-  sdk: ClientSDK
   deployed: DeployedStore
+  c: Contracts
 
   static async createAsync(hre: HardhatRuntimeEnvironment, signerOrAddress: string | Signer) {
     let signer: Signer
@@ -36,13 +27,13 @@ export class Helper {
     public readonly signer: Signer,
     public readonly signerAddress: string
   ) {
-    this.sdk = new ClientSDK(this.networkName, this.signer)
 
     if (this.hre.network.tags.local) {
       this.deployed = DEPLOYED
     } else {
       this.deployed = new DeployedStore()
     }
+    this.c = new Contracts(hre, signer, this.deployed)
   }
 
   get networkName() {
@@ -58,13 +49,13 @@ export class Helper {
       try {
         const deployed = await this.hre.deployments.get('ChromaticLPRegistry')
         if (deployed?.address) {
-          this.deployed.saveRegistry(deployed.address)
+          this.deployed.saveRegistry(deployed.address as AddressType)
 
-          const registry = this.registry
+          const registry = this.c.lpRegistry
           const markets = await this.markets()
           for (const market of markets) {
             const lpAddresses = await registry.lpListByMarket(market.address)
-            lpAddresses.map((x) => this.deployed.saveLP(x, market.address))
+            lpAddresses.map((x) => this.deployed.saveLP(x as AddressType, market.address))
           }
         }
       } catch {
@@ -77,57 +68,59 @@ export class Helper {
     return this.hre.network.tags.local
   }
 
-  get marketFactory(): ChromaticMarketFactory {
-    return this.sdk.marketFactory()
-  }
-
-  get registry(): ChromaticLPRegistry {
-    const address = this.deployed.registry
-    if (!address) throw new Error('deployed registry not exist')
-    return ChromaticLPRegistry__factory.connect(address, this.signer)
-  }
-
-  get bpFactory(): ChromaticBPFactory {
-    const address = this.deployed.bpFactory
-    if (!address) throw new Error('deployed bpFactory not exist')
-    return ChromaticBPFactory__factory.connect(address, this.signer)
-  }
+  // get marketFactory(): ChromaticMarketFactory {
+  //   return this.sdk.marketFactory()
+  // }
 
   lpOfMarket(marketAddress: string, index: number) {
-    const addresses = this.deployed.lpOfMarket(marketAddress)
+    const addresses = this.deployed.lpOfMarket(marketAddress as AddressType)
     if (!addresses) throw new Error('no address')
-    return IChromaticLP__factory.connect(addresses[index], this.signer)
+    return this.c.lp(addresses[index])
   }
 
   lp(lpAddress: string) {
-    return IChromaticLP__factory.connect(lpAddress, this.signer)
+    return this.c.lp(lpAddress)
   }
 
   async settlementTokens() {
-    return await this.marketFactory.registeredSettlementTokens()
+    return await this.c.marketFactory.registeredSettlementTokens()
   }
 
   async markets(): Promise<MarketInfo[]> {
     const allMarkets = []
     const tokens = await this.settlementTokens()
+
     for (let token of tokens) {
-      const markets = await this.marketFactory.getMarkets(token.address)
-      allMarkets.push(
-        ...markets.map((x) => {
-          return { ...x, settlementToken: token }
+      const markets = await this.c.marketFactory.getMarketsBySettlmentToken(token)
+      
+      const erc20 = this.c.erc20(token)
+      const name = await erc20.name()
+      const decimals = await erc20.decimals()
+
+      console.log(chalk.green(`✨ registered token of marketFactory: ${name}, ${token}`))
+
+      const marketInfos = await Promise.all(
+        markets.map(async (x) => {
+          const market = this.c.market(x)
+          const settlementToken = await market.settlementToken()
+          return {
+            address: x,
+            settlementToken: {
+              name: name,
+              decimals: decimals,
+              address: settlementToken
+            }
+          } as MarketInfo
         })
       )
+      allMarkets.push(...marketInfos)
     }
-    return allMarkets as MarketInfo[]
+    return allMarkets
   }
 
   async marketAddresses(): Promise<string[]> {
     const infos = await this.markets()
     return infos.map((x) => x.address)
-  }
-
-  get automationRegistry(): IMate2AutomationRegistry {
-    return IMate2AutomationRegistry__factory.connect(getAutomateAddress(this.hre), this.signer)
   }
 
   get lpAddresses(): string[] {

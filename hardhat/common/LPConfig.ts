@@ -53,9 +53,10 @@ export function getDefaultLPConfigs(): LPConfig[] {
       const distInfo = getSqrtDistributionConfig(
         info.startLevel,
         info.endLevel,
-        feeRates.length,
-        info.isLongShorts[i]
+        info.isLongShorts[i],
+        info.isLongShorts[i] === 0 ? feeRates.length / 2 : feeRates.length
       )
+      console.assert(feeRates.length === distInfo.distributionRates.length)
       const config = {
         meta: {
           lpName: info.lpName,
@@ -66,7 +67,6 @@ export function getDefaultLPConfigs(): LPConfig[] {
           utilizationTargetBPS: info.utilizationTargetBPS,
           rebalanceBPS: 500,
           rebalanceCheckingInterval: 24 * 60 * 60, // 24 hours
-          settleCheckingInterval: 1 * 60, // 1 minutes
           automationFeeReserved: parseEther('2.0'), // default
           minHoldingValueToRebalance: parseEther('100.0')
         },

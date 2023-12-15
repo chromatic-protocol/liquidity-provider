@@ -107,4 +107,10 @@ interface IChromaticLPEvents {
      * @param keeperFee Fee paid to the keeper.
      */
     event RebalanceSettled(uint256 indexed receiptId, uint256 keeperFee);
+
+    /**
+     * @notice Emitted when the AutomateLP address is set.
+     * @param automate The address of the AutomateLP contract.
+     */
+    event SetAutomateLP(address automate);
 }

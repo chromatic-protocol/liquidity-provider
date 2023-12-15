@@ -11,47 +11,55 @@ import {Module, ModuleData} from "@chromatic-protocol/contracts/core/automation/
 import {IKeeperFeePayer} from "@chromatic-protocol/contracts/core/interfaces/IKeeperFeePayer.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
-import {IChromaticBP, IChromaticBPAction, IChromaticBPLens, IChromaticBPTask} from "~/bp/interfaces/IChromaticBP.sol";
-import {BPConfig, AutomateParam} from "~/bp/libraries/BPConfig.sol";
-import {BPState, BPPeriod, BPExec} from "~/bp/libraries/BPState.sol";
+import {IChromaticBP, IChromaticBPAction, IChromaticBPLens, IChromaticBPAutomate} from "~/bp/interfaces/IChromaticBP.sol";
+import {IChromaticBPFactory} from "~/bp/interfaces/IChromaticBPFactory.sol";
+import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
+
+import {BPConfig} from "~/bp/libraries/BPConfig.sol";
+import {BPState, BPPeriod, BPExec, BPStatus} from "~/bp/libraries/BPState.sol";
 import {BPStateLib} from "~/bp/libraries/BPState.sol";
 
 /**
  * @title ChromaticBP
  * @dev ChromaticBP is a contract representing a BP (boosting pool) for boosting liquidity of LP in the Chromatic Protocol.
  */
-contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
+contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallback {
     using BPStateLib for BPState;
     using Math for uint256;
 
     BPState s_state;
     uint256 constant MIN_PERIOD = 1 days;
+    IChromaticBPFactory immutable _factory;
 
     /**
      * @dev Modifier to restrict the execution of a function to only the designated automation account.
      */
     modifier onlyAutomation() virtual {
-        if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
+        if (msg.sender != address(s_state.getAutomateBP())) revert NotAutomationCalled();
+        _;
+    }
+
+    modifier verifyCallback() virtual {
+        if (address(s_state.targetLP()) != msg.sender) revert NotLPCalled();
         _;
     }
 
     /**
      * @dev Constructs the ChromaticBP contract.
      * @param config The configuration parameters for the ChromaticBP.
-     * @param automateParam The automation parameters for the ChromaticBP.
+     * @param bpFactory The ChromaticBPFactory.
      */
-    constructor(
-        BPConfig memory config,
-        AutomateParam memory automateParam
-    )
-        ERC20("", "")
-        AutomateReady(automateParam.automate, address(this), automateParam.opsProxyFactory)
-    {
+    constructor(BPConfig memory config, IChromaticBPFactory bpFactory) ERC20("", "") {
         _checkArgs(config);
-        s_state.config = config;
+
+        emit SetTotalReward(config.totalReward);
+
+        s_state.init(config);
+        _factory = bpFactory;
     }
 
     /**
@@ -63,7 +71,7 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         if (config.startTimeOfWarmup <= block.timestamp) {
             revert StartTimeError();
         }
-        if (config.durationOfWarmup < MIN_PERIOD) {
+        if (config.maxDurationOfWarmup < MIN_PERIOD) {
             revert InvalidWarmup();
         }
         if (config.durationOfLockup < MIN_PERIOD) {
@@ -80,34 +88,11 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
     /**
      * @dev Creates a boost LP task to automate the boosting process.
      */
-    function _createBoostLPTask() internal {
+    function _createBoostTask() internal {
         // check needToCreateBoostTask(s_state)
-        ModuleData memory moduleData = ModuleData({modules: new Module[](3), args: new bytes[](3)});
-        moduleData.modules[0] = Module.RESOLVER;
-        moduleData.modules[1] = Module.TIME;
-        moduleData.modules[2] = Module.PROXY;
-        moduleData.args[0] = abi.encode(address(this), abi.encodeCall(this.resolveBoostLPTask, ()));
-        moduleData.args[1] = abi.encode(uint128(s_state.endTimeOfWarmup()), uint128(60 * 60)); // 1 hour
-        moduleData.args[2] = bytes("");
-
-        bytes32 taskId = automate.createTask(
-            address(this),
-            abi.encodeCall(this.boostLPTask, ()),
-            moduleData,
-            ETH
-        );
-        s_state.setBoostTask(taskId);
-    }
-
-    /**
-     * @dev Cancels the existing boost LP task.
-     */
-    function _cancelBoostLPTask() internal {
-        bytes32 taskId = s_state.boostTaskId();
-        if (taskId != 0) {
-            s_state.setBoostTask(0);
-            automate.cancelTask(taskId);
-        }
+        IAutomateBP automate = _factory.getAutomateBP();
+        s_state.setAutomateBP(automate);
+        automate.createBoostTask();
     }
 
     /**
@@ -122,7 +107,6 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
             uint256 depositAmount = maxDepositable >= amount ? amount : maxDepositable;
             if (depositAmount > 0) {
                 emit BPDeposited(msg.sender, depositAmount);
-
                 SafeERC20.safeTransferFrom(
                     settlementToken(),
                     msg.sender,
@@ -132,8 +116,14 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
                 _mint(msg.sender, depositAmount);
                 s_state.addRaised(depositAmount);
 
+                if (depositAmount < amount) {
+                    emit BPFullyRaised(s_state.totalRaised());
+                    s_state.setStartTimeOfLockup(block.timestamp);
+                }
+
                 if (s_state.needToCreateBoostTask()) {
-                    _createBoostLPTask();
+                    emit BPBoostTaskCreated();
+                    _createBoostTask();
                 }
             } else {
                 revert FullyRaised();
@@ -165,16 +155,17 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
      * @inheritdoc IChromaticBPAction
      */
     function claimLiquidity() external override nonReentrant {
+        if (s_state.boostingExecStatus() == BPExec.NOT_EXECUTED) revert BoostingNotExecuted();
+        if (s_state.boostingExecStatus() == BPExec.EXECUTED) revert BoostingNotSettled();
+
         //slither-disable-next-line timestamp
         if (block.timestamp <= s_state.endTimeOfLockup()) revert ClaimTimeError();
-        if (s_state.boostingExecStatus() == BPExec.NOT_EXECUTED) revert BoostingNotExecuted();
-        if (s_state.updateBoostingSettleState()) emit BPSettleUpdated(s_state.totalLPToken());
-        if (s_state.boostingExecStatus() == BPExec.EXECUTED) revert BoostingNotSettled();
 
         uint256 amount = balanceOf(msg.sender); // BLP amount to burn
         if (amount == 0) revert ClaimBalanceZeroError();
 
         uint256 lpAmount = s_state.totalLPToken().mulDiv(amount, s_state.totalRaised());
+
         emit BPClaimed(msg.sender, amount, lpAmount);
         _burn(msg.sender, amount);
         SafeERC20.safeTransfer(IERC20(s_state.targetLP().lpToken()), msg.sender, lpAmount);
@@ -239,7 +230,7 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
     /**
      * @inheritdoc IChromaticBPLens
      */
-    function currentPeriod() public view override returns (BPPeriod status) {
+    function currentPeriod() public view override returns (BPPeriod period) {
         return s_state.currentPeriod();
     }
 
@@ -273,28 +264,35 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         return s_state.settlementToken().decimals();
     }
 
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 /* amount */
+    ) internal virtual override(ERC20) {
+        if (from != address(0) && to != address(0)) {
+            revert NonTransferable();
+        }
+    }
+
     /**
-     * @inheritdoc IChromaticBPTask
+     * @inheritdoc IChromaticBPAutomate
      */
-    function resolveBoostLPTask()
-        external
-        view
-        override
-        returns (bool upkeepNeeded, bytes memory performData)
-    {
+    function checkBoost() external view override returns (bool) {
         if (s_state.isBoostExecutable()) {
-            return (true, bytes(""));
+            return true;
         } else {
-            return (false, bytes(""));
+            return false;
         }
     }
 
     /**
      * @inheritdoc IChromaticBPAction
      */
-    function boostLP() external override nonReentrant {
+    function boost() external override nonReentrant {
         if (s_state.isBoostExecutable()) {
             _boostLP();
+        } else {
+            revert NotBoostable();
         }
     }
 
@@ -303,35 +301,33 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
         uint256 balance = s_state.settlementToken().balanceOf(address(this));
 
         ChromaticLPReceipt memory receipt = lp.addLiquidity(balance, address(this));
-        emit BPExecuted();
+        emit BPBoostTaskExecuted();
         s_state.setBoostingReceiptId(receipt.id);
         s_state.setBoostingExecStatus(BPExec.EXECUTED);
-        _cancelBoostLPTask();
-    }
-
-    function _getFeeInfo() internal view returns (uint256 fee, address feePayee) {
-        (fee, ) = _getFeeDetails();
-        feePayee = automate.gelato();
     }
 
     function _payKeeperFee(
-        uint256 maxFeeInSettlementToken
+        uint256 maxFeeInSettlementToken,
+        address feePayee,
+        uint256 keeperFee
     ) internal virtual returns (uint256 feeInSettlementAmount) {
-        (uint256 fee, address feePayee) = _getFeeInfo();
         IKeeperFeePayer payer = IKeeperFeePayer(s_state.market().factory().keeperFeePayer());
 
         IERC20 token = s_state.settlementToken();
         SafeERC20.safeTransfer(token, address(payer), maxFeeInSettlementToken);
 
-        feeInSettlementAmount = payer.payKeeperFee(address(token), fee, feePayee);
+        feeInSettlementAmount = payer.payKeeperFee(address(token), keeperFee, feePayee);
     }
 
     /**
-     * @inheritdoc IChromaticBPTask
+     * @inheritdoc IChromaticBPAutomate
      */
-    function boostLPTask() external override nonReentrant onlyAutomation {
+    function boostTask(
+        address feePayee,
+        uint256 keeperFee
+    ) external override nonReentrant onlyAutomation {
         if (s_state.isBoostExecutable()) {
-            _payKeeperFee(s_state.targetLP().automationFeeReserved());
+            _payKeeperFee(s_state.targetLP().automationFeeReserved(), feePayee, keeperFee);
             _boostLP();
         }
     }
@@ -355,5 +351,46 @@ contract ChromaticBP is AutomateReady, ERC20, ReentrancyGuard, IChromaticBP {
      */
     function isClaimable() external view returns (bool) {
         return s_state.isClaimable();
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function totalReward() external view returns (uint256) {
+        return s_state.totalReward();
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function status() external view returns (BPStatus) {
+        return s_state.status();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPCallback
+     */
+    function claimedCallback(
+        uint256 /* receiptId */,
+        uint256 /* addedLiquidity */,
+        uint256 lpTokenMint,
+        uint256 /* keeperFee */
+    ) external override verifyCallback {
+        // when boost settled
+        emit BPSettleUpdated(lpTokenMint);
+        s_state.updateBoostingSettleState(lpTokenMint);
+    }
+
+    /**
+     * @inheritdoc IChromaticLPCallback
+     */
+    function withdrawnCallback(
+        uint256 receiptId,
+        uint256 burnedAmount,
+        uint256 withdrawnAmount,
+        uint256 refundedAmount,
+        uint256 keeperFee
+    ) external override {
+        // not used
     }
 }

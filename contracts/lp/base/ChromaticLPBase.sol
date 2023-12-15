@@ -17,6 +17,8 @@ import {IChromaticLPLens} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {IChromaticLPLiquidity} from "~/lp/interfaces/IChromaticLPLiquidity.sol";
 import {IChromaticLPConfigLens} from "~/lp/interfaces/IChromaticLPConfigLens.sol";
 import {IChromaticLPMeta} from "~/lp/interfaces/IChromaticLPMeta.sol";
+import {IChromaticLPAutomate} from "~/lp/interfaces/IChromaticLPAutomate.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
@@ -38,7 +40,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         _;
     }
 
-    constructor(AutomateParam memory automateParam) ChromaticLPStorage(automateParam) {
+    constructor(IAutomateLP automate) ChromaticLPStorage(automate) {
         _owner = msg.sender;
     }
 
@@ -67,7 +69,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
             utilizationTargetBPS: config.utilizationTargetBPS,
             rebalanceBPS: config.rebalanceBPS,
             rebalanceCheckingInterval: config.rebalanceCheckingInterval,
-            settleCheckingInterval: config.settleCheckingInterval,
             automationFeeReserved: config.automationFeeReserved,
             minHoldingValueToRebalance: config.minHoldingValueToRebalance
         });
@@ -117,46 +118,47 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         return s_state.market.oracleProvider().description();
     }
 
-    function _resolveRebalance(
-        function() external _rebalance
-    ) internal view returns (bool, bytes memory) {
+    /**
+     * @inheritdoc IChromaticLPAutomate
+     */
+    function checkRebalance() external view returns (bool) {
         if (s_state.holdingValue() < s_config.minHoldingValueToRebalance) {
-            return (false, bytes(""));
+            return false;
         }
         (uint256 currentUtility, uint256 value) = s_state.utilizationInfo();
-        if (value == 0) return (false, bytes(""));
+        if (value == 0) return false;
 
         AllocationStatus status = s_config.allocationStatus(currentUtility);
 
         if (status == AllocationStatus.OverUtilized) {
             // estimate this remove rebalancing is meaningful for paying automationFee
             if (_estimateRebalanceRemoveValue(currentUtility) >= s_config.automationFeeReserved) {
-                return (true, abi.encodeCall(_rebalance, ()));
+                return true;
             }
         } else if (status == AllocationStatus.UnderUtilized) {
             // check if it could be settled by automation
             if (_estimateRebalanceAddAmount(currentUtility) >= estimateMinAddLiquidityAmount()) {
-                return (true, abi.encodeCall(_rebalance, ()));
+                return true;
             }
         }
-        return (false, bytes(""));
+        return false;
     }
 
-    function _resolveSettle(
-        uint256 receiptId,
-        function(uint256) external settleTask
-    ) internal view returns (bool, bytes memory) {
+    /**
+     * @inheritdoc IChromaticLPAutomate
+     */
+    function checkSettle(uint256 receiptId) external view returns (bool) {
         if (s_state.holdingValue() < s_config.automationFeeReserved) {
-            return (false, bytes(""));
+            return false;
         }
 
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         if (receipt.id > 0 && receipt.oracleVersion < s_state.oracleVersion()) {
-            return (true, abi.encodeCall(settleTask, (receiptId)));
+            return true;
         }
 
         // for pending add/remove by user and by self
-        return (false, bytes(""));
+        return false;
     }
 
     /**
@@ -240,8 +242,22 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPLens
      */
+    function clbTokenValues() public view override returns (uint256[] memory _clbTokenBalances) {
+        return s_state.clbTokenValues();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function pendingRemoveClbBalances() public view override returns (uint256[] memory) {
         return s_state.pendingRemoveClbBalances();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
+    function longShortInfo() external view returns (int8) {
+        return s_state.longShortInfo();
     }
 
     /**
@@ -281,12 +297,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         return s_config.rebalanceCheckingInterval;
     }
 
-    /**
-     * @inheritdoc IChromaticLPConfigLens
-     */
-    function settleCheckingInterval() external view returns (uint256) {
-        return s_config.settleCheckingInterval;
-    }
 
     /**
      * @inheritdoc IChromaticLPConfigLens

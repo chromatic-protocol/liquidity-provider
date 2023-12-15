@@ -3,7 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
-import {BPPeriod} from "~/bp/libraries/BPState.sol";
+import {BPPeriod, BPStatus} from "~/bp/libraries/BPState.sol";
 
 /**
  * @title IChromaticBPLens
@@ -81,4 +81,16 @@ interface IChromaticBPLens {
      * @return true if a claim can be made, false otherwise.
      */
     function isClaimable() external view returns (bool);
+
+    /**
+     * @dev Retrieves the total reward available in the boosting pool.
+     * @return totalReward The total reward amount.
+     */
+    function totalReward() external view returns (uint256);
+
+    /**
+     * @dev Retrieves the current status of the boosting pool.
+     * @return status The current status of the boosting pool.
+     */
+    function status() external view returns (BPStatus);
 }

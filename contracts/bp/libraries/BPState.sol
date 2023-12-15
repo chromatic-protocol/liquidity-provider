@@ -7,6 +7,7 @@ import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
 
 /**
@@ -38,20 +39,44 @@ enum BPExec {
 }
 
 /**
+ * @title BPStatus
+ * @dev An enumeration representing the status of a Chromatic Boosting Pool.
+ *
+ * @param UPCOMING The boosting pool is in the upcoming status.
+ * @param DEPOSITABLE Deposits can be made to the boosting pool.
+ * @param WAIT_BOOST Waiting for boosting task execution.
+ * @param WAIT_SETTLE Waiting for settling boosting tasks.
+ * @param LOCKUP The lock-up period is active.
+ * @param CLAIMABLE The boosting pool is in the claimable status.
+ * @param REFUNDABLE Refunds can be initiated.
+ */
+enum BPStatus {
+    UPCOMING,
+    DEPOSITABLE,
+    WAIT_BOOST,
+    WAIT_SETTLE,
+    LOCKUP,
+    CLAIMABLE,
+    REFUNDABLE
+}
+
+/**
  * @title BPInfo
  * @dev A struct representing the information about a Chromatic Boosting Pool.
  * @param totalRaised The total amount raised in the Boosting Pool.
  * @param totalLPToken The total amount of LP tokens associated with the Boosting Pool.
- * @param boostingTaskId The task ID associated with the boosting task.
+ * @param automateBP The AutomateBP with the boosting task.
  * @param boostingReceiptId The receipt ID associated with the boosting execution.
  * @param boostingExecStatus The execution status of the boosting task.
+ * @param startTimeOfLockup The start time of the lockup period. (valid value if only boost executed )
  */
 struct BPInfo {
     uint256 totalRaised;
     uint256 totalLPToken;
-    bytes32 boostingTaskId;
+    IAutomateBP automateBP;
     uint256 boostingReceiptId;
     BPExec boostingExecStatus;
+    uint256 startTimeOfLockup;
 }
 
 /**
@@ -70,6 +95,16 @@ struct BPState {
  * @dev Library containing functions for managing the state of Chromatic Boosting Pool.
  */
 library BPStateLib {
+    /**
+     * @dev Initialize the state of the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @param config The configuration parameters for the ChromaticBP.
+     */
+    function init(BPState storage self, BPConfig memory config) internal {
+        self.config = config;
+        self.info.startTimeOfLockup = config.startTimeOfWarmup + config.maxDurationOfWarmup;
+    }
+
     /**
      * @dev Retrieves the total raised amount in the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
@@ -125,12 +160,25 @@ library BPStateLib {
     }
 
     /**
+     * @dev Retrieves the start time of the warm-up period for the Chromatic Boosting Pool.
+     * @param self The storage state of the Chromatic Boosting Pool.
+     * @return The start time of the lock-up period.
+     */
+    function startTimeOfLockup(BPState storage self) internal view returns (uint256) {
+        return self.info.startTimeOfLockup;
+    }
+
+    function setStartTimeOfLockup(BPState storage self, uint256 _startTimeOfLockup) internal {
+        self.info.startTimeOfLockup = _startTimeOfLockup;
+    }
+
+    /**
      * @dev Retrieves the end time of the warm-up period for the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
      * @return timestamp The end time of the warm-up period.
      */
     function endTimeOfWarmup(BPState storage self) internal view returns (uint256 timestamp) {
-        return self.config.startTimeOfWarmup + self.config.durationOfWarmup;
+        return startTimeOfLockup(self);
     }
 
     /**
@@ -139,10 +187,7 @@ library BPStateLib {
      * @return timestamp The end time of the lock-up period.
      */
     function endTimeOfLockup(BPState storage self) internal view returns (uint256 timestamp) {
-        return
-            self.config.startTimeOfWarmup +
-            self.config.durationOfWarmup +
-            self.config.durationOfLockup;
+        return startTimeOfLockup(self) + self.config.durationOfLockup;
     }
 
     /**
@@ -179,7 +224,7 @@ library BPStateLib {
      * @return True if needed, false otherwise.
      */
     function needToCreateBoostTask(BPState storage self) internal view returns (bool) {
-        return (boostTaskId(self) == 0 && isRaisedOverMinTarget(self));
+        return (address(getAutomateBP(self)) == address(0) && isRaisedOverMinTarget(self));
     }
 
     /**
@@ -188,18 +233,18 @@ library BPStateLib {
      * @return True if executable, false otherwise.
      */
     function isBoostExecutable(BPState storage self) internal view returns (bool) {
+        if (boostingExecStatus(self) != BPExec.NOT_EXECUTED) return false;
+        if (totalRaised(self) >= maxRaisingTarget(self)) return true;
         //slither-disable-next-line timestamp
-        return (block.timestamp > endTimeOfWarmup(self) &&
-            isRaisedOverMinTarget(self) &&
-            boostingExecStatus(self) == BPExec.NOT_EXECUTED);
+        return (block.timestamp > endTimeOfWarmup(self) && isRaisedOverMinTarget(self));
     }
 
     /**
      * @dev Retrieves the boosting execution status for the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @return status The boosting execution status (NOT_EXECUTED, EXECUTED, SETTLED).
+     * @return execStatus The boosting execution status (NOT_EXECUTED, EXECUTED, SETTLED).
      */
-    function boostingExecStatus(BPState storage self) internal view returns (BPExec status) {
+    function boostingExecStatus(BPState storage self) internal view returns (BPExec execStatus) {
         return self.info.boostingExecStatus;
     }
 
@@ -242,21 +287,13 @@ library BPStateLib {
     /**
      * @dev Updates the boosting settlement state for the Chromatic Boosting Pool.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @return updated True if updated, false otherwise.
+     * @param lpToken The amount of lp token.
      */
-    function updateBoostingSettleState(BPState storage self) internal returns (bool updated) {
-        if (boostingExecStatus(self) == BPExec.EXECUTED) {
-            IChromaticLP lp = targetLP(self);
-            uint256 receiptId = boostingReceiptId(self);
-            ChromaticLPReceipt memory receipt = lp.getReceipt(receiptId);
-            if (receipt.id == 0) {
-                // when it is settled
-                setTotalLPToken(self, IERC20(lp.lpToken()).balanceOf(address(this)));
-                setBoostingExecStatus(self, BPExec.SETTLED);
-                return true;
-            }
-        }
-        return false;
+    function updateBoostingSettleState(BPState storage self, uint256 lpToken) internal {
+        // when it is settled
+        require(boostingExecStatus(self) == BPExec.EXECUTED);
+        setTotalLPToken(self, lpToken);
+        setBoostingExecStatus(self, BPExec.SETTLED);
     }
 
     /**
@@ -276,25 +313,25 @@ library BPStateLib {
     function isClaimable(BPState storage self) internal view returns (bool) {
         //slither-disable-next-line timestamp
         return
-            block.timestamp > endTimeOfLockup(self) && boostingExecStatus(self) == BPExec.SETTLED;
+            boostingExecStatus(self) == BPExec.SETTLED && block.timestamp > endTimeOfLockup(self);
     }
 
     /**
-     * @dev Sets the boosting task ID for the Chromatic Boosting Pool.
+     * @dev Sets AutomateBP.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @param taskId The new boosting task ID.
+     * @param automateBP The address of AutomateBP to handle boosting task.
      */
-    function setBoostTask(BPState storage self, bytes32 taskId) internal {
-        self.info.boostingTaskId = taskId;
+    function setAutomateBP(BPState storage self, IAutomateBP automateBP) internal {
+        self.info.automateBP = automateBP;
     }
 
     /**
-     * @dev Retrieves the boosting task ID for the Chromatic Boosting Pool.
+     * @dev Retrieves the AutomateBP.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @return The boosting task ID.
+     * @return The address of AutomateBP to handle boosting task.
      */
-    function boostTaskId(BPState storage self) internal view returns (bytes32) {
-        return self.info.boostingTaskId;
+    function getAutomateBP(BPState storage self) internal view returns (IAutomateBP) {
+        return self.info.automateBP;
     }
 
     /**
@@ -307,9 +344,9 @@ library BPStateLib {
         //slither-disable-next-line timestamp
         if (ts < startTimeOfWarmup(self)) {
             return BPPeriod.PREWARMUP;
-        } else if (ts <= endTimeOfWarmup(self)) {
+        } else if (ts < endTimeOfWarmup(self)) {
             return BPPeriod.WARMUP;
-        } else if (ts <= endTimeOfLockup(self)) {
+        } else if (ts < endTimeOfLockup(self)) {
             return BPPeriod.LOCKUP;
         } else {
             return BPPeriod.POSTLOCKUP;
@@ -323,7 +360,7 @@ library BPStateLib {
      */
     function isRefundable(BPState storage self) internal view returns (bool) {
         //slither-disable-next-line timestamp
-        return (block.timestamp > endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
+        return (block.timestamp >= endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
     }
 
     /**
@@ -345,6 +382,34 @@ library BPStateLib {
      * @return true if a deposit can be made, false otherwise.
      */
     function isDepositable(BPState storage self) internal view returns (bool) {
-        return currentPeriod(self) == BPPeriod.WARMUP && maxDepositable(self) > 0;
+        return currentPeriod(self) == BPPeriod.WARMUP; // && maxDepositable(self) > 0;
+    }
+
+    function totalReward(BPState storage self) internal view returns (uint256) {
+        return self.config.totalReward;
+    }
+
+    function status(BPState storage self) internal view returns (BPStatus) {
+        BPPeriod period = currentPeriod(self);
+        if (period == BPPeriod.PREWARMUP) {
+            return BPStatus.UPCOMING;
+        } else if (period == BPPeriod.WARMUP) {
+            return BPStatus.DEPOSITABLE;
+        } else if (isRefundable(self)) {
+            return BPStatus.REFUNDABLE;
+        } else if (period == BPPeriod.LOCKUP) {
+            BPExec execStatus = boostingExecStatus(self);
+            if (execStatus == BPExec.NOT_EXECUTED) {
+                return BPStatus.WAIT_BOOST;
+            } else if (execStatus == BPExec.EXECUTED) {
+                return BPStatus.WAIT_SETTLE;
+            } else {
+                // BPExec.SETTLED
+                return BPStatus.LOCKUP;
+            }
+        } else {
+            // (period == BPPeriod.POSTLOCKUP)
+            return BPStatus.CLAIMABLE;
+        }
     }
 }

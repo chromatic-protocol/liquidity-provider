@@ -20,21 +20,11 @@ interface IChromaticLPAdmin {
     function cancelRebalanceTask() external;
 
     /**
-     * @dev Retrieves information about the settlement task identified by receiptId.
-     * @param receiptId Unique identifier for the settlement receipt
-     * @return upkeepNeeded Boolean indicating whether upkeep is needed for the settlement.
-     * @return performData Additional data to be used in the settlement process.
+     * @dev Cancels the settle task in the liquidity provider.
+     * This is allowed for the owner of LP contract to call
+     * @param  receiptId The receipt ID associated with the settle execution.
      */
-    function resolveSettle(
-        uint256 receiptId
-    ) external view returns (bool upkeepNeeded, bytes memory performData);
-
-    /**
-     * @dev Retrieves information about the active rebalance task.
-     * @return upkeepNeeded Boolean indicating whether upkeep is needed for the rebalance.
-     * @return performData Additional data to be used in the rebalance process.
-     */
-    function resolveRebalance() external view returns (bool upkeepNeeded, bytes memory performData);
+    function cancelSettleTask(uint256 receiptId) external;
 
     /**
      * @dev Additional data to be used in the rebalance process.

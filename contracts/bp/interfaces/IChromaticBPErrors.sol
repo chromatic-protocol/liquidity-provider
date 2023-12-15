@@ -73,6 +73,11 @@ interface IChromaticBPErrors {
     error ClaimBalanceZeroError();
 
     /**
+     * @dev Error indicating that boosting cannot be executed.
+     */
+    error NotBoostable();
+
+    /**
      * @dev Error indicating that boosting has not been executed.
      */
     error BoostingNotExecuted();
@@ -81,4 +86,14 @@ interface IChromaticBPErrors {
      * @dev Error indicating that boosting has not been settled.
      */
     error BoostingNotSettled();
+
+    /**
+     * @dev Error indicating that tokens are non-transferable.
+     */
+    error NonTransferable();
+
+    /**
+     * @dev Error indicating that LP-related function is not called.
+     */
+    error NotLPCalled();
 }

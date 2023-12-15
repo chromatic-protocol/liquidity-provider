@@ -23,7 +23,7 @@ interface IChromaticBPAction {
     function claimLiquidity() external;
 
     /**
-     * @dev Boost LP function for boosting liquidity of the LP.
+     * @dev Boost function for boosting liquidity of the LP.
      */
-    function boostLP() external;
+    function boost() external;
 }

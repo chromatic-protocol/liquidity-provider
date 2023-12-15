@@ -3,16 +3,16 @@
   "version": "0.0.1-rc.43",
   "license": "MIT",
   "dependencies": {
-    "@chainlink/contracts": "^0.6.1",
-    "@chromatic-protocol/contracts": "^0.0.1-rc.274",
+    "@chainlink/contracts": "^0.8.0",
+    "@chromatic-protocol/contracts": "^0.0.1-rc.283",
     "@openzeppelin/contracts": "^4.9.3",
     "@uniswap/v3-periphery": "^1.4.4"
   },
   "devDependencies": {
     "@chromatic-protocol/hardhat-package": "^0.0.1-dev.18",
     "@chromatic-protocol/liquidity-provider-sdk": "^1.0.1-rc.30",
-    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.165",
-    "@gelatonetwork/automate-sdk": "^2.14.0",
+    "@chromatic-protocol/sdk-ethers-v6": "0.1.0-rc.168",
+    "@gelatonetwork/automate-sdk": "^3.0.0",
     "@graphprotocol/graph-cli": "^0.58.0",
     "@graphprotocol/graph-ts": "^0.31.0",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.1",
@@ -21,16 +21,17 @@
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^1.0.0",
-    "@nomicfoundation/hardhat-verify": "^1.0.4",
+    "@nomicfoundation/hardhat-verify": "^2.0.2",
     "@nomicfoundation/hardhat-viem": "^1.0.0",
     "@typechain/ethers-v6": "^0.4.2",
     "@typechain/hardhat": "^8.0.2",
     "@types/bluebird": "^3.5.38",
     "@types/chai": "^4.2.0",
+    "@types/chai-as-promised": "^7.1.6",
     "@types/gaussian": "^1.2.0",
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=12.0.0",
-    "@types/chai-as-promised": "^7.1.6",
+    "@types/prompt-sync": "^4.2.3",
     "@uniswap/smart-order-router": "^3.13.7",
     "@wagmi/cli": "^1.5.0",
     "chai": "^4.2.0",
@@ -43,6 +44,7 @@
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
     "prettier-plugin-solidity": "^1.1.3",
+    "prompt-sync": "^4.2.0",
     "solidity-coverage": "^0.8.1",
     "ts-node": ">=8.0.0",
     "tsconfig-paths": "^4.2.0",
@@ -62,8 +64,6 @@
   },
   "scripts": {
     "anvil:arbitrum": "hardhat --network anvil_arbitrum --config hardhat.repl.config.ts",
-    "anvil:mantle": "hardhat --network anvil_mantle --config hardhat.repl.config.ts",
-    "arbitrum_goerli": "hardhat --network arbitrum_goerli --config hardhat.repl.config.ts",
-    "mantle_testnet": "hardhat --network mantle_testnet --config hardhat.repl.config.ts"
+    "arbitrum_sepolia": "hardhat --network arbitrum_sepolia --config hardhat.repl.config.ts"
   }
 }

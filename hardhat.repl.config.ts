@@ -14,13 +14,6 @@ const hardhatConfig = {
       accounts: {
         mnemonic: process.env.MNEMONIC || MNEMONIC_JUNK
       }
-    },
-    anvil_mantle: {
-      // localhost anvil_mantle
-      ...config.networks?.anvil_mantle,
-      accounts: {
-        mnemonic: process.env.MNEMONIC || MNEMONIC_JUNK
-      }
     }
   }
 }

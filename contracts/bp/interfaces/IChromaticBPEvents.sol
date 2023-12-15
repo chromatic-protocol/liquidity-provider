@@ -29,13 +29,30 @@ interface IChromaticBPEvents {
     event BPClaimed(address indexed provider, uint256 bpTokenAmount, uint256 lpTokenAmount);
 
     /**
-     * @dev Emitted when the boosting LP is executed.
+     * @dev Emitted when the deposit has been reached to maxRaisingTarget.
+     * @param totalRaised The total raised amount.
      */
-    event BPExecuted();
+    event BPFullyRaised(uint256 totalRaised);
+
+    /**
+     * @dev Emitted when the task of boosting LP is created.
+     */
+    event BPBoostTaskCreated();
+
+    /**
+     * @dev Emitted when the task of boosting LP is executed.
+     */
+    event BPBoostTaskExecuted();
 
     /**
      * @dev Emitted when the total LP token amount used for boosting is updated.
      * @param totalLPToken The updated total LP token amount.
      */
     event BPSettleUpdated(uint256 totalLPToken);
+
+    /**
+     * @dev Emitted when the total reward is set.
+     * @param totalReward The total reward amount.
+     */
+    event SetTotalReward(uint256 totalReward);
 }

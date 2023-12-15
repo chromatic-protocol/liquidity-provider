@@ -1,32 +1,42 @@
 import { type DeployResult } from 'hardhat-deploy/types'
+import { AddressType } from '~/hardhat/common/types'
 // import type { LPDeployedResultMap, RegistryDeployedResultMap } from './types'
 
 // const REGISTRY_DEPLOYED: RegistryDeployedResultMap = {}
 // const LP_DEPLOYED: LPDeployedResultMap = {}
 
 interface MarketToLPs {
-  [marketAddress: string]: string[]
+  [marketAddress: AddressType]: AddressType[]
 }
 
 export interface RegistryDeployedResultMap {
   registry?: DeployResult
 }
 export class DeployedStore {
-  registryAddress: string = ''
-  bpFactoryAddress: string = ''
+  registryAddress?: AddressType
+  bpFactoryAddress?: AddressType
+  automateBP?: AddressType
+  automateLP?: AddressType
   marketToLPs: MarketToLPs = {}
 
-  saveRegistry(result: string) {
-    this.registryAddress = result
+  saveRegistry(registryAddress: AddressType) {
+    this.registryAddress = registryAddress
   }
-  saveLP(lpAddress: string, marketAddress: string) {
+  saveAutomateLP(automateAddress: AddressType) {
+    this.automateLP = automateAddress
+  }
+  saveAutomateBP(automateAddress: AddressType) {
+    this.automateBP = automateAddress
+  }
+
+  saveLP(lpAddress: AddressType, marketAddress: AddressType) {
     if (!this.marketToLPs[marketAddress]) {
       this.marketToLPs[marketAddress] = [lpAddress]
     } else {
       this.marketToLPs[marketAddress].push(lpAddress)
     }
   }
-  saveBPFactory(result: string) {
+  saveBPFactory(result: AddressType) {
     this.bpFactoryAddress = result
   }
 
@@ -37,12 +47,12 @@ export class DeployedStore {
     return this.bpFactoryAddress
   }
 
-  lpOfMarket(marketAddress: string) {
+  lpOfMarket(marketAddress: AddressType) {
     return this.marketToLPs[marketAddress]
   }
 
   get lpAddresses() {
-    const result: any = []
+    const result: AddressType[] = []
 
     return result.concat(...Object.values(this.marketToLPs))
   }

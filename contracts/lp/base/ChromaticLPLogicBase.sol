@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -25,6 +24,8 @@ import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
+import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
@@ -70,41 +71,22 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         _;
     }
 
-    constructor(
-        AutomateParam memory automateParam
-    ) ChromaticLPStorage(automateParam) ReentrancyGuard() {}
+    constructor(IAutomateLP automate) ChromaticLPStorage(automate) ReentrancyGuard() {}
 
-    function cancelRebalanceTask() external nonReentrant {
-        if (s_task.rebalanceTaskId != 0) {
-            bytes32 rebalanceTaskId = s_task.rebalanceTaskId;
-            s_task.rebalanceTaskId = 0;
-            automate.cancelTask(rebalanceTaskId);
-        }
+    function _createSettleTask(uint256 receiptId) internal {
+        s_task[receiptId] = s_automate;
+        s_automate.createSettleTask(receiptId);
     }
 
-    function createSettleTask(uint256 receiptId) internal {
-        if (s_task.settleTasks[receiptId] == 0) {
-            s_task.settleTasks[receiptId] = _createTask(
-                abi.encodeCall(this.resolveSettle, (receiptId)),
-                abi.encodeCall(this.settleTask, (receiptId)),
-                s_config.settleCheckingInterval
-            );
-        }
-    }
-
-    function cancelSettleTask(uint256 receiptId) internal {
-        if (s_task.settleTasks[receiptId] != 0) {
-            bytes32 settleTaskId = s_task.settleTasks[receiptId];
-            delete s_task.settleTasks[receiptId];
-            automate.cancelTask(settleTaskId);
-        }
-    }
-
-    function settleTask(uint256 receiptId) external /* onlyAutomation */ {
-        if (s_task.settleTasks[receiptId] != 0) {
+    function settleTask(
+        uint256 receiptId,
+        address feePayee,
+        uint256 keeperFee
+    ) external /* onlyAutomation */ {
+        if (address(s_task[receiptId]) != address(0)) {
             uint256 feeMax = _getMaxPayableFeeInSettlement(receiptId);
-            uint256 keeperFee = _payKeeperFee(feeMax);
-            _settle(receiptId, keeperFee);
+            uint256 fee = _payKeeperFee(feeMax, feePayee, keeperFee);
+            _settle(receiptId, fee);
         } // TODO else revert
     }
 
@@ -126,22 +108,23 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     }
 
     function _payKeeperFee(
-        uint256 maxFeeInSettlementToken
+        uint256 maxFeeInSettlementToken,
+        address feePayee,
+        uint256 keeperFee
     ) internal virtual returns (uint256 feeInSettlementAmount) {
-        (uint256 fee, address feePayee) = _getFeeInfo();
         IKeeperFeePayer payer = IKeeperFeePayer(s_state.market.factory().keeperFeePayer());
 
         IERC20 token = s_state.settlementToken();
         SafeERC20.safeTransfer(token, address(payer), maxFeeInSettlementToken);
 
-        feeInSettlementAmount = payer.payKeeperFee(address(token), fee, feePayee);
+        feeInSettlementAmount = payer.payKeeperFee(address(token), keeperFee, feePayee);
     }
 
     function _settle(uint256 receiptId, uint256 keeperFee) internal returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
 
-        // TODO check receipt
         if (receipt.oracleVersion < s_state.oracleVersion()) {
+            delete s_task[receiptId];
             if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
                 s_state.claimLiquidity(receipt, keeperFee);
             } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
@@ -149,8 +132,6 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             } else {
                 revert UnknownLPAction();
             }
-            // finally remove settle task
-            cancelSettleTask(receiptId);
             return true;
         } else {
             return false;
@@ -164,12 +145,6 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     }
 
     function resolveRebalance() external view virtual returns (bool, bytes memory) {
-        revert NotImplementedInLogicContract();
-    }
-
-    function resolveSettle(
-        uint256 /* receiptId */
-    ) external view virtual returns (bool, bytes memory) {
         revert NotImplementedInLogicContract();
     }
 
@@ -188,7 +163,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             recipient
         );
 
-        createSettleTask(receipt.id);
+        // slither-disable-next-line reentrancy-benign
+        _createSettleTask(receipt.id);
     }
 
     function _removeLiquidity(
@@ -198,7 +174,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     ) internal returns (ChromaticLPReceipt memory receipt) {
         receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
 
-        createSettleTask(receipt.id);
+        // slither-disable-next-line reentrancy-benign
+        _createSettleTask(receipt.id);
     }
 
     /**
@@ -264,6 +241,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 lpTokenAmount: lpTokenMint,
                 keeperFee: keeperFee
             });
+            try
+                IChromaticLPCallback(receipt.provider).claimedCallback(
+                    receipt.id,
+                    netAmount,
+                    lpTokenMint,
+                    keeperFee
+                )
+            {} catch {}
         } else {
             emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }
@@ -355,13 +340,22 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
 
             SafeERC20.safeTransfer(s_state.settlementToken(), receipt.recipient, withdrawingAmount);
 
-            // burn LPToken requested\
+            // burn LPToken requested
             if (burningAmount > 0) {
                 _burn(address(this), burningAmount);
             }
             if (remainingAmount > 0) {
                 SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
             }
+            try
+                IChromaticLPCallback(receipt.provider).withdrawnCallback(
+                    receipt.id,
+                    burningAmount,
+                    withdrawingAmount,
+                    remainingAmount,
+                    keeperFee
+                )
+            {} catch {}
         } else {
             emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }

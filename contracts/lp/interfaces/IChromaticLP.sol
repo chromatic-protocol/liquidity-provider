@@ -3,6 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {IChromaticLPLiquidity} from "./IChromaticLPLiquidity.sol";
 import {IChromaticLPAdmin} from "./IChromaticLPAdmin.sol";
+import {IChromaticLPAutomate} from "./IChromaticLPAutomate.sol";
 import {IChromaticLPLens} from "./IChromaticLPLens.sol";
 import {IChromaticLPMeta} from "./IChromaticLPMeta.sol";
 import {IChromaticLPEvents} from "./IChromaticLPEvents.sol";
@@ -16,6 +17,7 @@ interface IChromaticLP is
     IChromaticLPLens,
     IChromaticLPMeta,
     IChromaticLPAdmin,
+    IChromaticLPAutomate,
     IChromaticLPEvents,
     IChromaticLPErrors
 {

@@ -1,8 +1,8 @@
 export function getLinearDistributionConfig(
   startLevel: number,
   endLevel: number,
+  isLongShort = 0, // 0 for longAndShort, -1 for short only, 1 for long only
   halfBinCount = 36,
-  isLongShort = 0 // 0 for longAndShort, -1 for short only, 1 for long only
 ): {
   distributionRates: number[]
 } {
@@ -42,8 +42,8 @@ function sqrtspace(start: number, stop: number, num: number): number[] {
 export function getSqrtDistributionConfig(
   startLevel: number,
   endLevel: number,
+  isLongShort = 0, // 0 for longAndShort, -1 for short only, 1 for long only
   halfBinCount = 36,
-  isLongShort = 0 // 0 for longAndShort, -1 for short only, 1 for long only
 ): {
   distributionRates: number[]
 } {

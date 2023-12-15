@@ -6,7 +6,7 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {IChromaticBPAction} from "~/bp/interfaces/IChromaticBPAction.sol";
 import {IChromaticBPEvents} from "~/bp/interfaces/IChromaticBPEvents.sol";
 import {IChromaticBPLens} from "~/bp/interfaces/IChromaticBPLens.sol";
-import {IChromaticBPTask} from "~/bp/interfaces/IChromaticBPTask.sol";
+import {IChromaticBPAutomate} from "~/bp/interfaces/IChromaticBPAutomate.sol";
 import {IChromaticBPErrors} from "~/bp/interfaces/IChromaticBPErrors.sol";
 
 interface IChromaticBP is
@@ -14,6 +14,6 @@ interface IChromaticBP is
     IChromaticBPAction,
     IChromaticBPEvents,
     IChromaticBPLens,
-    IChromaticBPTask,
+    IChromaticBPAutomate,
     IChromaticBPErrors
 {}
