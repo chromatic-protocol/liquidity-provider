@@ -1,6 +1,12 @@
 [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "contract IAutomateBP",
+        "name": "automate",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -48,6 +54,19 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "automateBP",
+        "type": "address"
+      }
+    ],
+    "name": "SetAutomateBP",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "bpList",
     "outputs": [
@@ -90,6 +109,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "totalReward",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "minRaisingTarget",
             "type": "uint256"
           },
@@ -105,7 +129,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "durationOfWarmup",
+            "name": "maxDurationOfWarmup",
             "type": "uint256"
           },
           {
@@ -117,28 +141,24 @@
         "internalType": "struct BPConfig",
         "name": "config",
         "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "automate",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "opsProxyFactory",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct AutomateParam",
-        "name": "automateParam",
-        "type": "tuple"
       }
     ],
     "name": "createBP",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAutomateBP",
+    "outputs": [
+      {
+        "internalType": "contract IAutomateBP",
+        "name": "automate",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -157,6 +177,19 @@
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IAutomateBP",
+        "name": "automate",
+        "type": "address"
+      }
+    ],
+    "name": "setAutomateBP",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
