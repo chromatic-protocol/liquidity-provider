@@ -25,6 +25,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
      * @param settleTasks A mapping from receipt ID to the corresponding settle task ID.
      */
     struct LPTasks {
+        uint256 nextRebalanceCheck;
         uint256 rebalanceTaskId;
         mapping(uint256 => uint256) settleTasks;
     }
@@ -79,7 +80,13 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
             0,
             false // is not singleExec
         );
+        _updateNextRebalanceCheckingTime(lp);
         _setRebalanceTaskId(lp, rebalanceTaskId);
+    }
+
+    function _updateNextRebalanceCheckingTime(IChromaticLP lp) internal {
+        uint256 interval = lp.rebalanceCheckingInterval();
+        _taskMap[lp].nextRebalanceCheck = block.timestamp + interval;
     }
 
     /**
@@ -92,6 +99,8 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
 
         if (rebalanceTaskId != 0) {
             _setRebalanceTaskId(lp, 0);
+            _taskMap[lp].nextRebalanceCheck = 0;
+
             // slither-disable-next-line reentrancy-events
             try automate.cancelUpkeep(rebalanceTaskId) {
                 emit CancleRebalanceTaskSucceeded(address(lp), rebalanceTaskId);
@@ -107,7 +116,11 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     function resolveRebalance(
         address lp
     ) public view returns (bool upkeepNeeded, bytes memory performData) {
-        if (IChromaticLP(lp).checkRebalance()) {
+        if (
+            _taskMap[IChromaticLP(lp)].nextRebalanceCheck != 0 &&
+            _taskMap[IChromaticLP(lp)].nextRebalanceCheck <= block.timestamp &&
+            IChromaticLP(lp).checkRebalance()
+        ) {
             return (true, abi.encode(UpkeepType.Rebalance, lp, 0));
         }
         return (false, bytes(""));
@@ -119,6 +132,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     function rebalance(address lp) public {
         (uint256 fee, address feePayee) = _getFeeInfo();
 
+        _updateNextRebalanceCheckingTime(IChromaticLP(lp));
         IChromaticLP(lp).rebalance(feePayee, fee);
     }
 
