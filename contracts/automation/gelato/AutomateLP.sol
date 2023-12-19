@@ -3,12 +3,13 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
+import {IAutomateGelatoLP} from "~/automation/gelato/interfaces/IAutomateGelatoLP.sol";
 
-contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
+contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoLP {
     /**
      * @title LPTasks
      * @dev A struct representing tasks associated with Chromatic LP operations.
@@ -39,7 +40,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
     }
 
     /**
-     * @inheritdoc IAutomateLP
+     * @inheritdoc IAutomateGelatoLP
      */
     function getRebalanceTaskId(IChromaticLP lp) public view returns (bytes32) {
         return _taskMap[lp].rebalanceTaskId;
@@ -50,7 +51,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
     }
 
     /**
-     * @inheritdoc IAutomateLP
+     * @inheritdoc IAutomateGelatoLP
      */
     function getSettleTaskId(IChromaticLP lp, uint256 receiptId) public view returns (bytes32) {
         return _taskMap[lp].settleTasks[receiptId];
@@ -191,7 +192,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateLP {
     }
 
     /**
-     * @inheritdoc IAutomateLP
+     * @inheritdoc IAutomateGelatoLP
      */
     function cancelTask(bytes32 taskId) external onlyOwner {
         automate.cancelTask(taskId);
