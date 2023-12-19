@@ -26,6 +26,7 @@ export interface LPConfig {
 
 export interface SettlementToken {
   name: string
+  symbol: string
   address: AddressType
   decimals: bigint
 }

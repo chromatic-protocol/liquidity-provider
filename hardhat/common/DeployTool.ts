@@ -177,7 +177,7 @@ export class DeployTool {
   }
 
   adjustLPConfig(marketInfo: MarketInfo, lpConfig: LPConfig): LPConfig {
-    const iscBTC = marketInfo.settlementToken.name == 'cBTC'
+    const iscBTC = marketInfo.settlementToken.symbol === 'cBTC'
     console.log('is cBTC?: ', iscBTC)
 
     let config = {
@@ -319,9 +319,9 @@ export class DeployTool {
 
   async addLiquidity(lpAddress: AddressType, amount: bigint) {
     const lp = this.c.lp(lpAddress)
-    const tokenAddress = await lp.settlementToken()
+    const tokenAddress = await retry(lp.settlementToken)()
     const token = this.c.erc20(tokenAddress)
-    const balance = await token.balanceOf(this.deployer)
+    const balance = await retry(token.balanceOf)(this.deployer)
 
     console.log(` - settlementTokenBalance: ${balance}`)
     if (amount > balance) {
@@ -341,7 +341,7 @@ export class DeployTool {
     const lp = this.c.lp(lpAddress)
     // const tokenAddress = await lp.lpToken()
     const token = this.c.erc20(lpAddress) // lp token
-    const lpTokenBalance = await token.balanceOf(this.deployer)
+    const lpTokenBalance = await retry(token.balanceOf)(this.deployer)
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
     const tx = await retry(lp.removeLiquidity)(amount, this.deployer)
@@ -351,7 +351,7 @@ export class DeployTool {
   async removeLiquidityAll(lpAddress: AddressType) {
     const lp = this.c.lp(lpAddress)
     const token = this.c.erc20(lpAddress) // lp token
-    const lpTokenBalance = await token.balanceOf(this.deployer)
+    const lpTokenBalance = await retry(token.balanceOf)(this.deployer)
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
     const tx = await retry(lp.removeLiquidity)(lpTokenBalance, this.deployer)
