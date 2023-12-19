@@ -200,7 +200,12 @@ export class DeployTool {
   async deployAutomateLP(): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying AutomateLP`))
     const args = [getAutomateAddress(this.hre)]
+    const FQN = this.hre.network.tags.mate2
+      ? 'contracts/automation/mate2/AutomateLP.sol:AutomateLP'
+      : 'contracts/automation/gelato/AutomateLP.sol:AutomateLP'
+
     const res = await this.deploy('AutomateLP', {
+      contract: FQN,
       from: this.deployer,
       args: args
     })
@@ -219,7 +224,12 @@ export class DeployTool {
   async deployAutomateBP(): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying AutomateBP`))
     const args = [getAutomateAddress(this.hre)]
+    const FQN = this.hre.network.tags.mate2
+      ? 'contracts/automation/mate2/AutomateBP.sol:AutomateBP'
+      : 'contracts/automation/gelato/AutomateBP.sol:AutomateBP'
+
     const res = await this.deploy('AutomateBP', {
+      contract: FQN,
       from: this.deployer,
       args: args
     })
