@@ -426,13 +426,13 @@ export class DeployTool {
 
     const mate2Registry = this.c.mate2Registry(getAutomateAddress(this.hre))
     console.log(chalk.yellow(`🔧 addWhitelistedRegistrar...: ${automate}`))
-    await (await mate2Registry.addWhitelistedRegistrar(automate)).wait()
+    await (await retry(mate2Registry.addWhitelistedRegistrar)(automate)).wait()
   }
   async removeWhitelistedRegistrar(automate: string) {
     console.assert(this.hre.network.tags.mate2, 'not mate2')
 
     const mate2Registry = this.c.mate2Registry(getAutomateAddress(this.hre))
     console.log(chalk.yellow(`🔧 removeWhitelistedRegistrar...: ${automate}`))
-    await (await mate2Registry.removeWhitelistedRegistrar(automate)).wait()
+    await (await retry(mate2Registry.removeWhitelistedRegistrar)(automate)).wait()
   }
 }
