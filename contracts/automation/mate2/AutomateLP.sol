@@ -36,11 +36,6 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
         automate = _automate;
     }
 
-    modifier onlyAutomation() virtual {
-        if (msg.sender != address(automate)) revert NotAutomationCalled();
-        _;
-    }
-
     /**
      * @dev Checks if the caller is the owner of the contract.
      */
@@ -121,7 +116,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     /**
      * @inheritdoc IAutomateLP
      */
-    function rebalance(address lp) public onlyAutomation {
+    function rebalance(address lp) public {
         (uint256 fee, address feePayee) = _getFeeInfo();
 
         IChromaticLP(lp).rebalance(feePayee, fee);
@@ -161,7 +156,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     /**
      * @inheritdoc IAutomateLP
      */
-    function settle(address lp, uint256 receiptId) public onlyAutomation {
+    function settle(address lp, uint256 receiptId) public {
         (uint256 fee, address feePayee) = _getFeeInfo();
 
         IChromaticLP(lp).settleTask(receiptId, feePayee, fee);

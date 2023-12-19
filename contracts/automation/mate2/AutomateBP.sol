@@ -21,10 +21,6 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
         automate = _automate;
     }
 
-    modifier onlyAutomation() virtual {
-        if (msg.sender != address(automate)) revert NotAutomationCalled();
-        _;
-    }
 
     /**
      * @dev Checks if the caller is the owner of the contract.
@@ -90,7 +86,7 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     /**
      * @inheritdoc IAutomateBP
      */
-    function boost(address bp) public onlyAutomation {
+    function boost(address bp) public {
         (uint256 fee, address feePayee) = _getFeeInfo();
         if (getBoostTaskId(IChromaticBP(bp)) != 0) {
             _setBoostTaskId(IChromaticBP(bp), 0);
