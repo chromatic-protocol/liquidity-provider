@@ -54,27 +54,27 @@ const config: HardhatUserConfig = {
         url: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
         blockNumber: 2618307
       },
-      tags: ['local', 'arbitrum', 'gelato']
+      tags: ['local', 'arbitrum', 'mate2']
     },
     anvil_arbitrum: {
       ...localCommon,
       url: 'http://127.0.0.1:8545',
       chainId: 31337,
-      tags: ['local', 'arbitrum', 'gelato']
+      tags: ['local', 'arbitrum', 'mate2']
     },
     arbitrum_sepolia: {
       // testnet
       ...common,
       url: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
       chainId: 421614,
-      tags: ['testnet', 'arbitrum', 'gelato']
+      tags: ['testnet', 'arbitrum', 'mate2']
     },
     arbitrum_one: {
       // mainnet
       ...common,
       url: 'https://arb1.arbitrum.io/rpc',
       chainId: 42161,
-      tags: ['mainnet', 'arbitrum', 'gelato']
+      tags: ['mainnet', 'arbitrum', 'mate2']
     }
   },
   namedAccounts: {

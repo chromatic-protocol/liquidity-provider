@@ -10,7 +10,7 @@ import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
 import { formatEther } from 'ethers'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
-import { getAutomateAddress, getAutomateConfig } from './getAutomateConfig'
+import { getAutomateAddress } from './getAutomateConfig'
 import type {
   AddressType,
   AutomateConfig,
@@ -148,7 +148,7 @@ export class DeployTool {
   }
 
   get automateConfig(): AutomateConfig {
-    return getAutomateConfig(this.hre)
+    return getAutomateAddress(this.hre)
   }
 
   async deployAllLP(lpConfigs?: LPConfig[]): Promise<LPDeployedResultMap> {
@@ -207,6 +207,12 @@ export class DeployTool {
     if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: args })
     DEPLOYED.saveAutomateLP(res.address as AddressType)
 
+    if (this.hre.network.tags.mate2 && res.newlyDeployed) {
+      await this.addWhitelistedRegistrar(res.address)
+    }
+
+    // addwhitelist
+
     return res
   }
 
@@ -219,6 +225,10 @@ export class DeployTool {
     })
     if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: args })
     DEPLOYED.saveAutomateBP(res.address as AddressType)
+
+    if (this.hre.network.tags.mate2 && res.newlyDeployed) {
+      await this.addWhitelistedRegistrar(res.address)
+    }
 
     return res
   }
@@ -399,5 +409,20 @@ export class DeployTool {
     const lp = this.c.lp(lpAddress)
     console.log(chalk.yellow(`🔧 cancelRebalanceTask...: ${lpAddress}`))
     await (await lp.cancelRebalanceTask()).wait()
+  }
+
+  async addWhitelistedRegistrar(automate: string) {
+    console.assert(this.hre.network.tags.mate2, 'not mate2')
+
+    const mate2Registry = this.c.mate2Registry(getAutomateAddress(this.hre))
+    console.log(chalk.yellow(`🔧 addWhitelistedRegistrar...: ${automate}`))
+    await (await mate2Registry.addWhitelistedRegistrar(automate)).wait()
+  }
+  async removeWhitelistedRegistrar(automate: string) {
+    console.assert(this.hre.network.tags.mate2, 'not mate2')
+
+    const mate2Registry = this.c.mate2Registry(getAutomateAddress(this.hre))
+    console.log(chalk.yellow(`🔧 removeWhitelistedRegistrar...: ${automate}`))
+    await (await mate2Registry.removeWhitelistedRegistrar(automate)).wait()
   }
 }
