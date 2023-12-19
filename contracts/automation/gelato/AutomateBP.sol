@@ -5,10 +5,11 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
-import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
+import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
+import {IAutomateGelatoBP} from "~/automation/gelato/interfaces/IAutomateGelatoBP.sol";
 
-contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateBP {
+contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoBP {
     mapping(IChromaticBP => bytes32) internal _boostTasks;
 
     constructor(
@@ -28,7 +29,7 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateBP {
     }
 
     /**
-     * @inheritdoc IAutomateBP
+     * @inheritdoc IAutomateGelatoBP
      */
     function getBoostTaskId(IChromaticBP bp) public view returns (bytes32) {
         return _boostTasks[bp];
