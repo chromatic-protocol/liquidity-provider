@@ -342,6 +342,7 @@ export class DeployTool {
     // const tokenAddress = await lp.lpToken()
     const token = this.c.erc20(lpAddress) // lp token
     const lpTokenBalance = await retry(token.balanceOf)(this.deployer)
+    await (await retry(token.approve)(lpAddress, amount)).wait()
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
     const tx = await retry(lp.removeLiquidity)(amount, this.deployer)
@@ -352,6 +353,7 @@ export class DeployTool {
     const lp = this.c.lp(lpAddress)
     const token = this.c.erc20(lpAddress) // lp token
     const lpTokenBalance = await retry(token.balanceOf)(this.deployer)
+    await (await retry(token.approve)(lpAddress, lpTokenBalance)).wait()
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
     const tx = await retry(lp.removeLiquidity)(lpTokenBalance, this.deployer)
