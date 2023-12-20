@@ -167,10 +167,11 @@ library LPStateValueLib {
     function clbTokenValues(
         LPState storage s_state
     ) internal view returns (uint256[] memory _clbTokenValues) {
+        _clbTokenValues = new uint256[](s_state.binCount());
         uint256[] memory clbSupplies = s_state.clbTotalSupplies();
         uint256[] memory binValues = s_state.market.getBinValues(s_state.feeRates);
         uint256[] memory clbTokenAmounts = s_state.clbTokenBalances();
-        for (uint256 i; i < binValues.length; ) {
+        for (uint256 i; i < s_state.binCount(); ) {
             _clbTokenValues[i] = clbSupplies[i] == 0
                 ? 0
                 : binValues[i].mulDiv(clbTokenAmounts[i], clbSupplies[i]);
