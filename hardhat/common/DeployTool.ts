@@ -165,8 +165,8 @@ export class DeployTool {
         try {
           const deployed = await this.deployLP(market.address, config, false, market)
           deployedResults.push(deployed)
-        } catch {
-          console.log(`skipped`)
+        } catch (e) {
+          console.log(`skipped`, e)
           continue
         }
       }
@@ -188,7 +188,7 @@ export class DeployTool {
           ? BigInt(lpConfig.config.automationFeeReserved) / 10n
           : BigInt(lpConfig.config.automationFeeReserved)
       },
-      automateConfig: DEPLOYED.automateLP,
+      automateConfig: DEPLOYED.automateLP || this.helper.deployed.automateLP,
       initialLiquidity:
         iscBTC && lpConfig.initialLiquidity
           ? BigInt(lpConfig.initialLiquidity) / 10n
@@ -337,6 +337,12 @@ export class DeployTool {
     await tx.wait()
   }
 
+  async removeAllLiquidity() {
+    for (const lpAddress of this.helper.lpAddresses) {
+      await this.removeLiquidityAll(lpAddress as AddressType)
+    }
+  }
+
   async removeLiquidity(lpAddress: AddressType, amount: bigint) {
     const lp = this.c.lp(lpAddress)
     // const tokenAddress = await lp.lpToken()
@@ -370,7 +376,7 @@ export class DeployTool {
   }
 
   async unregisterAllLP() {
-    let registry = await this.c.lpRegistry
+    let registry = this.c.lpRegistry
 
     for (const lpAddress of this.helper.lpAddresses) {
       await this.unregisterLP(lpAddress, registry)
@@ -391,7 +397,8 @@ export class DeployTool {
   }
 
   async unregisterLP(lpAddress: string, registry?: ChromaticLPRegistry) {
-    if (!registry) registry = await this.c.lpRegistry
+    if (!registry) registry = this.c.lpRegistry
+    console.log(chalk.green(`✨ uregistering lpAddress from registry: ${lpAddress}`))
     await (await retry(registry.unregister)(lpAddress)).wait()
   }
 
@@ -414,13 +421,13 @@ export class DeployTool {
   async createRebalanceTask(lpAddress: string) {
     const lp = this.c.lp(lpAddress)
     console.log(chalk.yellow(`🔧 createRebalanceTask...: ${lpAddress}`))
-    await (await lp.createRebalanceTask()).wait()
+    await (await retry(lp.createRebalanceTask)()).wait()
   }
 
   async cancelRebalanceTask(lpAddress: string) {
     const lp = this.c.lp(lpAddress)
     console.log(chalk.yellow(`🔧 cancelRebalanceTask...: ${lpAddress}`))
-    await (await lp.cancelRebalanceTask()).wait()
+    await (await retry(lp.cancelRebalanceTask)()).wait()
   }
 
   async addWhitelistedRegistrar(automate: string) {
