@@ -241,14 +241,16 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 lpTokenAmount: lpTokenMint,
                 keeperFee: keeperFee
             });
-            try
-                IChromaticLPCallback(receipt.provider).claimedCallback(
-                    receipt.id,
-                    netAmount,
-                    lpTokenMint,
-                    keeperFee
-                )
-            {} catch {}
+            if (receipt.provider.code.length > 0) {
+                try
+                    IChromaticLPCallback(receipt.provider).claimedCallback(
+                        receipt.id,
+                        netAmount,
+                        lpTokenMint,
+                        keeperFee
+                    )
+                {} catch {}
+            }
         } else {
             emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }
@@ -347,15 +349,17 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             if (remainingAmount > 0) {
                 SafeERC20.safeTransfer(IERC20(this), receipt.recipient, remainingAmount);
             }
-            try
-                IChromaticLPCallback(receipt.provider).withdrawnCallback(
-                    receipt.id,
-                    burningAmount,
-                    withdrawingAmount,
-                    remainingAmount,
-                    keeperFee
-                )
-            {} catch {}
+            if (receipt.provider.code.length > 0) {
+                try
+                    IChromaticLPCallback(receipt.provider).withdrawnCallback(
+                        receipt.id,
+                        burningAmount,
+                        withdrawingAmount,
+                        remainingAmount,
+                        keeperFee
+                    )
+                {} catch {}
+            }
         } else {
             emit RebalanceSettled({receiptId: receipt.id, keeperFee: keeperFee});
         }
