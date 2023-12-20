@@ -1,16 +1,10 @@
 import { BigNumberish } from 'ethers'
 
 import { DeployResult } from 'hardhat-deploy/types'
-import type { IOracleProvider } from '~/typechain-types'
 
 export type AddressType = `0x${string}`
 
-export type AutomateConfig =
-  | {
-      automate: AddressType
-      opsProxyFactory: AddressType
-    }
-  | AddressType
+export type AutomateConfig = AddressType
 
 export interface LPConfig {
   meta: {
@@ -32,6 +26,7 @@ export interface LPConfig {
 
 export interface SettlementToken {
   name: string
+  symbol: string
   address: AddressType
   decimals: bigint
 }

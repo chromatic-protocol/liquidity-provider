@@ -10,7 +10,7 @@ import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
 import { formatEther } from 'ethers'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
-import { getAutomateAddress, getAutomateConfig } from './getAutomateConfig'
+import { getAutomateAddress } from './getAutomateConfig'
 import type {
   AddressType,
   AutomateConfig,
@@ -148,7 +148,7 @@ export class DeployTool {
   }
 
   get automateConfig(): AutomateConfig {
-    return getAutomateConfig(this.hre)
+    return getAutomateAddress(this.hre)
   }
 
   async deployAllLP(lpConfigs?: LPConfig[]): Promise<LPDeployedResultMap> {
@@ -177,7 +177,7 @@ export class DeployTool {
   }
 
   adjustLPConfig(marketInfo: MarketInfo, lpConfig: LPConfig): LPConfig {
-    const iscBTC = marketInfo.settlementToken.name == 'cBTC'
+    const iscBTC = marketInfo.settlementToken.symbol === 'cBTC'
     console.log('is cBTC?: ', iscBTC)
 
     let config = {
@@ -200,12 +200,23 @@ export class DeployTool {
   async deployAutomateLP(): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying AutomateLP`))
     const args = [getAutomateAddress(this.hre)]
+    const FQN = this.hre.network.tags.mate2
+      ? 'contracts/automation/mate2/AutomateLP.sol:AutomateLP'
+      : 'contracts/automation/gelato/AutomateLP.sol:AutomateLP'
+
     const res = await this.deploy('AutomateLP', {
+      contract: FQN,
       from: this.deployer,
       args: args
     })
     if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: args })
     DEPLOYED.saveAutomateLP(res.address as AddressType)
+
+    if (this.hre.network.tags.mate2 && res.newlyDeployed) {
+      await this.addWhitelistedRegistrar(res.address)
+    }
+
+    // addwhitelist
 
     return res
   }
@@ -213,12 +224,21 @@ export class DeployTool {
   async deployAutomateBP(): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying AutomateBP`))
     const args = [getAutomateAddress(this.hre)]
+    const FQN = this.hre.network.tags.mate2
+      ? 'contracts/automation/mate2/AutomateBP.sol:AutomateBP'
+      : 'contracts/automation/gelato/AutomateBP.sol:AutomateBP'
+
     const res = await this.deploy('AutomateBP', {
+      contract: FQN,
       from: this.deployer,
       args: args
     })
     if (res.newlyDeployed) await this.verify({ address: res.address, constructorArguments: args })
     DEPLOYED.saveAutomateBP(res.address as AddressType)
+
+    if (this.hre.network.tags.mate2 && res.newlyDeployed) {
+      await this.addWhitelistedRegistrar(res.address)
+    }
 
     return res
   }
@@ -299,9 +319,9 @@ export class DeployTool {
 
   async addLiquidity(lpAddress: AddressType, amount: bigint) {
     const lp = this.c.lp(lpAddress)
-    const tokenAddress = await lp.settlementToken()
+    const tokenAddress = await retry(lp.settlementToken)()
     const token = this.c.erc20(tokenAddress)
-    const balance = await token.balanceOf(this.deployer)
+    const balance = await retry(token.balanceOf)(this.deployer)
 
     console.log(` - settlementTokenBalance: ${balance}`)
     if (amount > balance) {
@@ -321,7 +341,7 @@ export class DeployTool {
     const lp = this.c.lp(lpAddress)
     // const tokenAddress = await lp.lpToken()
     const token = this.c.erc20(lpAddress) // lp token
-    const lpTokenBalance = await token.balanceOf(this.deployer)
+    const lpTokenBalance = await retry(token.balanceOf)(this.deployer)
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
     const tx = await retry(lp.removeLiquidity)(amount, this.deployer)
@@ -331,7 +351,7 @@ export class DeployTool {
   async removeLiquidityAll(lpAddress: AddressType) {
     const lp = this.c.lp(lpAddress)
     const token = this.c.erc20(lpAddress) // lp token
-    const lpTokenBalance = await token.balanceOf(this.deployer)
+    const lpTokenBalance = await retry(token.balanceOf)(this.deployer)
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
     const tx = await retry(lp.removeLiquidity)(lpTokenBalance, this.deployer)
@@ -399,5 +419,20 @@ export class DeployTool {
     const lp = this.c.lp(lpAddress)
     console.log(chalk.yellow(`🔧 cancelRebalanceTask...: ${lpAddress}`))
     await (await lp.cancelRebalanceTask()).wait()
+  }
+
+  async addWhitelistedRegistrar(automate: string) {
+    console.assert(this.hre.network.tags.mate2, 'not mate2')
+
+    const mate2Registry = this.c.mate2Registry(getAutomateAddress(this.hre))
+    console.log(chalk.yellow(`🔧 addWhitelistedRegistrar...: ${automate}`))
+    await (await retry(mate2Registry.addWhitelistedRegistrar)(automate)).wait()
+  }
+  async removeWhitelistedRegistrar(automate: string) {
+    console.assert(this.hre.network.tags.mate2, 'not mate2')
+
+    const mate2Registry = this.c.mate2Registry(getAutomateAddress(this.hre))
+    console.log(chalk.yellow(`🔧 removeWhitelistedRegistrar...: ${automate}`))
+    await (await retry(mate2Registry.removeWhitelistedRegistrar)(automate)).wait()
   }
 }

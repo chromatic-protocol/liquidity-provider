@@ -30,20 +30,6 @@ interface IAutomateBP {
     error TaskNotExist();
 
     /**
-     * @dev Emitted when a boost task cancellation is successful.
-     * @param bp The address of the boosting pool.
-     * @param taskId The unique identifier of the cancelled rebalance task.
-     */
-    event CancleBoostTaskSucceeded(address bp, bytes32 taskId);
-
-    /**
-     * @dev Emitted when a boost task cancellation is successful.
-     * @param bp The address of the boosting pool.
-     * @param taskId The unique identifier of the cancelled rebalance task.
-     */
-    event CancleBoostTaskFailed(address bp, bytes32 taskId);
-
-    /**
      * @dev Initiates the creation of a boost task for the specified BP (msg.sender).
      */
     function createBoostTask() external;
@@ -68,11 +54,4 @@ interface IAutomateBP {
      * @param bp The address of the Chromatic BP.
      */
     function boost(address bp) external;
-
-    /**
-     * @dev Gets the task ID of the existing boost task for the specified BP.
-     * @param bp The address of the Chromatic BP.
-     * @return The task ID of the boost task.
-     */
-    function getBoostTaskId(IChromaticBP bp) external view returns (bytes32);
 }

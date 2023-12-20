@@ -22,36 +22,6 @@ interface IAutomateLP {
      */
     error OnlyAccessableByOwner();
 
-   /**
-     * @dev Emitted when a rebalance task cancellation is successful.
-     * @param lp The address of the liquidity provider.
-     * @param taskId The unique identifier of the cancelled rebalance task.
-     */
-    event CancleRebalanceTaskSucceeded(address lp, bytes32 taskId);
-
-    /**
-     * @dev Emitted when a rebalance task cancellation fails.
-     * @param lp The address of the liquidity provider.
-     * @param taskId The unique identifier of the cancelled rebalance task.
-     */
-    event CancleRebalanceTaskFailed(address lp, bytes32 taskId);
-
-    /**
-     * @dev Emitted when a settle task cancellation is successful.
-     * @param lp The address of the liquidity provider.
-     * @param receiptId The unique identifier of the cancelled settle task.
-     * @param taskId The unique identifier of the cancelled settle task.
-     */
-    event CancleSettleTaskSucceeded(address lp, uint256 receiptId, bytes32 taskId);
-
-    /**
-     * @dev Emitted when a settle task cancellation fails.
-     * @param lp The address of the liquidity provider.
-     * @param receiptId The unique identifier of the cancelled settle task.
-     * @param taskId The unique identifier of the cancelled settle task.
-     */
-    event CancleSettleTaskFailed(address lp, uint256 receiptId, bytes32 taskId);
-
     /**
      * @dev Initiates the creation of a rebalance task for the specified LP (msg.sender).
      */
@@ -108,25 +78,4 @@ interface IAutomateLP {
      * @param receiptId The unique identifier of the receipt associated with the task.
      */
     function settle(address lp, uint256 receiptId) external;
-
-    /**
-     * @dev Gets the task ID of the existing rebalance task for the specified LP.
-     * @param lp The address of the liquidity provider.
-     * @return The task ID of the rebalance task.
-     */
-    function getRebalanceTaskId(IChromaticLP lp) external view returns (bytes32);
-
-    /**
-     * @dev Gets the task ID of the existing settle task for the specified LP and receipt ID.
-     * @param lp The address of the liquidity provider.
-     * @param receiptId The unique identifier of the receipt associated with the task.
-     * @return The task ID of the settle task.
-     */
-    function getSettleTaskId(IChromaticLP lp, uint256 receiptId) external view returns (bytes32);
-
-    /**
-     * @dev Cancels the existing task for a specific task ID.
-     * @param taskId The unique identifier of the task.
-     */
-    function cancelTask(bytes32 taskId) external;
 }

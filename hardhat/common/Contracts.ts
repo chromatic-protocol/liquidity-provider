@@ -19,7 +19,9 @@ import {
   IChromaticLP,
   IChromaticLP__factory,
   IERC20Metadata,
-  IERC20Metadata__factory
+  IERC20Metadata__factory,
+  IMate2AutomationRegistry,
+  IMate2AutomationRegistry__factory
 } from '~/typechain-types'
 
 export class Contracts {
@@ -64,5 +66,8 @@ export class Contracts {
   }
   market(address: string): IChromaticMarket {
     return IChromaticMarket__factory.connect(address, this.signer)
+  }
+  mate2Registry(address: string): IMate2AutomationRegistry {
+    return IMate2AutomationRegistry__factory.connect(address, this.signer)
   }
 }
