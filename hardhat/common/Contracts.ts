@@ -14,6 +14,10 @@ import {
   ChromaticBPFactory__factory,
   ChromaticLPRegistry,
   ChromaticLPRegistry__factory,
+  IAutomateMate2BP,
+  IAutomateMate2BP__factory,
+  IAutomateMate2LP,
+  IAutomateMate2LP__factory,
   IChromaticBP,
   IChromaticBP__factory,
   IChromaticLP,
@@ -69,5 +73,11 @@ export class Contracts {
   }
   mate2Registry(address: string): IMate2AutomationRegistry {
     return IMate2AutomationRegistry__factory.connect(address, this.signer)
+  }
+  automateLP(address: string): IAutomateMate2LP {
+    return IAutomateMate2LP__factory.connect(address, this.signer)
+  }
+  automateBP(address: string): IAutomateMate2BP {
+    return IAutomateMate2BP__factory.connect(address, this.signer)
   }
 }
