@@ -85,10 +85,10 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.283":
-  version "0.0.1-rc.283"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.283.tgz#85a8dc9970e3ce268dc0e64644602b793c35ba47"
-  integrity sha512-OiVR6qXh8JaAyWq9VjXQsNxqwVOV0ptxjl8LIpUekNug/Bbrg9wT4q6KS4D8fDVWbiiaBkdcrPHaV1USgAfv8w==
+"@chromatic-protocol/contracts@^0.0.1-rc.285":
+  version "0.0.1-rc.285"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.285.tgz#2d532cd7d5c46807b75ed329720222fc71decfc8"
+  integrity sha512-dV+wRqA1VFyEY7wVRhuxOO/1t1EIqFgrtlJN2GmWsdgWEvwqRBXwqS53WDiQmdPY0/aS5d8QanA/NdVH6HMSOg==
   dependencies:
     "@chainlink/contracts" "^0.8.0"
     "@openzeppelin/contracts" "^4.9.3"
@@ -111,10 +111,10 @@
   dependencies:
     viem "^1.5.0"
 
-"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.168":
-  version "0.1.0-rc.168"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.168.tgz#46a3bd23f16d88368e37902a5fde4d827a5c2a0c"
-  integrity sha512-mganJncHkEvmO4sv5P+ao7ix59rv54P6YsHCoit5GN/PGvaolNHl53VTNdnOw+1JwsxpF9InkM036uykMcuBKA==
+"@chromatic-protocol/sdk-ethers-v6@0.1.0-rc.170":
+  version "0.1.0-rc.170"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-ethers-v6/-/sdk-ethers-v6-0.1.0-rc.170.tgz#62ebd21faa33bcc399d50ff98f5fa97b51360efa"
+  integrity sha512-QdPGjYzdKOz72vXp5ChKgAN0vtMhTkcnxVG/Bhgdx5oSL3Aps/4vWt1ofgrtOK4iFD0ZcF4i8N2sb0ucphCIoA==
 
 "@colors/colors@1.5.0":
   version "1.5.0"
