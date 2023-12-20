@@ -26,6 +26,7 @@ import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
+import {REBALANCE_ID} from "~/lp/libraries/LPState.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
@@ -123,8 +124,9 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function _settle(uint256 receiptId, uint256 keeperFee) internal returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
 
-        if (receipt.oracleVersion < s_state.oracleVersion()) {
-            delete s_task[receiptId];
+        if (receipt.id > REBALANCE_ID && receipt.oracleVersion < s_state.oracleVersion()) {
+            _cancelSettleTask(receiptId);
+
             if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
                 s_state.claimLiquidity(receipt, keeperFee);
             } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
@@ -135,6 +137,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             return true;
         } else {
             return false;
+        }
+    }
+
+    function _cancelSettleTask(uint256 receiptId) internal /* onlyOwner */ {
+        IAutomateLP automate = s_task[receiptId];
+        if (address(automate) != address(0)) {
+            delete s_task[receiptId];
+            automate.cancelSettleTask(receiptId);
         }
     }
 

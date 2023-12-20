@@ -58,10 +58,8 @@ contract ChromaticLP is IChromaticLiquidityCallback, IERC1155Receiver, Chromatic
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function cancelSettleTask(uint256 receiptId) external onlyOwner {
-        IAutomateLP automate = s_task[receiptId];
-        delete s_task[receiptId];
-        automate.cancelSettleTask(receiptId);
+    function cancelSettleTask(uint256 /* receiptId */) external onlyOwner {
+        _fallback();
     }
 
     /**
