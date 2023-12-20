@@ -67,7 +67,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
         return _settle(receiptId, 0);
     }
 
-    function cancelSettleTask(uint256 receiptId) public /* onlyOwner */ {
+    function cancelSettleTask(uint256 receiptId) external /* onlyOwner */ {
         _cancelSettleTask(receiptId);
     }
 
