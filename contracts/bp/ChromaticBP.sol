@@ -291,8 +291,17 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
     function boost() external override nonReentrant {
         if (s_state.isBoostExecutable()) {
             _boostLP();
+            _cancelBoostTask();
         } else {
             revert NotBoostable();
+        }
+    }
+
+    function _cancelBoostTask() internal {
+        // cancel task if manually executed
+        IAutomateBP automate = s_state.getAutomateBP();
+        if (address(automate) != address(0)) {
+            try automate.cancelBoostTask(IChromaticBP(this)) {} catch {}
         }
     }
 
