@@ -7,6 +7,18 @@ type ChromaticLPRegistered @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type ChromaticLP @entity(immutable: true) {
+  id: Bytes! # lp address
+  lpName: String!
+  longShortInfo: Int!
+  market: Bytes! # address
+  settlementToken: Bytes! #address
+  settlementTokenSymbol: String!
+  settlementTokenDecimals: Int!
+  oracleProvider: Bytes! # address
+  oracleDescription: String!
+}
+
 type AddLiquidity @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address
@@ -114,7 +126,7 @@ type BPDeposited @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type BPExecuted @entity(immutable: true) {
+type BPBoostTaskExecuted @entity(immutable: true) {
   id: Bytes!
   bp: Bytes! # address
   blockNumber: BigInt!

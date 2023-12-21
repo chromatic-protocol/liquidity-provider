@@ -18,17 +18,17 @@ function saveABI(contract, deployment) {
   fs.writeFileSync(join(abiPath, `${contract}.json`), JSON.stringify(deployment.abi, null, 2))
 }
 
-async function loadInterfaceABI(interfaceName, path) {
-  const interfacesPath = join(...'../../artifacts/contracts'.split('/'), path, 'interfaces')
+async function loadABIFromArtifacts(interfaceName, path) {
+  const interfacesPath = join(...'../../artifacts'.split('/'), ...path.split('/'))
   const json = await import(join(interfacesPath, `${interfaceName}.sol`, `${interfaceName}.json`), {
     assert: { type: 'json' }
   })
   return json.default
 }
 
-async function saveInterfaceABI(interfaceName, path) {
+async function saveABIFromArtifacts(interfaceName, path) {
   if (!fs.existsSync(abiPath)) fs.mkdirSync(abiPath, { recursive: true })
-  const json = await loadInterfaceABI(interfaceName, path)
+  const json = await loadABIFromArtifacts(interfaceName, path)
 
   fs.writeFileSync(join(abiPath, `${interfaceName}.json`), JSON.stringify(json.abi, null, 2))
 }
@@ -38,13 +38,17 @@ async function main() {
   const templateFile = process.argv[3]
   const outputFile = process.argv[4]
 
+  await saveABIFromArtifacts('IERC20Metadata', '@openzeppelin/contracts/token/ERC20/extensions')
+  await saveABIFromArtifacts('IChromaticMarket', '@chromatic-protocol/contracts/core/interfaces')
+  await saveABIFromArtifacts('IOracleProvider', '@chromatic-protocol/contracts/oracle/interfaces')
+
   const lpRegistry = await loadDeployment(network, 'ChromaticLPRegistry')
   saveABI('ChromaticLPRegistry', lpRegistry)
-  await saveInterfaceABI('IChromaticLP', 'lp')
+  await saveABIFromArtifacts('IChromaticLP', 'contracts/lp/interfaces')
 
   const bpFactory = await loadDeployment(network, 'ChromaticBPFactory')
   saveABI('ChromaticBPFactory', bpFactory)
-  await saveInterfaceABI('IChromaticBP', 'bp')
+  await saveABIFromArtifacts('IChromaticBP', 'contracts/bp/interfaces')
 
   const template = fs.readFileSync(templateFile).toString()
   const output = Mustache.render(template, {

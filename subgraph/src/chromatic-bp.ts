@@ -1,7 +1,7 @@
-import { BPDeposited, BPExecuted } from '../generated/schema'
+import { BPBoostTaskExecuted, BPDeposited } from '../generated/schema'
 import {
-  BPDeposited as BPDepositedEvent,
-  BPExecuted as BPExecutedEvent
+  BPBoostTaskExecuted as BPBoostTaskExecutedEvent,
+  BPDeposited as BPDepositedEvent
 } from '../generated/templates/IChromaticBP/IChromaticBP'
 
 export function handleBPDeposited(event: BPDepositedEvent): void {
@@ -17,8 +17,8 @@ export function handleBPDeposited(event: BPDepositedEvent): void {
   entity.save()
 }
 
-export function handleBPExecuted(event: BPExecutedEvent): void {
-  let entity = new BPExecuted(event.transaction.hash.concatI32(event.logIndex.toI32()))
+export function handleBPBoostTaskExecuted(event: BPBoostTaskExecutedEvent): void {
+  let entity = new BPBoostTaskExecuted(event.transaction.hash.concatI32(event.logIndex.toI32()))
   entity.bp = event.address
 
   entity.blockNumber = event.block.number

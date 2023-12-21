@@ -41,7 +41,22 @@
   },
   {
     "inputs": [],
+    "name": "NonTransferable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "NotAutomationCalled",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotBoostable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotLPCalled",
     "type": "error"
   },
   {
@@ -106,6 +121,18 @@
   },
   {
     "anonymous": false,
+    "inputs": [],
+    "name": "BPBoostTaskCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "BPBoostTaskExecuted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [
       {
         "indexed": true,
@@ -150,8 +177,15 @@
   },
   {
     "anonymous": false,
-    "inputs": [],
-    "name": "BPExecuted",
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalRaised",
+        "type": "uint256"
+      }
+    ],
+    "name": "BPFullyRaised",
     "type": "event"
   },
   {
@@ -184,6 +218,19 @@
       }
     ],
     "name": "BPSettleUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalReward",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetTotalReward",
     "type": "event"
   },
   {
@@ -280,16 +327,40 @@
   },
   {
     "inputs": [],
-    "name": "boostLP",
+    "name": "boost",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "feePayee",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "keeperFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "boostTask",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "boostLPTask",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "checkBoost",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -451,24 +522,6 @@
   },
   {
     "inputs": [],
-    "name": "resolveBoostLPTask",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "upkeepNeeded",
-        "type": "bool"
-      },
-      {
-        "internalType": "bytes",
-        "name": "performData",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "settlementToken",
     "outputs": [
       {
@@ -488,6 +541,19 @@
         "internalType": "uint256",
         "name": "timestamp",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "status",
+    "outputs": [
+      {
+        "internalType": "enum BPStatus",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -526,6 +592,19 @@
       {
         "internalType": "uint256",
         "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalReward",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
