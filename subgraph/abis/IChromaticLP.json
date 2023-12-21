@@ -1,11 +1,6 @@
 [
   {
     "inputs": [],
-    "name": "AlreadyRebalanceTaskExist",
-    "type": "error"
-  },
-  {
-    "inputs": [],
     "name": "InvalidMinHoldingValueToRebalance",
     "type": "error"
   },
@@ -332,6 +327,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "automate",
+        "type": "address"
+      }
+    ],
+    "name": "SetAutomateLP",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "newValue",
         "type": "uint256"
@@ -461,6 +469,51 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "receiptId",
+        "type": "uint256"
+      }
+    ],
+    "name": "cancelSettleTask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "checkRebalance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "receiptId",
+        "type": "uint256"
+      }
+    ],
+    "name": "checkSettle",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "clbTokenBalances",
     "outputs": [
@@ -480,6 +533,19 @@
       {
         "internalType": "uint256[]",
         "name": "tokenIds",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "clbTokenValues",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "values",
         "type": "uint256[]"
       }
     ],
@@ -540,6 +606,19 @@
         "internalType": "int16[]",
         "name": "",
         "type": "int16[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAutomateLP",
+    "outputs": [
+      {
+        "internalType": "contract IAutomateLP",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -641,6 +720,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "longShortInfo",
+    "outputs": [
+      {
+        "internalType": "int8",
+        "name": "",
+        "type": "int8"
       }
     ],
     "stateMutability": "view",
@@ -751,6 +843,24 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "feePayee",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "keeperFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "rebalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "rebalanceBPS",
     "outputs": [
@@ -838,45 +948,16 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "resolveRebalance",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "upkeepNeeded",
-        "type": "bool"
-      },
-      {
-        "internalType": "bytes",
-        "name": "performData",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "receiptId",
-        "type": "uint256"
+        "internalType": "contract IAutomateLP",
+        "name": "automate",
+        "type": "address"
       }
     ],
-    "name": "resolveSettle",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "upkeepNeeded",
-        "type": "bool"
-      },
-      {
-        "internalType": "bytes",
-        "name": "performData",
-        "type": "bytes"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "setAutomateLP",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -951,16 +1032,26 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "settleCheckingInterval",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "receiptId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "feePayee",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "keeperFee",
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "name": "settleTask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
