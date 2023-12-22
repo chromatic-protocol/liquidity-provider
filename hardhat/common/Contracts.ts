@@ -1,12 +1,12 @@
-import { deployedAddress } from '@chromatic-protocol/sdk-ethers-v6'
-import {
-  ChromaticMarketFactory,
-  ChromaticMarketFactory__factory,
-  IChromaticMarket,
-  IChromaticMarket__factory
-} from '@chromatic-protocol/sdk-ethers-v6/contracts'
+import { chromaticMarketFactoryAddress } from '@chromatic-protocol/sdk-viem'
 import { Signer } from 'ethers'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
+import {
+  IChromaticMarket,
+  IChromaticMarketFactory,
+  IChromaticMarketFactory__factory,
+  IChromaticMarket__factory
+} from '~/typechain-types'
 import { DeployedStore } from './DeployedStore'
 
 import {
@@ -35,17 +35,20 @@ export class Contracts {
     public readonly deployed: DeployedStore
   ) {}
 
-  get networkName() {
+  get chainId(): number {
     if (this.hre.network.name == 'anvil_arbitrum') {
-      return 'anvil'
+      return this.hre.config.networks.arbitrum_sepolia.chainId!
     } else {
-      return this.hre.network.name
+      return this.hre.network.config.chainId!
     }
   }
 
-  get marketFactory(): ChromaticMarketFactory {
-    const address = deployedAddress[this.networkName]['ChromaticMarketFactory']
-    return ChromaticMarketFactory__factory.connect(address, this.signer)
+  get marketFactory(): IChromaticMarketFactory {
+    const address =
+      chromaticMarketFactoryAddress[this.chainId as keyof typeof chromaticMarketFactoryAddress]
+
+    console.assert(address, `check marketFactory deployed address available in ${this.chainId}`)
+    return IChromaticMarketFactory__factory.connect(address, this.signer)
   }
 
   get lpRegistry(): ChromaticLPRegistry {
