@@ -17,6 +17,16 @@ type ChromaticLP @entity(immutable: true) {
   settlementTokenDecimals: Int!
   oracleProvider: Bytes! # address
   oracleDescription: String!
+  lpTag: String!
+  feeRates: [Int!]!
+  clbTokenIds: [BigInt!]!
+  lpTokenName: String!
+  lpTokenSymbol: String!
+  lpTokenDecimals: Int!
+  distributionRates: [Int!]!
+  rebalanceBPS: BigInt!
+  rebalanceCheckingInterval: BigInt!
+  utilizationTargetBPS: BigInt!
 }
 
 type AddLiquidity @entity(immutable: true) {

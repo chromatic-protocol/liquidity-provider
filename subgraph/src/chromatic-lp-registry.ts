@@ -21,6 +21,7 @@ export function handleChromaticLPRegistered(event: ChromaticLPRegisteredEvent): 
   let lpEntity = ChromaticLP.load(entity.lp)
   if (lpEntity == null) {
     let lpContract = IChromaticLP_.bind(Address.fromBytes(entity.lp))
+    let lpTokenContract = IERC20Metadata.bind(Address.fromBytes(entity.lp))
     let marketContract = IChromaticMarket.bind(Address.fromBytes(entity.market))
     let tokenContract = IERC20Metadata.bind(marketContract.settlementToken())
     let providerContract = IOracleProvider.bind(marketContract.oracleProvider())
@@ -34,6 +35,16 @@ export function handleChromaticLPRegistered(event: ChromaticLPRegisteredEvent): 
     lpEntity.settlementTokenDecimals = tokenContract.decimals()
     lpEntity.oracleProvider = providerContract._address
     lpEntity.oracleDescription = providerContract.description()
+    lpEntity.lpTag = lpContract.lpTag()
+    lpEntity.feeRates = lpContract.feeRates()
+    lpEntity.clbTokenIds = lpContract.clbTokenIds()
+    lpEntity.lpTokenName = lpTokenContract.name()
+    lpEntity.lpTokenSymbol = lpTokenContract.symbol()
+    lpEntity.lpTokenDecimals = lpTokenContract.decimals()
+    lpEntity.distributionRates = lpContract.distributionRates()
+    lpEntity.rebalanceBPS = lpContract.rebalanceBPS()
+    lpEntity.rebalanceCheckingInterval = lpContract.rebalanceCheckingInterval()
+    lpEntity.utilizationTargetBPS = lpContract.utilizationTargetBPS()
 
     lpEntity.save()
   }
