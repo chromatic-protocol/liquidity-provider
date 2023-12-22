@@ -44,7 +44,7 @@ async function main() {
 
   const lpRegistry = await loadDeployment(network, 'ChromaticLPRegistry')
   saveABI('ChromaticLPRegistry', lpRegistry)
-  await saveABIFromArtifacts('IChromaticLP', 'contracts/lp/interfaces')
+  await saveABIFromArtifacts('ChromaticLP', 'contracts/lp')
 
   const bpFactory = await loadDeployment(network, 'ChromaticBPFactory')
   saveABI('ChromaticBPFactory', bpFactory)
