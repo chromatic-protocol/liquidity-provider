@@ -1,9 +1,5 @@
 import { type DeployResult } from 'hardhat-deploy/types'
 import { AddressType } from '~/hardhat/common/types'
-// import type { LPDeployedResultMap, RegistryDeployedResultMap } from './types'
-
-// const REGISTRY_DEPLOYED: RegistryDeployedResultMap = {}
-// const LP_DEPLOYED: LPDeployedResultMap = {}
 
 interface MarketToLPs {
   [marketAddress: AddressType]: AddressType[]
