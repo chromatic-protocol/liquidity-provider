@@ -9,7 +9,6 @@ type ChromaticLPRegistered @entity(immutable: true) {
 
 type ChromaticLP @entity(immutable: true) {
   id: Bytes! # lp address
-  lpName: String!
   longShortInfo: Int!
   market: Bytes! # address
   settlementToken: Bytes! #address
@@ -17,7 +16,6 @@ type ChromaticLP @entity(immutable: true) {
   settlementTokenDecimals: Int!
   oracleProvider: Bytes! # address
   oracleDescription: String!
-  lpTag: String!
   feeRates: [Int!]!
   clbTokenIds: [BigInt!]!
   lpTokenName: String!

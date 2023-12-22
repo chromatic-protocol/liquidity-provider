@@ -27,7 +27,6 @@ export function handleChromaticLPRegistered(event: ChromaticLPRegisteredEvent): 
     let providerContract = IOracleProvider.bind(marketContract.oracleProvider())
 
     lpEntity = new ChromaticLP(lpContract._address)
-    lpEntity.lpName = lpContract.lpName()
     lpEntity.longShortInfo = lpContract.longShortInfo()
     lpEntity.market = marketContract._address
     lpEntity.settlementToken = tokenContract._address
@@ -35,7 +34,6 @@ export function handleChromaticLPRegistered(event: ChromaticLPRegisteredEvent): 
     lpEntity.settlementTokenDecimals = tokenContract.decimals()
     lpEntity.oracleProvider = providerContract._address
     lpEntity.oracleDescription = providerContract.description()
-    lpEntity.lpTag = lpContract.lpTag()
     lpEntity.feeRates = lpContract.feeRates()
     lpEntity.clbTokenIds = lpContract.clbTokenIds()
     lpEntity.lpTokenName = lpTokenContract.name()
