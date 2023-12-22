@@ -17,11 +17,14 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ChromaticLPRegistered
+        - ChromaticLP
+        - ChromaticLPMeta
+        - ChromaticLPConfig
       abis:
         - name: ChromaticLPRegistry
           file: ./abis/ChromaticLPRegistry.json
-        - name: IChromaticLP
-          file: ./abis/IChromaticLP.json
+        - name: ChromaticLP
+          file: ./abis/ChromaticLP.json
         - name: IERC20Metadata
           file: ./abis/IERC20Metadata.json
         - name: IChromaticMarket
@@ -58,10 +61,10 @@ dataSources:
 templates:
 
   - kind: ethereum/contract
-    name: IChromaticLP
+    name: ChromaticLP
     network: '{{network}}'
     source:
-      abi: IChromaticLP
+      abi: ChromaticLP
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -74,9 +77,12 @@ templates:
         - RebalanceAddLiquidity
         - RebalanceRemoveLiquidity
         - RebalanceSettled
+        - ChromaticLPMeta
+        - ChromaticLPConfig
+        - LPTokenTotalSupply
       abis:
-        - name: IChromaticLP
-          file: ./abis/IChromaticLP.json
+        - name: ChromaticLP
+          file: ./abis/ChromaticLP.json
       eventHandlers:
         - event: AddLiquidity(indexed uint256,indexed address,indexed address,uint256,uint256)
           handler: handleAddLiquidity
@@ -92,6 +98,16 @@ templates:
           handler: handleRebalanceRemoveLiquidity
         - event: RebalanceSettled(indexed uint256,uint256)
           handler: handleRebalanceSettled
+        - event: SetLpName(string)
+          handler: handleSetLpName
+        - event: SetLpTag(string)
+          handler: handleSetLpTag
+        - event: SetAutomationFeeReserved(uint256)
+          handler: handleSetAutomationFeeReserved
+        - event: SetMinHoldingValueToRebalance(uint256)
+          handler: handleSetMinHoldingValueToRebalance
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
       file: ./src/chromatic-lp.ts
 
   - kind: ethereum/contract

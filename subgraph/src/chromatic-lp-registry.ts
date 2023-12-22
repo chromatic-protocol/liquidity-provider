@@ -1,11 +1,16 @@
 import { Address } from '@graphprotocol/graph-ts'
+import { ChromaticLP as ChromaticLP_ } from '../generated/ChromaticLPRegistry/ChromaticLP'
 import { ChromaticLPRegistered as ChromaticLPRegisteredEvent } from '../generated/ChromaticLPRegistry/ChromaticLPRegistry'
-import { IChromaticLP as IChromaticLP_ } from '../generated/ChromaticLPRegistry/IChromaticLP'
 import { IChromaticMarket } from '../generated/ChromaticLPRegistry/IChromaticMarket'
 import { IERC20Metadata } from '../generated/ChromaticLPRegistry/IERC20Metadata'
 import { IOracleProvider } from '../generated/ChromaticLPRegistry/IOracleProvider'
-import { ChromaticLP, ChromaticLPRegistered } from '../generated/schema'
-import { IChromaticLP } from '../generated/templates'
+import {
+  ChromaticLP,
+  ChromaticLPConfig,
+  ChromaticLPMeta,
+  ChromaticLPRegistered
+} from '../generated/schema'
+import { ChromaticLP as ChromaticLPTemplate } from '../generated/templates'
 
 export function handleChromaticLPRegistered(event: ChromaticLPRegisteredEvent): void {
   let entity = new ChromaticLPRegistered(event.transaction.hash.concatI32(event.logIndex.toI32()))
@@ -20,8 +25,7 @@ export function handleChromaticLPRegistered(event: ChromaticLPRegisteredEvent): 
 
   let lpEntity = ChromaticLP.load(entity.lp)
   if (lpEntity == null) {
-    let lpContract = IChromaticLP_.bind(Address.fromBytes(entity.lp))
-    let lpTokenContract = IERC20Metadata.bind(Address.fromBytes(entity.lp))
+    let lpContract = ChromaticLP_.bind(Address.fromBytes(entity.lp))
     let marketContract = IChromaticMarket.bind(Address.fromBytes(entity.market))
     let tokenContract = IERC20Metadata.bind(marketContract.settlementToken())
     let providerContract = IOracleProvider.bind(marketContract.oracleProvider())
@@ -36,16 +40,40 @@ export function handleChromaticLPRegistered(event: ChromaticLPRegisteredEvent): 
     lpEntity.oracleDescription = providerContract.description()
     lpEntity.feeRates = lpContract.feeRates()
     lpEntity.clbTokenIds = lpContract.clbTokenIds()
-    lpEntity.lpTokenName = lpTokenContract.name()
-    lpEntity.lpTokenSymbol = lpTokenContract.symbol()
-    lpEntity.lpTokenDecimals = lpTokenContract.decimals()
+    lpEntity.lpTokenName = lpContract.name()
+    lpEntity.lpTokenSymbol = lpContract.symbol()
+    lpEntity.lpTokenDecimals = lpContract.decimals()
     lpEntity.distributionRates = lpContract.distributionRates()
     lpEntity.rebalanceBPS = lpContract.rebalanceBPS()
     lpEntity.rebalanceCheckingInterval = lpContract.rebalanceCheckingInterval()
     lpEntity.utilizationTargetBPS = lpContract.utilizationTargetBPS()
 
     lpEntity.save()
+
+    let id = entity.lp.toHex() + '@' + event.block.number.toString()
+
+    let metaEntity = ChromaticLPMeta.load(id)
+    if (metaEntity == null) {
+      metaEntity = new ChromaticLPMeta(id)
+      metaEntity.lp = lpContract._address
+      metaEntity.lpName = lpContract.lpName()
+      metaEntity.lpTag = lpContract.lpTag()
+      metaEntity.blockNumber = event.block.number
+      metaEntity.blockTimestamp = event.block.timestamp
+      metaEntity.save()
+    }
+
+    let configEntity = ChromaticLPConfig.load(id)
+    if (configEntity == null) {
+      configEntity = new ChromaticLPConfig(id)
+      configEntity.lp = lpContract._address
+      configEntity.automationFeeReserved = lpContract.automationFeeReserved()
+      configEntity.minHoldingValueToRebalance = lpContract.minHoldingValueToRebalance()
+      configEntity.blockNumber = event.block.number
+      configEntity.blockTimestamp = event.block.timestamp
+      configEntity.save()
+    }
   }
 
-  IChromaticLP.create(event.params.lp)
+  ChromaticLPTemplate.create(event.params.lp)
 }

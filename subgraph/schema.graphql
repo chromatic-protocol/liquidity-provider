@@ -27,6 +27,45 @@ type ChromaticLP @entity(immutable: true) {
   utilizationTargetBPS: BigInt!
 }
 
+type ChromaticLPMeta @entity(immutable: true) {
+  id: ID!
+  lp: Bytes! # lp address
+  lpName: String!
+  lpTag: String!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+type ChromaticLPConfig @entity(immutable: true) {
+  id: ID!
+  lp: Bytes! # lp address
+  automationFeeReserved: BigInt!
+  minHoldingValueToRebalance: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+type ChromaticLPStat @entity(immutable: true) {
+  id: ID!
+  lp: Bytes! # lp address
+  totalValue: BigInt!
+  holdingValue: BigInt!
+  pendingValue: BigInt!
+  holdingClbValue: BigInt!
+  pendingClbValue: BigInt!
+  utilization: Int!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+type LPTokenTotalSupply @entity(immutable: true) {
+  id: ID!
+  token: Bytes! # address
+  amount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
 type AddLiquidity @entity(immutable: true) {
   id: Bytes!
   lp: Bytes! # address

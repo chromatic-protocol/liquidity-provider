@@ -1,5 +1,85 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "contract ChromaticLPLogic",
+        "name": "lpLogic",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "lpName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "tag",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct ChromaticLPStorageCore.LPMeta",
+        "name": "lpMeta",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "contract IChromaticMarket",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "uint16",
+            "name": "utilizationTargetBPS",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint16",
+            "name": "rebalanceBPS",
+            "type": "uint16"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rebalanceCheckingInterval",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "automationFeeReserved",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minHoldingValueToRebalance",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ChromaticLPStorageCore.ConfigParam",
+        "name": "config",
+        "type": "tuple"
+      },
+      {
+        "internalType": "int16[]",
+        "name": "_feeRates",
+        "type": "int16[]"
+      },
+      {
+        "internalType": "uint16[]",
+        "name": "_distributionRates",
+        "type": "uint16[]"
+      },
+      {
+        "internalType": "contract IAutomateLP",
+        "name": "automate",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "inputs": [],
     "name": "InvalidMinHoldingValueToRebalance",
     "type": "error"
@@ -159,6 +239,31 @@
       }
     ],
     "name": "AddLiquiditySettled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
     "type": "event"
   },
   {
@@ -388,6 +493,48 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "fallback"
+  },
+  {
+    "inputs": [],
+    "name": "CHROMATIC_LP_LOGIC",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -396,7 +543,7 @@
       },
       {
         "internalType": "address",
-        "name": "recipient",
+        "name": "",
         "type": "address"
       }
     ],
@@ -449,8 +596,121 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "addLiquidityBatchCallback",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "addLiquidityCallback",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "automationFeeReserved",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
     "outputs": [
       {
         "internalType": "uint256",
@@ -472,7 +732,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "receiptId",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -514,12 +774,78 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "int16[]",
+        "name": "",
+        "type": "int16[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "claimLiquidityBatchCallback",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "int16",
+        "name": "",
+        "type": "int16"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "claimLiquidityCallback",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "clbTokenBalances",
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "balances",
+        "name": "_clbTokenBalances",
         "type": "uint256[]"
       }
     ],
@@ -532,7 +858,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "tokenIds",
+        "name": "",
         "type": "uint256[]"
       }
     ],
@@ -545,7 +871,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "values",
+        "name": "_clbTokenBalances",
         "type": "uint256[]"
       }
     ],
@@ -561,11 +887,48 @@
   },
   {
     "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "subtractedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseAllowance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "distributionRates",
     "outputs": [
       {
         "internalType": "uint16[]",
-        "name": "",
+        "name": "rates",
         "type": "uint16[]"
       }
     ],
@@ -628,7 +991,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "id",
+        "name": "receiptId",
         "type": "uint256"
       }
     ],
@@ -692,7 +1055,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "",
+        "name": "receiptIds",
         "type": "uint256[]"
       }
     ],
@@ -705,7 +1068,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "value",
         "type": "uint256"
       }
     ],
@@ -723,6 +1086,30 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "addedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseAllowance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -805,11 +1192,102 @@
   },
   {
     "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC1155BatchReceived",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "onERC1155Received",
+    "outputs": [
+      {
+        "internalType": "bytes4",
+        "name": "",
+        "type": "bytes4"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "pendingClbValue",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "value",
         "type": "uint256"
       }
     ],
@@ -822,7 +1300,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "pendingBalances",
+        "name": "",
         "type": "uint256[]"
       }
     ],
@@ -846,12 +1324,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "feePayee",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "keeperFee",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -890,12 +1368,12 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "lpTokenAmount",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "recipient",
+        "name": "",
         "type": "address"
       }
     ],
@@ -950,6 +1428,52 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "removeLiquidityBatchCallback",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "removeLiquidityCallback",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IAutomateLP",
         "name": "automate",
         "type": "address"
@@ -990,7 +1514,7 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "newTag",
+        "name": "tag",
         "type": "string"
       }
     ],
@@ -1016,7 +1540,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "receiptId",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -1040,12 +1564,12 @@
       },
       {
         "internalType": "address",
-        "name": "feePayee",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "keeperFee",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -1068,6 +1592,38 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceID",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "totalClbValue",
     "outputs": [
@@ -1082,7 +1638,7 @@
   },
   {
     "inputs": [],
-    "name": "totalValue",
+    "name": "totalSupply",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1095,11 +1651,77 @@
   },
   {
     "inputs": [],
+    "name": "totalValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "utilization",
     "outputs": [
       {
         "internalType": "uint16",
-        "name": "",
+        "name": "currentUtility",
         "type": "uint16"
       }
     ],
@@ -1158,5 +1780,75 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "int16[]",
+        "name": "",
+        "type": "int16[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "withdrawLiquidityBatchCallback",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "int16",
+        "name": "",
+        "type": "int16"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "name": "withdrawLiquidityCallback",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]
