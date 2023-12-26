@@ -25,11 +25,13 @@ type ChromaticLP @entity(immutable: true) {
   rebalanceBPS: BigInt!
   rebalanceCheckingInterval: BigInt!
   utilizationTargetBPS: BigInt!
+  metas: [ChromaticLPMeta!]! @derivedFrom(field: "lp")
+  configs: [ChromaticLPConfig!]! @derivedFrom(field: "lp")
 }
 
 type ChromaticLPMeta @entity(immutable: true) {
   id: ID!
-  lp: Bytes! # lp address
+  lp: ChromaticLP!
   lpName: String!
   lpTag: String!
   blockNumber: BigInt!
@@ -38,7 +40,7 @@ type ChromaticLPMeta @entity(immutable: true) {
 
 type ChromaticLPConfig @entity(immutable: true) {
   id: ID!
-  lp: Bytes! # lp address
+  lp: ChromaticLP!
   automationFeeReserved: BigInt!
   minHoldingValueToRebalance: BigInt!
   blockNumber: BigInt!
@@ -163,6 +165,68 @@ type ChromaticBPCreated @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type ChromaticBP @entity(immutable: true) {
+  id: Bytes! # bp address
+  lp: ChromaticLP!
+  totalReward: BigInt!
+  minRaisingTarget: BigInt!
+  initialEndTimeOfWarmup: BigInt!
+  maxRaisingTarget: BigInt!
+  startTimeOfWarmup: BigInt!
+  statuses: [ChromaticBPStatus!]! @derivedFrom(field: "bp")
+  totalRaised: [ChromaticBPTotalRaised!]! @derivedFrom(field: "bp")
+  deposits: [ChromaticBPDeposit!]! @derivedFrom(field: "bp")
+  refunds: [ChromaticBPRefund!]! @derivedFrom(field: "bp")
+  claims: [ChromaticBPClaim!]! @derivedFrom(field: "bp")
+}
+
+type ChromaticBPStatus @entity(immutable: true) {
+  id: ID!
+  bp: ChromaticBP!
+  endTimeOfWarmup: BigInt!
+  endTimeOfLockup: BigInt!
+  currentPeriod: Int!
+  status: Int!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+type ChromaticBPTotalRaised @entity(immutable: true) {
+  id: ID!
+  bp: ChromaticBP!
+  amount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+type ChromaticBPDeposit @entity(immutable: true) {
+  id: ID!
+  bp: ChromaticBP!
+  provider: Bytes! # address
+  amount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+type ChromaticBPRefund @entity(immutable: true) {
+  id: ID!
+  bp: ChromaticBP!
+  provider: Bytes! # address
+  amount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
+type ChromaticBPClaim @entity(immutable: true) {
+  id: ID!
+  bp: ChromaticBP!
+  provider: Bytes! # address
+  bpTokenAmount: BigInt!
+  lpTokenAmount: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+}
+
 type BPDeposited @entity(immutable: true) {
   id: Bytes!
   bp: Bytes! # address
@@ -180,3 +244,13 @@ type BPBoostTaskExecuted @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+type BPSettleUpdated @entity(immutable: true) {
+  id: Bytes!
+  bp: Bytes! # address
+  totalLPToken: BigInt!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+

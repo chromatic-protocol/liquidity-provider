@@ -48,7 +48,7 @@ async function main() {
 
   const bpFactory = await loadDeployment(network, 'ChromaticBPFactory')
   saveABI('ChromaticBPFactory', bpFactory)
-  await saveABIFromArtifacts('IChromaticBP', 'contracts/bp/interfaces')
+  await saveABIFromArtifacts('ChromaticBP', 'contracts/bp')
 
   const template = fs.readFileSync(templateFile).toString()
   const output = Mustache.render(template, {

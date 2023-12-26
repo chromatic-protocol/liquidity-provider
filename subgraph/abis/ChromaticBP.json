@@ -1,5 +1,58 @@
 [
   {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "contract IChromaticLP",
+            "name": "lp",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalReward",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minRaisingTarget",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxRaisingTarget",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTimeOfWarmup",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxDurationOfWarmup",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "durationOfLockup",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct BPConfig",
+        "name": "config",
+        "type": "tuple"
+      },
+      {
+        "internalType": "contract IChromaticBPFactory",
+        "name": "bpFactory",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "inputs": [],
     "name": "BoostingNotExecuted",
     "type": "error"
@@ -371,6 +424,34 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lpTokenMint",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimedCallback",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "currentPeriod",
     "outputs": [
@@ -394,6 +475,30 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "subtractedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseAllowance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -433,6 +538,30 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "addedValue",
+        "type": "uint256"
+      }
+    ],
+    "name": "increaseAllowance",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -674,6 +803,39 @@
         "type": "bool"
       }
     ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "receiptId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "burnedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "withdrawnAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "refundedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "keeperFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawnCallback",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   }
