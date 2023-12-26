@@ -49,9 +49,13 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - ChromaticBPCreated
+        - ChromaticBP
+        - ChromaticBPStatus
       abis:
         - name: ChromaticBPFactory
           file: ./abis/ChromaticBPFactory.json
+        - name: ChromaticBP
+          file: ./abis/ChromaticBP.json
       eventHandlers:
         - event: ChromaticBPCreated(indexed address,address)
           handler: handleChromaticBPCreated
@@ -111,10 +115,10 @@ templates:
       file: ./src/chromatic-lp.ts
 
   - kind: ethereum/contract
-    name: IChromaticBP
+    name: ChromaticBP
     network: '{{network}}'
     source:
-      abi: IChromaticBP
+      abi: ChromaticBP
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -122,12 +126,26 @@ templates:
       entities:
         - BPDeposited
         - BPBoostTaskExecuted
+        - BPSettleUpdated
+        - ChromaticBPStatus
+        - ChromaticBPTotalRaised
+        - ChromaticBPDeposit
       abis:
-        - name: IChromaticBP
-          file: ./abis/IChromaticBP.json
+        - name: ChromaticBP
+          file: ./abis/ChromaticBP.json
       eventHandlers:
         - event: BPDeposited(indexed address,uint256)
           handler: handleBPDeposited
+        - event: BPRefunded(indexed address,uint256)
+          handler: handleBPRefunded
+        - event: BPClaimed(indexed address,uint256,uint256)
+          handler: handleBPClaimed
+        - event: BPFullyRaised(uint256)
+          handler: handleBPFullyRaised
+        - event: BPBoostTaskCreated()
+          handler: handleBPBoostTaskCreated
         - event: BPBoostTaskExecuted()
           handler: handleBPBoostTaskExecuted
+        - event: BPSettleUpdated(uint256)
+          handler: handleBPSettleUpdated
       file: ./src/chromatic-bp.ts
