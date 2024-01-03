@@ -150,6 +150,7 @@ library LPStateLogicLib {
      * @param s_state The storage state of the liquidity provider.
      * @param amount The total amount of liquidity to be added.
      * @param liquidityTarget The target liquidity amount.
+     * @param provider The address of the liquidity provider.
      * @param recipient The address to receive LP tokens.
      * @return receipt The Chromatic LP Receipt representing the addition of liquidity.
      */
@@ -157,6 +158,7 @@ library LPStateLogicLib {
         LPState storage s_state,
         uint256 amount,
         uint256 liquidityTarget,
+        address provider,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
         (uint256[] memory amounts, uint256 liquidityAmount) = s_state.distributeAmount(
@@ -169,7 +171,7 @@ library LPStateLogicLib {
             amounts,
             abi.encode(
                 ChromaticLPLogicBase.AddLiquidityBatchCallbackData({
-                    provider: msg.sender,
+                    provider: provider,
                     liquidityAmount: liquidityAmount,
                     holdingAmount: amount - liquidityAmount
                 })
@@ -178,7 +180,7 @@ library LPStateLogicLib {
 
         receipt = ChromaticLPReceipt({
             id: s_state.nextReceiptId(),
-            provider: msg.sender,
+            provider: provider,
             recipient: recipient,
             oracleVersion: lpReceipts[0].oracleVersion,
             amount: amount,
@@ -195,6 +197,7 @@ library LPStateLogicLib {
      * @param s_state The storage state of the liquidity provider.
      * @param clbTokenAmounts The amounts of CLB tokens to be removed for each fee bin.
      * @param lpTokenAmount The total amount of LP tokens to be removed.
+     * @param provider The address of calling removeLiquidity.
      * @param recipient The address to receive the removed liquidity.
      * @return receipt The Chromatic LP Receipt representing the removal of liquidity.
      */
@@ -202,6 +205,7 @@ library LPStateLogicLib {
         LPState storage s_state,
         uint256[] memory clbTokenAmounts,
         uint256 lpTokenAmount,
+        address provider,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
         LpReceipt[] memory lpReceipts = s_state.market.removeLiquidityBatch(
@@ -210,7 +214,7 @@ library LPStateLogicLib {
             clbTokenAmounts,
             abi.encode(
                 ChromaticLPLogicBase.RemoveLiquidityBatchCallbackData({
-                    provider: msg.sender,
+                    provider: provider,
                     recipient: recipient,
                     lpTokenAmount: lpTokenAmount,
                     clbTokenAmounts: clbTokenAmounts
@@ -220,7 +224,7 @@ library LPStateLogicLib {
 
         receipt = ChromaticLPReceipt({
             id: s_state.nextReceiptId(),
-            provider: msg.sender,
+            provider: provider,
             recipient: recipient,
             oracleVersion: lpReceipts[0].oracleVersion,
             amount: lpTokenAmount,
