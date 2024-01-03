@@ -29,7 +29,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
         uint256 amount,
         address recipient
     ) external nonReentrant returns (ChromaticLPReceipt memory receipt) {
-        receipt = _addLiquidity(amount, recipient);
+        receipt = _addLiquidity(amount, msg.sender, recipient);
         //slither-disable-next-line reentrancy-events
         emit AddLiquidity({
             receiptId: receipt.id,
@@ -49,7 +49,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     ) external nonReentrant returns (ChromaticLPReceipt memory receipt) {
         uint256[] memory clbTokenAmounts = _calcRemoveClbAmounts(lpTokenAmount);
 
-        receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
+        receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, msg.sender, recipient);
         //slither-disable-next-line reentrancy-events
         emit RemoveLiquidity({
             receiptId: receipt.id,
