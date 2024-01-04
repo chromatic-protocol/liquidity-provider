@@ -71,4 +71,14 @@ interface IChromaticLPErrors {
      * @dev Throws an error indicating that the amount to add liquidity is too small.
      */
     error TooSmallAmountToAddLiquidity();
+
+    /**
+     * @dev Error indicating that adding liquidity is suspended.
+     */
+    error AddLiquiditySuspended();
+
+    /**
+     * @dev Error indicating that removing liquidity is suspended.
+     */
+    error RemoveLiquiditySuspended();
 }

@@ -37,4 +37,16 @@ interface IChromaticLPAdmin {
      * @param _minHoldingValueToRebalance The new value for the required minimum amount to trigger rebalance.
      */
     function setMinHoldingValueToRebalance(uint256 _minHoldingValueToRebalance) external;
+
+    /**
+     * @dev Retrieves the current suspension mode of the LP.
+     * @return The current suspension mode.
+     */
+    function suspendMode() external view returns (uint8);
+
+    /**
+     * @dev Sets the suspension mode for the LP.
+     * @param mode The new suspension mode to be set.
+     */
+    function setSuspendMode(uint8 mode) external;
 }
