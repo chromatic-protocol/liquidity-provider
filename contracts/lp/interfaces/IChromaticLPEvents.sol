@@ -113,4 +113,10 @@ interface IChromaticLPEvents {
      * @param automate The address of the AutomateLP contract.
      */
     event SetAutomateLP(address automate);
+
+    /**
+     * @dev Emitted when the suspension mode is set.
+     * @param mode The new suspension mode.
+     */
+    event SetSuspendMode(uint8 mode);
 }
