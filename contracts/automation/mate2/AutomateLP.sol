@@ -113,6 +113,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     /**
      * @inheritdoc IAutomateLP
      */
+    //slither-disable-next-line timestamp
     function resolveRebalance(
         address lp
     ) public view returns (bool upkeepNeeded, bytes memory performData) {
