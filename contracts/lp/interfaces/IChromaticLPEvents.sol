@@ -119,4 +119,10 @@ interface IChromaticLPEvents {
      * @param mode The new suspension mode.
      */
     event SetSuspendMode(uint8 mode);
+
+    /**
+     * @dev Emitted when the private/public mode is set.
+     * @param mode The new private/public mode .
+     */
+    event SetPrivateMode(bool mode);
 }

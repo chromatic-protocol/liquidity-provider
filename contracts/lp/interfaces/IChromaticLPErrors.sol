@@ -81,4 +81,9 @@ interface IChromaticLPErrors {
      * @dev Error indicating that removing liquidity is suspended.
      */
     error RemoveLiquiditySuspended();
+
+    /**
+     * @dev Error indicating that adding liquidity is not allowed during private mode.
+     */
+    error AddLiquidityNotAllowed();
 }
