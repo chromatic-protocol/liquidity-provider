@@ -37,7 +37,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
     using LPStateSetupLib for LPState;
     using LPConfigLib for LPConfig;
 
-    address immutable _owner;
+    address _owner;
 
     modifier onlyOwner() virtual {
         if (msg.sender != _owner) revert OnlyAccessableByOwner();
@@ -398,5 +398,31 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
      */
     function isAllowedProvider(address provider) external view returns (bool) {
         return _containsAllowed(provider);
+    }
+
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
+    function owner() external view returns (address) {
+        return _owner;
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        if (newOwner == address(0)) revert ZeroAddressError();
+        _transferOwnership(newOwner);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Internal function without access restriction.
+     */
+    function _transferOwnership(address newOwner) internal virtual {
+        address oldOwner = _owner;
+        _owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
     }
 }

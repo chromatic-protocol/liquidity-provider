@@ -86,4 +86,9 @@ interface IChromaticLPErrors {
      * @dev Error indicating that adding liquidity is not allowed during private mode.
      */
     error AddLiquidityNotAllowed();
+
+    /**
+     * @dev Error indicating an attempt to use a zero address.
+     */
+    error ZeroAddressError();
 }

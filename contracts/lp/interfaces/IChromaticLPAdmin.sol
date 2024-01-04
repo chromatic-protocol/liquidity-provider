@@ -86,4 +86,16 @@ interface IChromaticLPAdmin {
      * @return true if the provider is allowed, false otherwise.
      */
     function isAllowedProvider(address provider) external view returns (bool);
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) external;
+
+    /**
+     * @dev Retrieves the address of the current owner.
+     * @return The address of the owner.
+     */
+    function owner() external view returns (address);
 }

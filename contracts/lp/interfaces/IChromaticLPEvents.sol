@@ -125,4 +125,11 @@ interface IChromaticLPEvents {
      * @param mode The new private/public mode .
      */
     event SetPrivateMode(bool mode);
+
+    /**
+     * @dev Emitted when ownership of the LP contract is transferred.
+     * @param previousOwner The address of the previous owner.
+     * @param newOwner The address of the new owner.
+     */
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 }
