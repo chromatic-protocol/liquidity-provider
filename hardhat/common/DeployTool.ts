@@ -5,7 +5,7 @@ const prompt = require('prompt-sync')({ sigint: true })
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
 import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
-import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
+import { ChromaticLP__factory } from '~/typechain-types'
 
 import { formatEther } from 'ethers'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
@@ -42,6 +42,10 @@ function retry(f: any, maxRetry = 10) {
   return _retry
 }
 
+console.assert = function (cond, text) {
+  if (cond) return
+  throw new Error(text || 'Assertion failed!')
+}
 export class DeployTool {
   constructor(
     public readonly hre: HardhatRuntimeEnvironment,
@@ -149,6 +153,69 @@ export class DeployTool {
 
   get automateConfig(): AutomateConfig {
     return getAutomateAddress(this.hre)
+  }
+
+  async getLPDeployConfigs(lpConfigs?: LPConfig[]) {
+    const markets = await this.helper.markets()
+    lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
+
+    const deployConfigs = []
+
+    for (let market of markets) {
+      for (let lpConfig of lpConfigs) {
+        const config = this.adjustLPConfig(market, lpConfig)
+        deployConfigs.push({
+          market: market,
+          config: config
+        })
+      }
+    }
+    return deployConfigs
+  }
+
+  async addInitialLiquidityAll(dryrun = false) {
+    // helper to run addLiquidity to already deployed
+    const deployConfigs = await this.getLPDeployConfigs()
+    const lpAddresses = this.helper.lpAddresses.map((x) => x.toLowerCase())
+
+    console.assert(
+      lpAddresses.length === deployConfigs.length,
+      chalk.red('not same length lpAddress and deployConfigs')
+    )
+
+    let i = 0
+    for (let { market, config } of deployConfigs) {
+      const lp = lpAddresses[i++] as AddressType
+      const lpOfMarket = this.helper.deployed.lpOfMarket(market.address).map((x) => x.toLowerCase())
+      console.assert(
+        lpOfMarket.includes(lp),
+        chalk.red(`lp ${lp} not found in the following deployed LPs for market ${market}: \n 
+          ${JSON.stringify(lpOfMarket, null, 2)}`)
+      )
+
+      try {
+        console.log(
+          chalk.cyan(
+            `add initial liquidity: [${market.address}] 
+            lp:[${lp}]
+            ${formatEther(config.initialLiquidity || 0)}`
+          )
+        )
+        if (!dryrun) {
+          const input = prompt('proceed? (y/n)', 'y')
+          if (input?.toLowerCase() === 'n') {
+            console.log('skipped')
+            continue
+          }
+        }
+        if (config.initialLiquidity) {
+          if (!dryrun) await this.addLiquidity(lp as AddressType, BigInt(config.initialLiquidity))
+        }
+      } catch (e) {
+        console.log(chalk.redBright('failed to add liquidity initially'))
+        console.log(e)
+      }
+    }
   }
 
   async deployAllLP(lpConfigs?: LPConfig[]): Promise<LPDeployedResultMap> {
@@ -307,7 +374,7 @@ export class DeployTool {
 
     if (config.initialLiquidity) {
       try {
-        console.log(chalk.cyan(`add initial liqduitity: ${formatEther(config.initialLiquidity)}`))
+        console.log(chalk.cyan(`add initial liquidity: ${formatEther(config.initialLiquidity)}`))
         await this.addLiquidity(result.address as AddressType, BigInt(config.initialLiquidity))
       } catch {
         console.log(chalk.redBright('failed to add liquidity initially'))
