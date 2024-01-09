@@ -40,12 +40,12 @@
     "hardhat": "2.17.0",
     "hardhat-contract-sizer": "^2.8.0",
     "hardhat-deploy": "^0.11.26",
-    "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-gas-reporter": "^1.0.9",
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
     "prettier-plugin-solidity": "^1.1.3",
     "prompt-sync": "^4.2.0",
-    "solidity-coverage": "^0.8.1",
+    "solidity-coverage": "^0.8.5",
     "ts-node": ">=8.0.0",
     "tsconfig-paths": "^4.2.0",
     "typechain": "^8.1.0",
@@ -61,7 +61,8 @@
     "lodash": "^4.17.21",
     "tough-cookie": "^4.1.3",
     "jsbi": "^3.2.0",
-    "viem": "^1.12.1"
+    "viem": "^1.12.1",
+    "flat": "^5.0.2"
   },
   "scripts": {
     "anvil:arbitrum": "hardhat --network anvil_arbitrum --config hardhat.repl.config.ts",
