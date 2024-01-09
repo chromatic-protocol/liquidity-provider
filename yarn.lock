@@ -637,6 +637,11 @@
     "@ethersproject/properties" "^5.7.0"
     "@ethersproject/strings" "^5.7.0"
 
+"@fastify/busboy@^2.0.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@fastify/busboy/-/busboy-2.1.0.tgz#0709e9f4cb252351c609c6e6d8d6779a8d25edff"
+  integrity sha512-+KpH+QxZU7O4675t3mnkQKcZZg56u+K/Ct2K+N2AZYNVK8kyeo/bI18tI8aPm3tvNNRyTWfj6s5tnGNlcbQRsA==
+
 "@float-capital/float-subgraph-uncrashable@^0.0.0-alpha.4":
   version "0.0.0-internal-testing.5"
   resolved "https://registry.yarnpkg.com/@float-capital/float-subgraph-uncrashable/-/float-subgraph-uncrashable-0.0.0-internal-testing.5.tgz#060f98440f6e410812766c5b040952d2d02e2b73"
@@ -7848,11 +7853,11 @@ unbox-primitive@^1.0.2:
     which-boxed-primitive "^1.0.2"
 
 undici@^5.14.0:
-  version "5.24.0"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-5.24.0.tgz#6133630372894cfeb3c3dab13b4c23866bd344b5"
-  integrity sha512-OKlckxBjFl0oXxcj9FU6oB8fDAaiRUq+D8jrFWGmOfI/gIyjk/IeS75LMzgYKUaeHzLUcYvf9bbJGSrUwTfwwQ==
+  version "5.28.2"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-5.28.2.tgz#fea200eac65fc7ecaff80a023d1a0543423b4c91"
+  integrity sha512-wh1pHJHnUeQV5Xa8/kyQhO7WFa8M34l026L5P/+2TYiakvGy5Rdc8jWZVyG7ieht/0WgJLEd3kcU5gKx+6GC8w==
   dependencies:
-    busboy "^1.6.0"
+    "@fastify/busboy" "^2.0.0"
 
 universalify@^0.1.0:
   version "0.1.2"
