@@ -262,6 +262,7 @@ library BPStateLib {
      * @param self The storage state of the Chromatic Boosting Pool.
      * @return receiptId The boosting receipt ID.
      */
+    //slither-disable-next-line dead-code
     function boostingReceiptId(BPState storage self) internal view returns (uint256 receiptId) {
         return self.info.boostingReceiptId;
     }

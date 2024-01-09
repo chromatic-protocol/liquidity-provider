@@ -31,6 +31,7 @@ abstract contract Privatable is IChromaticLPEvents, IChromaticLPErrors {
      * @param provider The address of the provider to register.
      */
     function _registerProvider(address provider) internal {
+        //slither-disable-next-line unused-return
         _addLiquidityAllowed.add(provider);
     }
 
@@ -39,6 +40,7 @@ abstract contract Privatable is IChromaticLPEvents, IChromaticLPErrors {
      * @param provider The address of the provider to unregister.
      */
     function _unregisterProvider(address provider) internal {
+        //slither-disable-next-line unused-return
         _addLiquidityAllowed.remove(provider);
     }
 

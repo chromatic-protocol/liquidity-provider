@@ -164,9 +164,9 @@ contract ChromaticCommonLP is IChromaticLiquidityCallback, IERC1155Receiver, Chr
      * @inheritdoc IChromaticLPLiquidity
      */
     function getReceiptIdsOf(
-        address owner
+        address owner_
     ) external view override returns (uint256[] memory receiptIds) {
-        return s_state.providerReceiptIds[owner].values();
+        return s_state.providerReceiptIds[owner_].values();
     }
 
     /**
