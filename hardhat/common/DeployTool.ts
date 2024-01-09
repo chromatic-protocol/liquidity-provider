@@ -126,7 +126,10 @@ export class DeployTool {
     if (!DEPLOYED.automateBP) {
       throw new Error('deploy AutomateBP first')
     }
-    const args = [DEPLOYED.automateBP]
+    const factory = this.c.marketFactory
+    const factoryAddress = await factory.getAddress()
+
+    const args = [factoryAddress, DEPLOYED.automateBP]
     const res = await this.deploy('ChromaticBPFactory', {
       from: this.deployer,
       args: args

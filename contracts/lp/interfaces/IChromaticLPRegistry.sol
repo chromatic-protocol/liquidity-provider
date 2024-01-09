@@ -23,9 +23,9 @@ interface IChromaticLPRegistry {
     event ChromaticLPUnregistered(address indexed market, address indexed lp);
 
     /**
-     * @notice Error thrown when a function is called by an unauthorized user.
+     * @notice Error thrown when a function is called by the DAO.
      */
-    error OnlyAccessableByOwner();
+    error OnlyAccessableByDao();
 
     /**
      * @notice Error thrown when attempting to register an LP that is already registered.

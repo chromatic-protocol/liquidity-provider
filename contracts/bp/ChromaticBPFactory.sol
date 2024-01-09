@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
 import {ChromaticBP} from "~/bp/ChromaticBP.sol";
@@ -13,9 +13,10 @@ import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
  * @title ChromaticBPFactory
  * @dev A contract to create and manage instances of ChromaticBP.
  */
-contract ChromaticBPFactory is Ownable, IChromaticBPFactory {
+contract ChromaticBPFactory is IChromaticBPFactory {
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    IChromaticMarketFactory public immutable factory;
     mapping(address => EnumerableSet.AddressSet) private _lpToBpSet;
     EnumerableSet.AddressSet private _bpSet;
     IAutomateBP internal _automateBP;
@@ -23,22 +24,25 @@ contract ChromaticBPFactory is Ownable, IChromaticBPFactory {
     /**
      * @dev Creates a new ChromaticBPFactory contract.
      */
-    constructor(IAutomateBP automate) {
+    constructor(IChromaticMarketFactory _factory, IAutomateBP automate) {
+        factory = _factory;
         setAutomateBP(automate);
     }
 
     /**
-     * @dev Checks if the caller is the owner of the contract.
+     * @dev Modifier to restrict access to only the DAO.
+     *      Throws an `OnlyAccessableByDao` error if the caller is not the DAO.
      */
-    function _checkOwner() internal view override {
-        if (owner() != _msgSender()) revert OnlyAccessableByOwner();
+    modifier onlyDao() {
+        if (msg.sender != factory.dao()) revert OnlyAccessableByDao();
+        _;
     }
-
+    
     /**
      * @dev Creates a new ChromaticBP instance.
      * @param config The configuration parameters for the ChromaticBP.
      */
-    function createBP(BPConfig memory config) external onlyOwner {
+    function createBP(BPConfig memory config) external onlyDao {
         ChromaticBP bp = new ChromaticBP(config, this);
 
         emit ChromaticBPCreated(address(config.lp), address(bp));
@@ -69,7 +73,7 @@ contract ChromaticBPFactory is Ownable, IChromaticBPFactory {
     /**
      * @inheritdoc IChromaticBPFactory
      */
-    function setAutomateBP(IAutomateBP automate) public override onlyOwner {
+    function setAutomateBP(IAutomateBP automate) public override onlyDao {
         emit SetAutomateBP(address(automate));
         _automateBP = automate;
     }

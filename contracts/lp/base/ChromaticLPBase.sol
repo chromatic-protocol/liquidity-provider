@@ -40,12 +40,16 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
     address _owner;
 
     modifier onlyOwner() virtual {
-        if (msg.sender != _owner) revert OnlyAccessableByOwner();
+        if (!_checkOwner()) revert OnlyAccessableByOwner();
         _;
     }
 
     constructor(IAutomateLP automate) ChromaticLPStorage(automate) {
         _owner = msg.sender;
+    }
+
+    function _checkOwner() internal view virtual returns (bool) {
+        return msg.sender == _owner;
     }
 
     function _initialize(
@@ -403,7 +407,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function owner() external view returns (address) {
+    function owner() external view virtual returns (address) {
         return _owner;
     }
 

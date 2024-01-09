@@ -2,13 +2,12 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
 
-contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
+contract ChromaticLPRegistry is IChromaticLPRegistry {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     IChromaticMarketFactory public immutable factory;
@@ -17,18 +16,23 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     mapping(address => EnumerableSet.AddressSet) _lpsBySettlementToken;
     EnumerableSet.AddressSet _lpsAll;
 
-    constructor(IChromaticMarketFactory _factory) Ownable() {
+    constructor(IChromaticMarketFactory _factory) {
         factory = _factory;
     }
 
-    function _checkOwner() internal view override {
-        if (owner() != _msgSender()) revert OnlyAccessableByOwner();
+    /**
+     * @dev Modifier to restrict access to only the DAO.
+     *      Throws an `OnlyAccessableByDao` error if the caller is not the DAO.
+     */
+    modifier onlyDao() {
+        if (msg.sender != factory.dao()) revert OnlyAccessableByDao();
+        _;
     }
 
     /**
      * @inheritdoc IChromaticLPRegistry
      */
-    function register(IChromaticLP lp) external override onlyOwner {
+    function register(IChromaticLP lp) external override onlyDao {
         address market = lp.market();
 
         bool success = _lpsByMarket[market].add(address(lp));
@@ -44,7 +48,7 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     /**
      * @inheritdoc IChromaticLPRegistry
      */
-    function unregister(IChromaticLP lp) external override onlyOwner {
+    function unregister(IChromaticLP lp) external override onlyDao {
         address market = lp.market();
 
         bool success = _lpsByMarket[market].remove(address(lp));

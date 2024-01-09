@@ -11,9 +11,9 @@ import {IAutomateBP} from "./IAutomateBP.sol";
  */
 interface IChromaticBPFactory {
     /**
-     * @dev Emitted when only the owner is allowed to access the function.
+     * @dev Throws an `OnlyAccessableByDao` error if the caller is not the DAO.
      */
-    error OnlyAccessableByOwner();
+    error OnlyAccessableByDao();
 
     /**
      * @dev Emitted when a Chromatic BP is successfully created.
