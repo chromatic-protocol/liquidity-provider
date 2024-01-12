@@ -151,7 +151,7 @@ export class DeployTool {
     const bpAddress = logs[0].args[1]
     console.log(chalk.cyan(`ChromaticBPCreated(lp: ${logs[0].args[0]}, bp:${bpAddress})`))
 
-    await this.verify({ address: bpAddress, constructorArguments: [bpConfig, this.automateConfig] })
+    await this.verify({ address: bpAddress, constructorArguments: [bpConfig, this.helper.deployed.bpFactory] })
   }
 
   get automateConfig(): AutomateConfig {
