@@ -14,7 +14,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const aday = BigInt(24 * 3600)
 
   // FIXME this is just sample config
-  throw new Error('dont deploy as is. this is just sample')
 
   const bpConfigs: BPConfigStruct[] = [
     // for early boosting
@@ -23,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       totalReward: parseEther('100'),
       minRaisingTarget: parseEther('500'),
       maxRaisingTarget: parseEther('600'),
-      startTimeOfWarmup: toTimestamp(new Date(2024, 1, 12)),
+      startTimeOfWarmup: toTimestamp(new Date(Date.UTC(2024, 0, 16))),
       maxDurationOfWarmup: aday,
       durationOfLockup: aday
     },
@@ -33,8 +32,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       totalReward: parseEther('200'),
       minRaisingTarget: parseEther('50000'),
       maxRaisingTarget: parseEther('100000'),
-      startTimeOfWarmup: toTimestamp(new Date(2024, 1, 12)),
-      maxDurationOfWarmup: aday,
+      startTimeOfWarmup: toTimestamp(new Date(Date.UTC(2024, 0, 16))),
+      maxDurationOfWarmup: aday * 2n,
       durationOfLockup: aday
     },
     // for above minRaisingTarget but below max ,
@@ -43,7 +42,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       totalReward: parseEther('100'),
       minRaisingTarget: parseEther('300'),
       maxRaisingTarget: parseEther('100000'),
-      startTimeOfWarmup: toTimestamp(new Date(2024, 1, 12)),
+      startTimeOfWarmup: toTimestamp(new Date(Date.UTC(2024, 0, 16))),
       maxDurationOfWarmup: aday * 3n,
       durationOfLockup: aday
     }
