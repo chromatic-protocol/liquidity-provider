@@ -144,11 +144,12 @@ export class DeployTool {
   async deployBP(bpConfig: BPConfigStruct) {
     console.log(chalk.cyan(`deploying BP:`), bpConfig)
     const factory = await this.c.bpFactory
+    const blockFrom = await this.hre.ethers.provider.getBlockNumber()
     const tx = await retry(factory.createBP)(bpConfig)
     await tx.wait()
     const filter = factory.filters.ChromaticBPCreated(bpConfig.lp)
-    const logs = await factory.queryFilter(filter)
-    const bpAddress = logs[0].args[1]
+    const logs = await factory.queryFilter(filter, blockFrom, 'latest')
+    const bpAddress = logs[logs.length - 1].args[1]
     console.log(chalk.cyan(`ChromaticBPCreated(lp: ${logs[0].args[0]}, bp:${bpAddress})`))
 
     await this.verify({ address: bpAddress, constructorArguments: [bpConfig, this.helper.deployed.bpFactory] })
