@@ -18,6 +18,8 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
         Settle
     }
 
+    event UpkeepGasLimitUpdated(uint32 gasLimitOld, uint32 gasLimitNew);
+
     /**
      * @title LPTasks
      * @dev A struct representing tasks associated with Chromatic LP operations.
@@ -33,8 +35,12 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     IMate2AutomationRegistry public immutable automate;
     mapping(IChromaticLP => LPTasks) internal _taskMap;
 
+    uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 2e7;
+    uint32 public upkeepGasLimit;
+
     constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
         automate = _automate;
+        upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
     }
 
     /**
@@ -205,7 +211,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     ) internal returns (uint256 upkeepId) {
         upkeepId = automate.registerUpkeep(
             address(this), // target
-            2e7, //uint32 gasLimit,
+            upkeepGasLimit, //uint32 gasLimit,
             address(this), // address admin,
             false, // bool useTreasury,
             singleExec, // bool singleExec,
@@ -242,5 +248,11 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
         } else if (upkeepType == UpkeepType.Rebalance) {
             rebalance(lp);
         }
+    }
+
+    function updateUpkeepGasLimit(uint32 gasLimit) external onlyOwner {
+        uint32 gasLimitOld = upkeepGasLimit;
+        upkeepGasLimit = gasLimit;
+        emit UpkeepGasLimitUpdated(gasLimitOld, gasLimit);
     }
 }

@@ -14,13 +14,17 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     enum UpkeepType {
         Boost
     }
+    event UpkeepGasLimitUpdated(uint32 gasLimitOld, uint32 gasLimitNew);
+
     IMate2AutomationRegistry public immutable automate;
     mapping(IChromaticBP => uint256) internal _boostTasks;
+    uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 2e7;
+    uint32 public upkeepGasLimit;
 
     constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
         automate = _automate;
+        upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
     }
-
 
     /**
      * @dev Checks if the caller is the owner of the contract.
@@ -101,7 +105,7 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     ) internal returns (uint256 upkeepId) {
         upkeepId = automate.registerUpkeep(
             address(this), // target
-            2e7, //uint32 gasLimit,
+            upkeepGasLimit, //uint32 gasLimit,
             address(this), // address admin,
             false, // bool useTreasury,
             singleExec, // bool singleExec,
@@ -127,5 +131,11 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
         (UpkeepType upkeepType, address bp) = abi.decode(performData, (UpkeepType, address));
         require(upkeepType == UpkeepType.Boost);
         boost(bp);
+    }
+
+    function updateUpkeepGasLimit(uint32 gasLimit) external onlyOwner {
+        uint32 gasLimitOld = upkeepGasLimit;
+        upkeepGasLimit = gasLimit;
+        emit UpkeepGasLimitUpdated(gasLimitOld, gasLimit);
     }
 }
