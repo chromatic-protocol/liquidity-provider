@@ -42,6 +42,18 @@ function retry(f: any, maxRetry = 10) {
   return _retry
 }
 
+function adjustGasLimit(f: any) {
+  const MIN_GAS_LIMIT_SETTLE_ALL = 10n ** 7n
+  async function _moreGasLimit(...args: any[]) {
+    const gas = await f.estimateGas(...args)
+
+    return await f(...args, {
+      gasLimit: MIN_GAS_LIMIT_SETTLE_ALL >= gas ? MIN_GAS_LIMIT_SETTLE_ALL : gas
+    })
+  }
+  return _moreGasLimit
+}
+
 console.assert = function (cond, text) {
   if (cond) return
   throw new Error(text || 'Assertion failed!')
@@ -152,7 +164,10 @@ export class DeployTool {
     const bpAddress = logs[logs.length - 1].args[1]
     console.log(chalk.cyan(`ChromaticBPCreated(lp: ${logs[0].args[0]}, bp:${bpAddress})`))
 
-    await this.verify({ address: bpAddress, constructorArguments: [bpConfig, this.helper.deployed.bpFactory] })
+    await this.verify({
+      address: bpAddress,
+      constructorArguments: [bpConfig, this.helper.deployed.bpFactory]
+    })
   }
 
   get automateConfig(): AutomateConfig {
@@ -404,7 +419,7 @@ export class DeployTool {
 
     await (await retry(token.approve)(lpAddress, amount)).wait()
 
-    const tx = await retry(lp.addLiquidity)(amount, this.deployer)
+    const tx = await retry(adjustGasLimit(lp.addLiquidity))(amount, this.deployer)
     await tx.wait()
   }
 
@@ -422,7 +437,7 @@ export class DeployTool {
     await (await retry(token.approve)(lpAddress, amount)).wait()
 
     console.log(`  - lpTokenBalance: ${lpTokenBalance}`)
-    const tx = await retry(lp.removeLiquidity)(amount, this.deployer)
+    const tx = await retry(adjustGasLimit(lp.removeLiquidity))(amount, this.deployer)
     await tx.wait()
   }
 
