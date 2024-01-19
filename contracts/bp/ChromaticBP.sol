@@ -116,7 +116,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
                 _mint(msg.sender, depositAmount);
                 s_state.addRaised(depositAmount);
 
-                if (depositAmount < amount) {
+                if (depositAmount == maxDepositable) {
                     emit BPFullyRaised(s_state.totalRaised());
                     s_state.setStartTimeOfLockup(block.timestamp);
                 }
