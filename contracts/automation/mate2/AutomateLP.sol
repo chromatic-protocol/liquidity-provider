@@ -35,7 +35,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     IMate2AutomationRegistry public immutable automate;
     mapping(IChromaticLP => LPTasks) internal _taskMap;
 
-    uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 2e7;
+    uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
 
     constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
