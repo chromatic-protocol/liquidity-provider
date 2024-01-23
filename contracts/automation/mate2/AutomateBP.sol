@@ -18,7 +18,7 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
 
     IMate2AutomationRegistry public immutable automate;
     mapping(IChromaticBP => uint256) internal _boostTasks;
-    uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 2e7;
+    uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
 
     constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
