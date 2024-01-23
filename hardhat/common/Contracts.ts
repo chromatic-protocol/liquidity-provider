@@ -14,10 +14,6 @@ import {
   ChromaticBPFactory__factory,
   ChromaticLPRegistry,
   ChromaticLPRegistry__factory,
-  IAutomateMate2BP,
-  IAutomateMate2BP__factory,
-  IAutomateMate2LP,
-  IAutomateMate2LP__factory,
   IChromaticBP,
   IChromaticBP__factory,
   IChromaticLP,
@@ -27,6 +23,12 @@ import {
   IMate2AutomationRegistry,
   IMate2AutomationRegistry__factory
 } from '~/typechain-types'
+
+import { AutomateBP, AutomateLP } from '~/typechain-types/contracts/automation/mate2'
+import {
+  AutomateBP__factory,
+  AutomateLP__factory
+} from '~/typechain-types/factories/contracts/automation/mate2'
 
 export class Contracts {
   constructor(
@@ -77,10 +79,10 @@ export class Contracts {
   mate2Registry(address: string): IMate2AutomationRegistry {
     return IMate2AutomationRegistry__factory.connect(address, this.signer)
   }
-  automateLP(address: string): IAutomateMate2LP {
-    return IAutomateMate2LP__factory.connect(address, this.signer)
+  automateLP(address: string): AutomateLP {
+    return AutomateLP__factory.connect(address, this.signer)
   }
-  automateBP(address: string): IAutomateMate2BP {
-    return IAutomateMate2BP__factory.connect(address, this.signer)
+  automateBP(address: string): AutomateBP {
+    return AutomateBP__factory.connect(address, this.signer)
   }
 }
