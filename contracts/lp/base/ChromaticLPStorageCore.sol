@@ -16,8 +16,11 @@ import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPConfig} from "~/lp/libraries/LPConfig.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
+import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 
 abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromaticLPErrors {
+    using LPStateViewLib for LPState;
+
     /**
      * @title LPMeta
      * @dev A struct representing metadata information for an LP (Liquidity Provider) in the Chromatic Protocol.
@@ -55,4 +58,11 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
     LPState internal s_state;
 
     constructor() ERC20("", "") {}
+
+    /**
+     * @inheritdoc ERC20
+     */
+    function decimals() public view virtual override returns (uint8) {
+        return s_state.settlementToken().decimals();
+    }
 }
