@@ -58,7 +58,7 @@ interface IChromaticBPFactory {
      * @dev Retrieves the automate contract currently set for Chromatic BPs.
      * @return automate The address of the automate contract for Chromatic BPs.
      */
-    function getAutomateBP() external view returns (IAutomateBP automate);
+    function automateBP() external view returns (IAutomateBP automate);
 
     /**
      * @dev Retrieves the ChromatcMarketFactory address.

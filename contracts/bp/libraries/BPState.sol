@@ -224,7 +224,7 @@ library BPStateLib {
      * @return True if needed, false otherwise.
      */
     function needToCreateBoostTask(BPState storage self) internal view returns (bool) {
-        return (address(getAutomateBP(self)) == address(0) && isRaisedOverMinTarget(self));
+        return (address(automateBP(self)) == address(0) && isRaisedOverMinTarget(self));
     }
 
     /**
@@ -320,10 +320,10 @@ library BPStateLib {
     /**
      * @dev Sets AutomateBP.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @param automateBP The address of AutomateBP to handle boosting task.
+     * @param _automateBP The address of AutomateBP to handle boosting task.
      */
-    function setAutomateBP(BPState storage self, IAutomateBP automateBP) internal {
-        self.info.automateBP = automateBP;
+    function setAutomateBP(BPState storage self, IAutomateBP _automateBP) internal {
+        self.info.automateBP = _automateBP;
     }
 
     /**
@@ -331,7 +331,7 @@ library BPStateLib {
      * @param self The storage state of the Chromatic Boosting Pool.
      * @return The address of AutomateBP to handle boosting task.
      */
-    function getAutomateBP(BPState storage self) internal view returns (IAutomateBP) {
+    function automateBP(BPState storage self) internal view returns (IAutomateBP) {
         return self.info.automateBP;
     }
 

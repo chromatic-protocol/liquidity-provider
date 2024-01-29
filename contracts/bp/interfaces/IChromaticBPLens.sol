@@ -99,4 +99,10 @@ interface IChromaticBPLens {
      * @return The address of ChromaticBPFactory.
      */
     function bpFactory() external view returns (address);
+
+    /**
+     * @dev Retrieves the automate contract currently set for the Chromatic BP.
+     * @return The address of the automate contract for this Chromatic BP.
+     */
+    function automateBP() external view returns (address);
 }

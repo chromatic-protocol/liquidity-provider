@@ -81,7 +81,7 @@ contract ChromaticBPFactory is IChromaticBPFactory {
     /**
      * @inheritdoc IChromaticBPFactory
      */
-    function getAutomateBP() external view override returns (IAutomateBP automate) {
+    function automateBP() external view override returns (IAutomateBP automate) {
         return _automateBP;
     }
 

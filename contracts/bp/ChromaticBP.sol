@@ -39,7 +39,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
      * @dev Modifier to restrict the execution of a function to only the designated automation account.
      */
     modifier onlyAutomation() virtual {
-        if (msg.sender != address(s_state.getAutomateBP())) revert NotAutomationCalled();
+        if (msg.sender != address(s_state.automateBP())) revert NotAutomationCalled();
         _;
     }
 
@@ -91,7 +91,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
      */
     function _createBoostTask() internal {
         // check needToCreateBoostTask(s_state)
-        IAutomateBP automate = _factory.getAutomateBP();
+        IAutomateBP automate = _factory.automateBP();
         s_state.setAutomateBP(automate);
         automate.createBoostTask();
     }
@@ -300,7 +300,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
 
     function _cancelBoostTask() internal {
         // cancel task if manually executed
-        IAutomateBP automate = s_state.getAutomateBP();
+        IAutomateBP automate = s_state.automateBP();
         if (address(automate) != address(0)) {
             try automate.cancelBoostTask(IChromaticBP(this)) {} catch {}
         }
@@ -405,10 +405,18 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
     ) external override {
         // not used
     }
+
     /**
      * @inheritdoc IChromaticBPLens
      */
     function bpFactory() external view returns (address) {
         return address(_factory);
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function automateBP() external view returns (address) {
+        return address(s_state.info.automateBP);
     }
 }
