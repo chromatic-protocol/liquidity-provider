@@ -2,6 +2,7 @@
 
 pragma solidity >=0.8.0 <0.9.0;
 
+import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
 import {IAutomateBP} from "./IAutomateBP.sol";
 
@@ -58,4 +59,10 @@ interface IChromaticBPFactory {
      * @return automate The address of the automate contract for Chromatic BPs.
      */
     function getAutomateBP() external view returns (IAutomateBP automate);
+
+    /**
+     * @dev Retrieves the ChromatcMarketFactory address.
+     * @return the ChromatcMarketFactory address.
+     */
+    function marketFactory() external view returns (IChromaticMarketFactory);
 }
