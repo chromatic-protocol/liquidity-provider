@@ -76,6 +76,13 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     }
 
     /**
+     * @inheritdoc IAutomateMate2BP
+     */
+    function cancelUpkeep(uint256 upkeepId) external onlyOwner {
+        automate.cancelUpkeep(upkeepId);
+    }
+
+    /**
      * @inheritdoc IAutomateBP
      */
     function resolveBoost(

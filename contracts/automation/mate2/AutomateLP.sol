@@ -199,8 +199,8 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     /**
      * @inheritdoc IAutomateMate2LP
      */
-    function cancelTask(uint256 taskId) external onlyOwner {
-        automate.cancelUpkeep(taskId);
+    function cancelUpkeep(uint256 upkeepId) external onlyOwner {
+        automate.cancelUpkeep(upkeepId);
     }
 
     function _registerUpkeep(

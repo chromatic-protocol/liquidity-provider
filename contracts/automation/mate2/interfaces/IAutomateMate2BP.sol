@@ -30,4 +30,10 @@ interface IAutomateMate2BP is IAutomateBP {
      * @return The task ID of the boost task.
      */
     function getBoostTaskId(IChromaticBP bp) external view returns (uint256);
+
+    /**
+     * @dev Cancels the existing task for a specific    .
+     * @param upkeepId The unique identifier of the task.
+     */
+    function cancelUpkeep(uint256 upkeepId) external;
 }
