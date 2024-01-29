@@ -35,6 +35,11 @@ interface IChromaticBPEvents {
     event BPFullyRaised(uint256 totalRaised);
 
     /**
+     * @dev Emitted when the BP is canceled.
+     */
+    event BPCanceled();
+
+    /**
      * @dev Emitted when the task of boosting LP is created.
      */
     event BPBoostTaskCreated();
