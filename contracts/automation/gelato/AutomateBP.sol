@@ -64,9 +64,9 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoB
             _setBoostTaskId(bp, 0);
             // slither-disable-next-line reentrancy-events
             try automate.cancelTask(taskId) {
-                emit CancleBoostTaskSucceeded(address(bp), taskId);
+                emit CancelBoostTaskSucceeded(address(bp), taskId);
             } catch {
-                emit CancleBoostTaskFailed(address(bp), taskId);
+                emit CancelBoostTaskFailed(address(bp), taskId);
             }
         } else {
             revert TaskNotExist();

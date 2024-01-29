@@ -13,14 +13,14 @@ interface IAutomateGelatoLP is IAutomateLP {
      * @param lp The address of the liquidity provider.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleRebalanceTaskSucceeded(address lp, bytes32 taskId);
+    event CancelRebalanceTaskSucceeded(address lp, bytes32 taskId);
 
     /**
      * @dev Emitted when a rebalance task cancellation fails.
      * @param lp The address of the liquidity provider.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleRebalanceTaskFailed(address lp, bytes32 taskId);
+    event CancelRebalanceTaskFailed(address lp, bytes32 taskId);
 
     /**
      * @dev Emitted when a settle task cancellation is successful.
@@ -28,7 +28,7 @@ interface IAutomateGelatoLP is IAutomateLP {
      * @param receiptId The unique identifier of the cancelled settle task.
      * @param taskId The unique identifier of the cancelled settle task.
      */
-    event CancleSettleTaskSucceeded(address lp, uint256 receiptId, bytes32 taskId);
+    event CancelSettleTaskSucceeded(address lp, uint256 receiptId, bytes32 taskId);
 
     /**
      * @dev Emitted when a settle task cancellation fails.
@@ -36,7 +36,7 @@ interface IAutomateGelatoLP is IAutomateLP {
      * @param receiptId The unique identifier of the cancelled settle task.
      * @param taskId The unique identifier of the cancelled settle task.
      */
-    event CancleSettleTaskFailed(address lp, uint256 receiptId, bytes32 taskId);
+    event CancelSettleTaskFailed(address lp, uint256 receiptId, bytes32 taskId);
 
     /**
      * @dev Gets the task ID of the existing rebalance task for the specified LP.

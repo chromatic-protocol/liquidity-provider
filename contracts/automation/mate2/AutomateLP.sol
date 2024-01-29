@@ -109,9 +109,9 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
 
             // slither-disable-next-line reentrancy-events
             try automate.cancelUpkeep(rebalanceTaskId) {
-                emit CancleRebalanceTaskSucceeded(address(lp), rebalanceTaskId);
+                emit CancelRebalanceTaskSucceeded(address(lp), rebalanceTaskId);
             } catch {
-                emit CancleRebalanceTaskFailed(address(lp), rebalanceTaskId);
+                emit CancelRebalanceTaskFailed(address(lp), rebalanceTaskId);
             }
         }
     }
@@ -167,9 +167,9 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
             _setSettleTaskId(lp, receiptId, 0);
             // slither-disable-next-line reentrancy-events
             try automate.cancelUpkeep(taskId) {
-                emit CancleSettleTaskSucceeded(address(lp), receiptId, taskId);
+                emit CancelSettleTaskSucceeded(address(lp), receiptId, taskId);
             } catch {
-                emit CancleSettleTaskFailed(address(lp), receiptId, taskId);
+                emit CancelSettleTaskFailed(address(lp), receiptId, taskId);
             }
         }
     }

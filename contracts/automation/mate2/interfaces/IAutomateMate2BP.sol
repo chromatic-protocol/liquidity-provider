@@ -15,14 +15,14 @@ interface IAutomateMate2BP is IAutomateBP {
      * @param bp The address of the boosting pool.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleBoostTaskSucceeded(address bp, uint256 taskId);
+    event CancelBoostTaskSucceeded(address bp, uint256 taskId);
 
     /**
      * @dev Emitted when a boost task cancellation is successful.
      * @param bp The address of the boosting pool.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleBoostTaskFailed(address bp, uint256 taskId);
+    event CancelBoostTaskFailed(address bp, uint256 taskId);
 
     /**
      * @dev Gets the task ID of the existing boost task for the specified BP.
