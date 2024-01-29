@@ -51,15 +51,16 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
     /**
      * @dev Constructs the ChromaticBP contract.
      * @param config The configuration parameters for the ChromaticBP.
-     * @param bpFactory The ChromaticBPFactory.
+     * @param _bpFactory The ChromaticBPFactory.
      */
-    constructor(BPConfig memory config, IChromaticBPFactory bpFactory) ERC20("", "") {
+    constructor(BPConfig memory config, IChromaticBPFactory _bpFactory) ERC20("", "") {
         _checkArgs(config);
 
         emit SetTotalReward(config.totalReward);
 
         s_state.init(config);
-        _factory = bpFactory;
+        if (address(_bpFactory) == address(0)) revert ZeroBPFactory();
+        _factory = _bpFactory;
     }
 
     /**
@@ -403,5 +404,11 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
         uint256 keeperFee
     ) external override {
         // not used
+    }
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function bpFactory() external view returns (address) {
+        return address(_factory);
     }
 }

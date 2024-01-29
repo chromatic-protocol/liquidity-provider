@@ -93,4 +93,10 @@ interface IChromaticBPLens {
      * @return status The current status of the boosting pool.
      */
     function status() external view returns (BPStatus);
+
+    /**
+     * @dev Retrieves the address of ChromaticBPFactory.
+     * @return The address of ChromaticBPFactory.
+     */
+    function bpFactory() external view returns (address);
 }

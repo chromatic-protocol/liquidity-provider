@@ -96,4 +96,8 @@ interface IChromaticBPErrors {
      * @dev Error indicating that LP-related function is not called.
      */
     error NotLPCalled();
+    /**
+     * @dev Error indicating a zero BPFactory addresss.
+     */
+    error ZeroBPFactory();
 }
