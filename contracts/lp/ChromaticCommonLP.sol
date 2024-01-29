@@ -19,7 +19,12 @@ import {BPS} from "~/lp/libraries/Constants.sol";
 import {IChromaticLPAutomate} from "~/lp/interfaces/IChromaticLPAutomate.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
-contract ChromaticCommonLP is IChromaticLiquidityCallback, IERC1155Receiver, ChromaticLPBase, Proxy {
+contract ChromaticCommonLP is
+    IChromaticLiquidityCallback,
+    IERC1155Receiver,
+    ChromaticLPBase,
+    Proxy
+{
     using EnumerableSet for EnumerableSet.UintSet;
     using LPStateViewLib for LPState;
 
@@ -345,7 +350,7 @@ contract ChromaticCommonLP is IChromaticLiquidityCallback, IERC1155Receiver, Chr
     /**
      * @inheritdoc IChromaticLPAutomate
      */
-    function getAutomateLP() external view override returns (IAutomateLP) {
+    function automateLP() external view override returns (IAutomateLP) {
         return s_automate;
     }
 }

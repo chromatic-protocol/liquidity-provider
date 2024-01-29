@@ -46,5 +46,5 @@ interface IChromaticLPAutomate {
      * @notice Gets the current AutomateLP contract address.
      * @return The address of the AutomateLP contract.
      */
-    function getAutomateLP() external view returns (IAutomateLP);
+    function automateLP() external view returns (IAutomateLP);
 }
