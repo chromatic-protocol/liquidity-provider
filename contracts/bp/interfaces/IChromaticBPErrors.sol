@@ -96,8 +96,14 @@ interface IChromaticBPErrors {
      * @dev Error indicating that LP-related function is not called.
      */
     error NotLPCalled();
+
     /**
      * @dev Error indicating a zero BPFactory addresss.
      */
     error ZeroBPFactory();
+
+    /**
+     * @dev Throws an `OnlyAccessableByDao` error if the caller is not the DAO.
+     */
+    error OnlyAccessableByDao();
 }

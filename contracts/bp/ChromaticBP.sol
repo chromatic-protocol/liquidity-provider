@@ -48,6 +48,11 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
         _;
     }
 
+    modifier onlyDao() {
+        if (msg.sender != _factory.marketFactory().dao()) revert OnlyAccessableByDao();
+        _;
+    }
+
     /**
      * @dev Constructs the ChromaticBP contract.
      * @param config The configuration parameters for the ChromaticBP.
