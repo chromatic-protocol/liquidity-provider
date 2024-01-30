@@ -54,8 +54,8 @@ interface IAutomateGelatoLP is IAutomateLP {
     function getSettleTaskId(IChromaticLP lp, uint256 receiptId) external view returns (bytes32);
 
     /**
-     * @dev Cancels the existing task for a specific task ID.
-     * @param taskId The unique identifier of the task.
+     * @dev Cancels the existing task for a specific upkeep ID.
+     * @param upkeepId The unique identifier of the task.
      */
-    function cancelTask(bytes32 taskId) external;
+    function cancelUpkeep(bytes32 upkeepId) external;
 }
