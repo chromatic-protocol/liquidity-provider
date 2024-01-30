@@ -194,8 +194,8 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoL
     /**
      * @inheritdoc IAutomateGelatoLP
      */
-    function cancelTask(bytes32 taskId) external onlyOwner {
-        automate.cancelTask(taskId);
+    function cancelUpkeep(bytes32 upkeepId) external onlyOwner {
+        automate.cancelTask(upkeepId);
     }
 
     function _createTimeTask(
