@@ -254,3 +254,11 @@ type BPSettleUpdated @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type BPCanceled @entity(immutable: true) {
+  id: Bytes!
+  bp: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
