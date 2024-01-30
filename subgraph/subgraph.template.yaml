@@ -126,6 +126,7 @@ templates:
       entities:
         - BPDeposited
         - BPBoostTaskExecuted
+        - BPCanceled
         - BPSettleUpdated
         - ChromaticBPStatus
         - ChromaticBPTotalRaised
@@ -148,4 +149,6 @@ templates:
           handler: handleBPBoostTaskExecuted
         - event: BPSettleUpdated(uint256)
           handler: handleBPSettleUpdated
+        - event: BPCanceled()
+          handler: handleBPCanceled
       file: ./src/chromatic-bp.ts

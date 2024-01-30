@@ -54,6 +54,19 @@
   },
   {
     "inputs": [],
+    "name": "automateBP",
+    "outputs": [
+      {
+        "internalType": "contract IAutomateBP",
+        "name": "automate",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "bpList",
     "outputs": [
       {
@@ -136,24 +149,11 @@
   },
   {
     "inputs": [],
-    "name": "factory",
+    "name": "marketFactory",
     "outputs": [
       {
         "internalType": "contract IChromaticMarketFactory",
         "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getAutomateBP",
-    "outputs": [
-      {
-        "internalType": "contract IAutomateBP",
-        "name": "automate",
         "type": "address"
       }
     ],

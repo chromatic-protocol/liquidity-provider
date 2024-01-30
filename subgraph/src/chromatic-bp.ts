@@ -3,6 +3,7 @@ import {
   BPBoostTaskExecuted,
   BPDeposited,
   BPSettleUpdated,
+  BPCanceled,
   ChromaticBPClaim,
   ChromaticBPDeposit,
   ChromaticBPRefund,
@@ -17,6 +18,7 @@ import {
   BPFullyRaised as BPFullyRaisedEvent,
   BPRefunded as BPRefundedEvent,
   BPSettleUpdated as BPSettleUpdatedEvent,
+  BPCanceled as BPCanceledEvent,
   ChromaticBP
 } from '../generated/templates/ChromaticBP/ChromaticBP'
 
@@ -124,6 +126,18 @@ export function handleBPSettleUpdated(event: BPSettleUpdatedEvent): void {
   entity.bp = event.address
   entity.totalLPToken = event.params.totalLPToken
 
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+
+  entity.save()
+
+  saveChromaticBPStatus(event)
+}
+
+export function handleBPCanceled(event: BPCanceledEvent): void {
+  let entity = new BPCanceled(event.transaction.hash.concatI32(event.logIndex.toI32()))
+  entity.bp = event.address
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash

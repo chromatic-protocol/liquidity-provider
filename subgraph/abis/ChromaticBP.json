@@ -45,12 +45,17 @@
       },
       {
         "internalType": "contract IChromaticBPFactory",
-        "name": "bpFactory",
+        "name": "_bpFactory",
         "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "BoostingAlreadyExecuted",
+    "type": "error"
   },
   {
     "inputs": [],
@@ -75,6 +80,11 @@
   {
     "inputs": [],
     "name": "FullyRaised",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "FundingCanceled",
     "type": "error"
   },
   {
@@ -124,6 +134,11 @@
   },
   {
     "inputs": [],
+    "name": "OnlyAccessableByDao",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "RefundError",
     "type": "error"
   },
@@ -140,6 +155,11 @@
   {
     "inputs": [],
     "name": "TooSmallMinRaisingTarget",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroBPFactory",
     "type": "error"
   },
   {
@@ -182,6 +202,12 @@
     "anonymous": false,
     "inputs": [],
     "name": "BPBoostTaskExecuted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "BPCanceled",
     "type": "event"
   },
   {
@@ -360,6 +386,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "automateBP",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -399,6 +438,26 @@
       }
     ],
     "name": "boostTask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "bpFactory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cancelBP",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
