@@ -8,6 +8,7 @@ import {IChromaticBPEvents} from "~/bp/interfaces/IChromaticBPEvents.sol";
 import {IChromaticBPLens} from "~/bp/interfaces/IChromaticBPLens.sol";
 import {IChromaticBPAutomate} from "~/bp/interfaces/IChromaticBPAutomate.sol";
 import {IChromaticBPErrors} from "~/bp/interfaces/IChromaticBPErrors.sol";
+import {IChromaticBPAdmin} from "~/bp/interfaces/IChromaticBPAdmin.sol";
 
 interface IChromaticBP is
     IERC20Metadata,
@@ -15,5 +16,6 @@ interface IChromaticBP is
     IChromaticBPEvents,
     IChromaticBPLens,
     IChromaticBPAutomate,
-    IChromaticBPErrors
+    IChromaticBPErrors,
+    IChromaticBPAdmin
 {}

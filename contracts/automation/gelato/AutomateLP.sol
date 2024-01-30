@@ -89,9 +89,9 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoL
             _setRebalanceTaskId(lp, 0);
             // slither-disable-next-line reentrancy-events
             try automate.cancelTask(rebalanceTaskId) {
-                emit CancleRebalanceTaskSucceeded(address(lp), rebalanceTaskId);
+                emit CancelRebalanceTaskSucceeded(address(lp), rebalanceTaskId);
             } catch {
-                emit CancleRebalanceTaskFailed(address(lp), rebalanceTaskId);
+                emit CancelRebalanceTaskFailed(address(lp), rebalanceTaskId);
             }
         }
     }
@@ -162,9 +162,9 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoL
             _setSettleTaskId(lp, receiptId, 0);
             // slither-disable-next-line reentrancy-events
             try automate.cancelTask(taskId) {
-                emit CancleSettleTaskSucceeded(address(lp), receiptId, taskId);
+                emit CancelSettleTaskSucceeded(address(lp), receiptId, taskId);
             } catch {
-                emit CancleSettleTaskFailed(address(lp), receiptId, taskId);
+                emit CancelSettleTaskFailed(address(lp), receiptId, taskId);
             }
         }
     }

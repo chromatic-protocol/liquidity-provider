@@ -15,7 +15,7 @@ import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
 import {ChromaticLPReceipt} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 
-import {IChromaticBP, IChromaticBPAction, IChromaticBPLens, IChromaticBPAutomate} from "~/bp/interfaces/IChromaticBP.sol";
+import {IChromaticBP, IChromaticBPAction, IChromaticBPLens, IChromaticBPAutomate, IChromaticBPAdmin} from "~/bp/interfaces/IChromaticBP.sol";
 import {IChromaticBPFactory} from "~/bp/interfaces/IChromaticBPFactory.sol";
 import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 
@@ -39,7 +39,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
      * @dev Modifier to restrict the execution of a function to only the designated automation account.
      */
     modifier onlyAutomation() virtual {
-        if (msg.sender != address(s_state.getAutomateBP())) revert NotAutomationCalled();
+        if (msg.sender != address(s_state.automateBP())) revert NotAutomationCalled();
         _;
     }
 
@@ -48,18 +48,24 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
         _;
     }
 
+    modifier onlyDao() {
+        if (msg.sender != _factory.marketFactory().dao()) revert OnlyAccessableByDao();
+        _;
+    }
+
     /**
      * @dev Constructs the ChromaticBP contract.
      * @param config The configuration parameters for the ChromaticBP.
-     * @param bpFactory The ChromaticBPFactory.
+     * @param _bpFactory The ChromaticBPFactory.
      */
-    constructor(BPConfig memory config, IChromaticBPFactory bpFactory) ERC20("", "") {
+    constructor(BPConfig memory config, IChromaticBPFactory _bpFactory) ERC20("", "") {
         _checkArgs(config);
 
         emit SetTotalReward(config.totalReward);
 
         s_state.init(config);
-        _factory = bpFactory;
+        if (address(_bpFactory) == address(0)) revert ZeroBPFactory();
+        _factory = _bpFactory;
     }
 
     /**
@@ -90,7 +96,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
      */
     function _createBoostTask() internal {
         // check needToCreateBoostTask(s_state)
-        IAutomateBP automate = _factory.getAutomateBP();
+        IAutomateBP automate = _factory.automateBP();
         s_state.setAutomateBP(automate);
         automate.createBoostTask();
     }
@@ -99,6 +105,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
      * @inheritdoc IChromaticBPAction
      */
     function deposit(uint256 amount) external override nonReentrant {
+        if (s_state.isBPCanceled()) revert FundingCanceled();
         if (amount == 0) revert ZeroDepositError();
 
         if (currentPeriod() == BPPeriod.WARMUP) {
@@ -138,9 +145,14 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
      */
     function refund() external override nonReentrant {
         //slither-disable-next-line timestamp
-        if (block.timestamp < s_state.startTimeOfWarmup()) revert NotRefundablePeriod();
-        if (s_state.isRaisedOverMinTarget()) revert RefundError();
+        if (!s_state.isBPCanceled()) {
+            if (block.timestamp < s_state.startTimeOfWarmup()) revert NotRefundablePeriod();
+            if (s_state.isRaisedOverMinTarget()) revert RefundError();
+        }
+        _refund();
+    }
 
+    function _refund() internal {
         uint256 amount = balanceOf(msg.sender);
         if (amount > 0) {
             emit BPRefunded(msg.sender, amount);
@@ -299,7 +311,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
 
     function _cancelBoostTask() internal {
         // cancel task if manually executed
-        IAutomateBP automate = s_state.getAutomateBP();
+        IAutomateBP automate = s_state.automateBP();
         if (address(automate) != address(0)) {
             try automate.cancelBoostTask(IChromaticBP(this)) {} catch {}
         }
@@ -403,5 +415,29 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
         uint256 keeperFee
     ) external override {
         // not used
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function bpFactory() external view returns (address) {
+        return address(_factory);
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function automateBP() external view returns (address) {
+        return address(s_state.info.automateBP);
+    }
+
+    /**
+     * @inheritdoc IChromaticBPAdmin
+     */
+    function cancelBP() external onlyDao {
+        if (s_state.boostingExecStatus() != BPExec.NOT_EXECUTED) revert BoostingAlreadyExecuted();
+        emit BPCanceled();
+        s_state.cancelBP();
+        _cancelBoostTask(); // if task created but not executed then cancel task
     }
 }

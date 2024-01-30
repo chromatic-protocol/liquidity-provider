@@ -15,14 +15,14 @@ interface IAutomateGelatoBP is IAutomateBP {
      * @param bp The address of the boosting pool.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleBoostTaskSucceeded(address bp, bytes32 taskId);
+    event CancelBoostTaskSucceeded(address bp, bytes32 taskId);
 
     /**
      * @dev Emitted when a boost task cancellation is successful.
      * @param bp The address of the boosting pool.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleBoostTaskFailed(address bp, bytes32 taskId);
+    event CancelBoostTaskFailed(address bp, bytes32 taskId);
 
     /**
      * @dev Gets the task ID of the existing boost task for the specified BP.

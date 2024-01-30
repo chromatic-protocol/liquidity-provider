@@ -69,6 +69,7 @@ enum BPStatus {
  * @param boostingReceiptId The receipt ID associated with the boosting execution.
  * @param boostingExecStatus The execution status of the boosting task.
  * @param startTimeOfLockup The start time of the lockup period. (valid value if only boost executed )
+ * @param isCanceled Whether this BP is canceled and forced to refundable by DAO
  */
 struct BPInfo {
     uint256 totalRaised;
@@ -77,6 +78,7 @@ struct BPInfo {
     uint256 boostingReceiptId;
     BPExec boostingExecStatus;
     uint256 startTimeOfLockup;
+    bool isCanceled;
 }
 
 /**
@@ -224,7 +226,7 @@ library BPStateLib {
      * @return True if needed, false otherwise.
      */
     function needToCreateBoostTask(BPState storage self) internal view returns (bool) {
-        return (address(getAutomateBP(self)) == address(0) && isRaisedOverMinTarget(self));
+        return (address(automateBP(self)) == address(0) && isRaisedOverMinTarget(self));
     }
 
     /**
@@ -233,6 +235,7 @@ library BPStateLib {
      * @return True if executable, false otherwise.
      */
     function isBoostExecutable(BPState storage self) internal view returns (bool) {
+        if (isBPCanceled(self)) return false;
         if (boostingExecStatus(self) != BPExec.NOT_EXECUTED) return false;
         if (totalRaised(self) >= maxRaisingTarget(self)) return true;
         //slither-disable-next-line timestamp
@@ -320,10 +323,10 @@ library BPStateLib {
     /**
      * @dev Sets AutomateBP.
      * @param self The storage state of the Chromatic Boosting Pool.
-     * @param automateBP The address of AutomateBP to handle boosting task.
+     * @param _automateBP The address of AutomateBP to handle boosting task.
      */
-    function setAutomateBP(BPState storage self, IAutomateBP automateBP) internal {
-        self.info.automateBP = automateBP;
+    function setAutomateBP(BPState storage self, IAutomateBP _automateBP) internal {
+        self.info.automateBP = _automateBP;
     }
 
     /**
@@ -331,7 +334,7 @@ library BPStateLib {
      * @param self The storage state of the Chromatic Boosting Pool.
      * @return The address of AutomateBP to handle boosting task.
      */
-    function getAutomateBP(BPState storage self) internal view returns (IAutomateBP) {
+    function automateBP(BPState storage self) internal view returns (IAutomateBP) {
         return self.info.automateBP;
     }
 
@@ -361,6 +364,7 @@ library BPStateLib {
      */
     function isRefundable(BPState storage self) internal view returns (bool) {
         //slither-disable-next-line timestamp
+        if (isBPCanceled(self)) return true;
         return (block.timestamp >= endTimeOfWarmup(self) && !isRaisedOverMinTarget(self));
     }
 
@@ -383,7 +387,7 @@ library BPStateLib {
      * @return true if a deposit can be made, false otherwise.
      */
     function isDepositable(BPState storage self) internal view returns (bool) {
-        return currentPeriod(self) == BPPeriod.WARMUP; // && maxDepositable(self) > 0;
+        return !isBPCanceled(self) && currentPeriod(self) == BPPeriod.WARMUP; // && maxDepositable(self) > 0;
     }
 
     function totalReward(BPState storage self) internal view returns (uint256) {
@@ -391,6 +395,8 @@ library BPStateLib {
     }
 
     function status(BPState storage self) internal view returns (BPStatus) {
+        if (isBPCanceled(self)) return BPStatus.REFUNDABLE;
+
         BPPeriod period = currentPeriod(self);
         if (period == BPPeriod.PREWARMUP) {
             return BPStatus.UPCOMING;
@@ -412,5 +418,13 @@ library BPStateLib {
             // (period == BPPeriod.POSTLOCKUP)
             return BPStatus.CLAIMABLE;
         }
+    }
+
+    function cancelBP(BPState storage self) internal {
+        self.info.isCanceled = true;
+    }
+
+    function isBPCanceled(BPState storage self) internal view returns (bool) {
+        return self.info.isCanceled;
     }
 }

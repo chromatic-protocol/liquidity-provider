@@ -9,14 +9,14 @@ interface IAutomateMate2LP is IAutomateLP {
      * @param lp The address of the liquidity provider.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleRebalanceTaskSucceeded(address lp, uint256 taskId);
+    event CancelRebalanceTaskSucceeded(address lp, uint256 taskId);
 
     /**
      * @dev Emitted when a rebalance task cancellation fails.
      * @param lp The address of the liquidity provider.
      * @param taskId The unique identifier of the cancelled rebalance task.
      */
-    event CancleRebalanceTaskFailed(address lp, uint256 taskId);
+    event CancelRebalanceTaskFailed(address lp, uint256 taskId);
 
     /**
      * @dev Emitted when a settle task cancellation is successful.
@@ -24,7 +24,7 @@ interface IAutomateMate2LP is IAutomateLP {
      * @param receiptId The unique identifier of the cancelled settle task.
      * @param taskId The unique identifier of the cancelled settle task.
      */
-    event CancleSettleTaskSucceeded(address lp, uint256 receiptId, uint256 taskId);
+    event CancelSettleTaskSucceeded(address lp, uint256 receiptId, uint256 taskId);
 
     /**
      * @dev Emitted when a settle task cancellation fails.
@@ -32,7 +32,7 @@ interface IAutomateMate2LP is IAutomateLP {
      * @param receiptId The unique identifier of the cancelled settle task.
      * @param taskId The unique identifier of the cancelled settle task.
      */
-    event CancleSettleTaskFailed(address lp, uint256 receiptId, uint256 taskId);
+    event CancelSettleTaskFailed(address lp, uint256 receiptId, uint256 taskId);
 
     /**
      * @dev Gets the task ID of the existing rebalance task for the specified LP.
@@ -50,8 +50,8 @@ interface IAutomateMate2LP is IAutomateLP {
     function getSettleTaskId(IChromaticLP lp, uint256 receiptId) external view returns (uint256);
 
     /**
-     * @dev Cancels the existing task for a specific task ID.
-     * @param taskId The unique identifier of the task.
+     * @dev Cancels the existing task for a specific upkeep ID.
+     * @param upkeepId The unique identifier of the task.
      */
-    function cancelTask(uint256 taskId) external;
+    function cancelUpkeep(uint256 upkeepId) external;
 }

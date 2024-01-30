@@ -16,7 +16,7 @@ import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 contract ChromaticBPFactory is IChromaticBPFactory {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    IChromaticMarketFactory public immutable factory;
+    IChromaticMarketFactory immutable _marketFactory;
     mapping(address => EnumerableSet.AddressSet) private _lpToBpSet;
     EnumerableSet.AddressSet private _bpSet;
     IAutomateBP internal _automateBP;
@@ -25,7 +25,7 @@ contract ChromaticBPFactory is IChromaticBPFactory {
      * @dev Creates a new ChromaticBPFactory contract.
      */
     constructor(IChromaticMarketFactory _factory, IAutomateBP automate) {
-        factory = _factory;
+        _marketFactory = _factory;
         setAutomateBP(automate);
     }
 
@@ -34,10 +34,10 @@ contract ChromaticBPFactory is IChromaticBPFactory {
      *      Throws an `OnlyAccessableByDao` error if the caller is not the DAO.
      */
     modifier onlyDao() {
-        if (msg.sender != factory.dao()) revert OnlyAccessableByDao();
+        if (msg.sender != _marketFactory.dao()) revert OnlyAccessableByDao();
         _;
     }
-    
+
     /**
      * @dev Creates a new ChromaticBP instance.
      * @param config The configuration parameters for the ChromaticBP.
@@ -81,7 +81,11 @@ contract ChromaticBPFactory is IChromaticBPFactory {
     /**
      * @inheritdoc IChromaticBPFactory
      */
-    function getAutomateBP() external view override returns (IAutomateBP automate) {
+    function automateBP() external view override returns (IAutomateBP automate) {
         return _automateBP;
+    }
+
+    function marketFactory() external view returns (IChromaticMarketFactory) {
+        return _marketFactory;
     }
 }
