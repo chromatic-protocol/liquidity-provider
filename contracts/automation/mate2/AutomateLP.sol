@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IMate2Automation} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation.sol";
 import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
 
@@ -12,7 +11,7 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IAutomateMate2LP} from "~/automation/mate2/interfaces/IAutomateMate2LP.sol";
 
-contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automation {
+contract AutomateLP is ReentrancyGuard, IAutomateMate2LP, IMate2Automation {
     enum UpkeepType {
         Rebalance,
         Settle
@@ -37,17 +36,20 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
 
     uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
+    IChromaticMarketFactory public immutable marketFactory;
 
-    constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
+    constructor(
+        IMate2AutomationRegistry _automate,
+        IChromaticMarketFactory _marketFactory
+    ) ReentrancyGuard() {
         automate = _automate;
         upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
+        marketFactory = _marketFactory;
     }
 
-    /**
-     * @dev Checks if the caller is the owner of the contract.
-     */
-    function _checkOwner() internal view override {
-        if (owner() != _msgSender()) revert OnlyAccessableByOwner();
+    modifier onlyDao() {
+        if (msg.sender != marketFactory.dao()) revert OnlyAccessableByDao();
+        _;
     }
 
     /**
@@ -199,7 +201,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     /**
      * @inheritdoc IAutomateMate2LP
      */
-    function cancelUpkeep(uint256 upkeepId) external onlyOwner {
+    function cancelUpkeep(uint256 upkeepId) external onlyDao {
         automate.cancelUpkeep(upkeepId);
     }
 
@@ -250,7 +252,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
         }
     }
 
-    function updateUpkeepGasLimit(uint32 gasLimit) external onlyOwner {
+    function updateUpkeepGasLimit(uint32 gasLimit) external onlyDao {
         uint32 gasLimitOld = upkeepGasLimit;
         upkeepGasLimit = gasLimit;
         emit UpkeepGasLimitUpdated(gasLimitOld, gasLimit);

@@ -44,7 +44,6 @@ export class Contracts {
       return this.hre.network.config.chainId!
     }
   }
-
   get marketFactory(): IChromaticMarketFactory {
     const address =
       chromaticMarketFactoryAddress[this.chainId as keyof typeof chromaticMarketFactoryAddress]

@@ -15,9 +15,9 @@ interface IAutomateBP {
     error NotAutomationCalled();
 
     /**
-     * @dev Signifies that the function is only accessible by the owner.
+     * @dev Signifies that the function is only accessible by the DAO.
      */
-    error OnlyAccessableByOwner();
+    error OnlyAccessableByDao();
 
     /**
      * @dev Emitted when attempting to create a boost task while one already exists.

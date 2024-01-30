@@ -18,9 +18,9 @@ interface IAutomateLP {
     error AlreadyRebalanceTaskExist();
 
     /**
-     * @dev Signifies that the function is only accessible by the owner
+     * @dev Signifies that the function is only accessible by the DAO
      */
-    error OnlyAccessableByOwner();
+    error OnlyAccessableByDao();
 
     /**
      * @dev Initiates the creation of a rebalance task for the specified LP (msg.sender).

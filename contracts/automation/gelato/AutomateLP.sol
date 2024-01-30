@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IAutomateGelatoLP} from "~/automation/gelato/interfaces/IAutomateGelatoLP.sol";
 
-contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoLP {
+contract AutomateLP is ReentrancyGuard, AutomateReady, IAutomateGelatoLP {
     /**
      * @title LPTasks
      * @dev A struct representing tasks associated with Chromatic LP operations.
@@ -22,21 +22,23 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoL
     }
 
     mapping(IChromaticLP => LPTasks) internal _taskMap;
+    IChromaticMarketFactory public immutable marketFactory;
 
     constructor(
-        address gelatoAutomate
-    ) ReentrancyGuard() AutomateReady(gelatoAutomate, address(this)) Ownable() {}
+        address gelatoAutomate,
+        IChromaticMarketFactory _marketFactory
+    ) ReentrancyGuard() AutomateReady(gelatoAutomate, address(this)) {
+        marketFactory = _marketFactory;
+    }
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
         _;
     }
 
-    /**
-     * @dev Checks if the caller is the owner of the contract.
-     */
-    function _checkOwner() internal view override {
-        if (owner() != _msgSender()) revert OnlyAccessableByOwner();
+    modifier onlyDao() {
+        if (msg.sender != marketFactory.dao()) revert OnlyAccessableByDao();
+        _;
     }
 
     /**
@@ -194,7 +196,7 @@ contract AutomateLP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoL
     /**
      * @inheritdoc IAutomateGelatoLP
      */
-    function cancelUpkeep(bytes32 upkeepId) external onlyOwner {
+    function cancelUpkeep(bytes32 upkeepId) external onlyDao {
         automate.cancelTask(upkeepId);
     }
 

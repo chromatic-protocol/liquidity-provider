@@ -40,7 +40,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
     address _owner;
 
     modifier onlyOwner() virtual {
-        if (!_checkOwner()) revert OnlyAccessableByOwner();
+        if (!_checkOwner()) revert OnlyAccessableByDao();
         _;
     }
 

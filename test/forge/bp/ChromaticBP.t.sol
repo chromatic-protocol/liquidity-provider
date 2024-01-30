@@ -44,7 +44,7 @@ contract ChromaticBPTest is BaseSetup, IChromaticBPEvents {
             feeRates[i] = _feeRates[i];
             distributionRates[i] = _distributions[i];
         }
-        automateLP = new AutomateLP(address(automate));
+        automateLP = new AutomateLP(address(automate), factory);
         lpLogic = new ChromaticLPLogic(automateLP);
 
         lp = new ChromaticLP(
@@ -66,7 +66,7 @@ contract ChromaticBPTest is BaseSetup, IChromaticBPEvents {
         console.log("LP address: ", address(lp));
         console.log("LP logic address: ", address(lpLogic));
 
-        automateBP = new AutomateBP(address(automate));
+        automateBP = new AutomateBP(address(automate), factory);
         dao = factory.dao();
 
         bpFactory = new ChromaticBPFactory(IChromaticMarketFactory(factory), automateBP);

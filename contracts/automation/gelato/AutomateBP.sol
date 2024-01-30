@@ -1,31 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
+import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
 import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
 import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {IAutomateGelatoBP} from "~/automation/gelato/interfaces/IAutomateGelatoBP.sol";
 
-contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoBP {
+contract AutomateBP is ReentrancyGuard, AutomateReady, IAutomateGelatoBP {
     mapping(IChromaticBP => bytes32) internal _boostTasks;
+    IChromaticMarketFactory public immutable marketFactory;
 
     constructor(
-        address gelatoAutomate
-    ) ReentrancyGuard() AutomateReady(gelatoAutomate, address(this)) Ownable() {}
+        address gelatoAutomate,
+        IChromaticMarketFactory _marketFactory
+    ) ReentrancyGuard() AutomateReady(gelatoAutomate, address(this)) {
+        marketFactory = _marketFactory;
+    }
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();
         _;
     }
 
-    /**
-     * @dev Checks if the caller is the owner of the contract.
-     */
-    function _checkOwner() internal view override {
-        if (owner() != _msgSender()) revert OnlyAccessableByOwner();
+    modifier onlyDao() {
+        if (msg.sender != marketFactory.dao()) revert OnlyAccessableByDao();
+        _;
     }
 
     /**
@@ -57,7 +59,7 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoB
     /**
      * @inheritdoc IAutomateBP
      */
-    function cancelBoostTask(IChromaticBP bp) external onlyOwner {
+    function cancelBoostTask(IChromaticBP bp) external onlyDao {
         bytes32 taskId = getBoostTaskId(bp);
 
         if (taskId != 0) {

@@ -92,7 +92,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
             feeRates[i] = _feeRates[i];
             distributionRates[i] = _distributions[i];
         }
-        automateLP = new AutomateLP(address(automate));
+        automateLP = new AutomateLP(address(automate), factory);
         lpLogic = new ChromaticLPLogic(automateLP);
 
         lp = new ChromaticLP(

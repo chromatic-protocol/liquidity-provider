@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IMate2Automation} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation.sol";
 import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
 
@@ -10,7 +10,7 @@ import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
 import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {IAutomateMate2BP} from "~/automation/mate2/interfaces/IAutomateMate2BP.sol";
 
-contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automation {
+contract AutomateBP is ReentrancyGuard, IAutomateMate2BP, IMate2Automation {
     enum UpkeepType {
         Boost
     }
@@ -20,17 +20,20 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     mapping(IChromaticBP => uint256) internal _boostTasks;
     uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
+    IChromaticMarketFactory public immutable marketFactory;
 
-    constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
+    constructor(
+        IMate2AutomationRegistry _automate,
+        IChromaticMarketFactory _marketFactory
+    ) ReentrancyGuard() {
         automate = _automate;
         upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
+        marketFactory = _marketFactory;
     }
 
-    /**
-     * @dev Checks if the caller is the owner of the contract.
-     */
-    function _checkOwner() internal view override {
-        if (owner() != _msgSender()) revert OnlyAccessableByOwner();
+    modifier onlyDao() {
+        if (msg.sender != marketFactory.dao()) revert OnlyAccessableByDao();
+        _;
     }
 
     /**
@@ -59,7 +62,7 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     /**
      * @inheritdoc IAutomateBP
      */
-    function cancelBoostTask(IChromaticBP bp) external onlyOwner {
+    function cancelBoostTask(IChromaticBP bp) external onlyDao {
         uint256 taskId = getBoostTaskId(bp);
 
         if (taskId != 0) {
@@ -78,7 +81,7 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     /**
      * @inheritdoc IAutomateMate2BP
      */
-    function cancelUpkeep(uint256 upkeepId) external onlyOwner {
+    function cancelUpkeep(uint256 upkeepId) external onlyDao {
         automate.cancelUpkeep(upkeepId);
     }
 
@@ -140,7 +143,7 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
         boost(bp);
     }
 
-    function updateUpkeepGasLimit(uint32 gasLimit) external onlyOwner {
+    function updateUpkeepGasLimit(uint32 gasLimit) external onlyDao {
         uint32 gasLimitOld = upkeepGasLimit;
         upkeepGasLimit = gasLimit;
         emit UpkeepGasLimitUpdated(gasLimitOld, gasLimit);
