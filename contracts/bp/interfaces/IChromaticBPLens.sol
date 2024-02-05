@@ -29,6 +29,12 @@ interface IChromaticBPLens {
     function maxRaisingTarget() external view returns (uint256 amount);
 
     /**
+     * @dev Retrieves the minimum deposit amount.
+     * @return amount The minimum deposit amount.
+     */
+    function minDeposit() external view returns (uint256 amount);
+
+    /**
      * @dev Retrieves the start time of the warm-up period.
      * @return timestamp The timestamp of the start time of the warm-up period.
      */

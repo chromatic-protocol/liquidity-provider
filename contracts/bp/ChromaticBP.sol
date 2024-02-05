@@ -83,11 +83,14 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
         if (config.durationOfLockup < MIN_PERIOD) {
             revert InvalidLockup();
         }
-        if (config.minRaisingTarget < config.lp.automationFeeReserved()) {
+        if (config.minRaisingTarget < config.lp.estimateMinAddLiquidityAmount()) {
             revert TooSmallMinRaisingTarget();
         }
         if (config.minRaisingTarget > config.maxRaisingTarget) {
             revert InvalidRaisingTarget();
+        }
+        if (config.minDeposit < config.lp.estimateMinAddLiquidityAmount()) {
+            revert TooSmallMinDeposit();
         }
     }
 
@@ -110,6 +113,9 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
 
         if (currentPeriod() == BPPeriod.WARMUP) {
             uint256 maxDepositable = s_state.maxDepositable();
+            uint256 _minDeposit = s_state.config.minDeposit;
+            if (maxDepositable >= _minDeposit && amount < _minDeposit)
+                revert TooSmallDepositError();
 
             uint256 depositAmount = maxDepositable >= amount ? amount : maxDepositable;
             if (depositAmount > 0) {
@@ -202,6 +208,13 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
      */
     function maxRaisingTarget() external view override returns (uint256 amount) {
         return s_state.maxRaisingTarget();
+    }
+
+    /**
+     * @inheritdoc IChromaticBPLens
+     */
+    function minDeposit() external view returns (uint256 amount) {
+        return s_state.config.minDeposit;
     }
 
     /**
