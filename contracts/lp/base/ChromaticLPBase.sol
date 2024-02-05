@@ -345,7 +345,11 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
      * @inheritdoc IChromaticLPLiquidity
      */
     function estimateMinRemoveLiquidityAmount() public view returns (uint256) {
-        return s_config.automationFeeReserved.mulDiv(totalSupply(), holdingValue());
+        if (holdingValue() == 0 || totalSupply() == 0) {
+            return s_config.automationFeeReserved.mulDiv(BPS, BPS - s_config.utilizationTargetBPS);
+        } else {
+            return s_config.automationFeeReserved.mulDiv(totalSupply(), holdingValue());
+        }
     }
 
     /**
