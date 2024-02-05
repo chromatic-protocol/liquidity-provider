@@ -13,6 +13,7 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
  * @param startTimeOfWarmup The start time of the warmup period.
  * @param maxDurationOfWarmup The max duration of the warmup period.
  * @param durationOfLockup The duration of the lockup period.
+ * @param minDeposit The minimum deposit amount.
  */
 struct BPConfig {
     IChromaticLP lp;
@@ -22,4 +23,5 @@ struct BPConfig {
     uint256 startTimeOfWarmup;
     uint256 maxDurationOfWarmup;
     uint256 durationOfLockup;
+    uint256 minDeposit;
 }

@@ -28,6 +28,11 @@ interface IChromaticBPErrors {
     error TooSmallMinRaisingTarget();
 
     /**
+     * @dev Error indicating a too small minimum deposit amount.
+     */
+    error TooSmallMinDeposit();
+
+    /**
      * @dev Error indicating that the warm-up period is not active.
      */
     error NotWarmupPeriod();
@@ -41,6 +46,11 @@ interface IChromaticBPErrors {
      * @dev Error indicating a zero deposit amount.
      */
     error ZeroDepositError();
+
+    /**
+     * @dev Error indicating a too small deposit amount.
+     */
+    error TooSmallDepositError();
 
     /**
      * @dev Error indicating that it's not the refundable period.
