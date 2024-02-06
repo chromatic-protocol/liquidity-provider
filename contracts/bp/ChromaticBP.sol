@@ -114,7 +114,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
         if (currentPeriod() == BPPeriod.WARMUP) {
             uint256 maxDepositable = s_state.maxDepositable();
             uint256 _minDeposit = s_state.config.minDeposit;
-            if (maxDepositable >= _minDeposit && amount < _minDeposit)
+            if (maxDepositable > _minDeposit && amount < _minDeposit)
                 revert TooSmallDepositError();
 
             uint256 depositAmount = maxDepositable >= amount ? amount : maxDepositable;
