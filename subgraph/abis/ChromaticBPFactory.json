@@ -135,6 +135,11 @@
             "internalType": "uint256",
             "name": "durationOfLockup",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minDeposit",
+            "type": "uint256"
           }
         ],
         "internalType": "struct BPConfig",
