@@ -26,6 +26,7 @@ export function handleChromaticBPCreated(event: ChromaticBPCreatedEvent): void {
     bpEntity.maxRaisingTarget = bpContract.maxRaisingTarget()
     bpEntity.startTimeOfWarmup = bpContract.startTimeOfWarmup()
     bpEntity.initialEndTimeOfWarmup = bpContract.endTimeOfWarmup()
+    bpEntity.minDeposit = bpContract.minDeposit()
     bpEntity.save()
 
     let statusId = entity.bp.toHex() + '@' + event.block.number.toString()
