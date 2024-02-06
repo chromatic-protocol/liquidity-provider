@@ -4,7 +4,7 @@
   "license": "MIT",
   "dependencies": {
     "@chainlink/contracts": "^0.8.0",
-    "@chromatic-protocol/contracts": "^0.0.1-rc.297",
+    "@chromatic-protocol/contracts": "^0.0.1-rc.306",
     "@openzeppelin/contracts": "^4.9.3",
     "@uniswap/v3-periphery": "^1.4.4"
   },

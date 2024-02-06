@@ -4,15 +4,15 @@ pragma solidity >=0.8.0 <0.9.0;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import {IMate2Automation} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation.sol";
-import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
+import {IMate2Automation1_1, ExtraModule} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation1_1.sol";
+import {IMate2AutomationRegistry1_1} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry1_1.sol";
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IAutomateMate2LP} from "~/automation/mate2/interfaces/IAutomateMate2LP.sol";
 
-contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automation {
+contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automation1_1 {
     enum UpkeepType {
         Rebalance,
         Settle
@@ -32,13 +32,13 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
         mapping(uint256 => uint256) settleTasks;
     }
 
-    IMate2AutomationRegistry public immutable automate;
+    IMate2AutomationRegistry1_1 public immutable automate;
     mapping(IChromaticLP => LPTasks) internal _taskMap;
 
     uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
 
-    constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
+    constructor(IMate2AutomationRegistry1_1 _automate) ReentrancyGuard() Ownable() {
         automate = _automate;
         upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
     }
@@ -215,7 +215,9 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
             address(this), // address admin,
             false, // bool useTreasury,
             singleExec, // bool singleExec,
-            abi.encode(upkeepType, lp, receiptIdOrZero)
+            abi.encode(upkeepType, lp, receiptIdOrZero), // checkData
+            ExtraModule.None, // extraModule
+            bytes("") // extraParam
         );
     }
 
@@ -225,7 +227,8 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     }
 
     function checkUpkeep(
-        bytes calldata checkData
+        bytes calldata checkData,
+        bytes calldata /* extraData */
     ) external view returns (bool upkeepNeeded, bytes memory performData) {
         (UpkeepType upkeepType, address lp, uint256 receiptId) = abi.decode(
             checkData,
