@@ -3,8 +3,8 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import type { AddressType } from '~/hardhat/common/types'
 
 export const MATE2_AUTOMATION_ADDRESS: { [key: number]: AddressType } = {
-  421614: '0xCc25d82dd205bF21eCd6CE63559415AFce93a00F'  // arbitrum_sepolia
-  // 42161: '0xCc25d82dd205bF21eCd6CE63559415AFce93a00F' // FIXME arbitrum mainnet
+  421614: '0x14cC9A5B88425d357AEca1B13B8cd6F81388Fe86'  // arbitrum_sepolia
+  // 42161: '0x14cC9A5B88425d357AEca1B13B8cd6F81388Fe86' // FIXME arbitrum mainnet
 }
 
 export function getAutomateAddress(hre: HardhatRuntimeEnvironment, tag=undefined): AddressType {
