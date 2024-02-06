@@ -173,6 +173,7 @@ type ChromaticBP @entity(immutable: true) {
   initialEndTimeOfWarmup: BigInt!
   maxRaisingTarget: BigInt!
   startTimeOfWarmup: BigInt!
+  minDeposit: BigInt!
   statuses: [ChromaticBPStatus!]! @derivedFrom(field: "bp")
   totalRaised: [ChromaticBPTotalRaised!]! @derivedFrom(field: "bp")
   deposits: [ChromaticBPDeposit!]! @derivedFrom(field: "bp")
