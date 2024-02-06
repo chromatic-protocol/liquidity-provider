@@ -3,25 +3,25 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {IMate2Automation} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation.sol";
-import {IMate2AutomationRegistry} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry.sol";
+import {IMate2Automation1_1, ExtraModule} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation1_1.sol";
+import {IMate2AutomationRegistry1_1} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry1_1.sol";
 
 import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
 import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {IAutomateMate2BP} from "~/automation/mate2/interfaces/IAutomateMate2BP.sol";
 
-contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automation {
+contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automation1_1 {
     enum UpkeepType {
         Boost
     }
     event UpkeepGasLimitUpdated(uint32 gasLimitOld, uint32 gasLimitNew);
 
-    IMate2AutomationRegistry public immutable automate;
+    IMate2AutomationRegistry1_1 public immutable automate;
     mapping(IChromaticBP => uint256) internal _boostTasks;
     uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
 
-    constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
+    constructor(IMate2AutomationRegistry1_1 _automate) ReentrancyGuard() Ownable() {
         automate = _automate;
         upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
     }
@@ -116,7 +116,9 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
             address(this), // address admin,
             false, // bool useTreasury,
             singleExec, // bool singleExec,
-            abi.encode(upkeepType, bp)
+            abi.encode(upkeepType, bp), // checkData
+            ExtraModule.None, // extraModule
+            bytes("") // extraParam
         );
     }
 
@@ -126,7 +128,8 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     }
 
     function checkUpkeep(
-        bytes calldata checkData
+        bytes calldata checkData,
+        bytes calldata /* extraData */
     ) external view returns (bool upkeepNeeded, bytes memory performData) {
         (UpkeepType upkeepType, address bp) = abi.decode(checkData, (UpkeepType, address));
         require(upkeepType == UpkeepType.Boost);

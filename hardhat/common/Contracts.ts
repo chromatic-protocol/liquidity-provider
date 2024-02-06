@@ -20,8 +20,8 @@ import {
   IChromaticLP__factory,
   IERC20Metadata,
   IERC20Metadata__factory,
-  IMate2AutomationRegistry,
-  IMate2AutomationRegistry__factory
+  IMate2AutomationRegistry1_1,
+  IMate2AutomationRegistry1_1__factory
 } from '~/typechain-types'
 
 import { AutomateBP, AutomateLP } from '~/typechain-types/contracts/automation/mate2'
@@ -76,8 +76,8 @@ export class Contracts {
   market(address: string): IChromaticMarket {
     return IChromaticMarket__factory.connect(address, this.signer)
   }
-  mate2Registry(address: string): IMate2AutomationRegistry {
-    return IMate2AutomationRegistry__factory.connect(address, this.signer)
+  mate2Registry(address: string): IMate2AutomationRegistry1_1 {
+    return IMate2AutomationRegistry1_1__factory.connect(address, this.signer)
   }
   automateLP(address: string): AutomateLP {
     return AutomateLP__factory.connect(address, this.signer)
