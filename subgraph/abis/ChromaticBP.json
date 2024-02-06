@@ -37,6 +37,11 @@
             "internalType": "uint256",
             "name": "durationOfLockup",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minDeposit",
+            "type": "uint256"
           }
         ],
         "internalType": "struct BPConfig",
@@ -150,6 +155,16 @@
   {
     "inputs": [],
     "name": "StartTimeError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TooSmallDepositError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TooSmallMinDeposit",
     "type": "error"
   },
   {
@@ -665,6 +680,19 @@
   {
     "inputs": [],
     "name": "maxRaisingTarget",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minDeposit",
     "outputs": [
       {
         "internalType": "uint256",
