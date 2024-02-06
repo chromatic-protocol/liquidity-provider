@@ -5,7 +5,7 @@ const prompt = require('prompt-sync')({ sigint: true })
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
 import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
-import { ChromaticLP__factory } from '~/typechain-types'
+import { ChromaticLP__factory, ChromaticLPRegistry } from '~/typechain-types'
 
 import { formatEther } from 'ethers'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
