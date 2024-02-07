@@ -7,7 +7,7 @@ import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
 import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
 
-import { formatEther } from 'ethers'
+import { formatEther, parseUnits } from 'ethers'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
 import { getAutomateAddress } from './getAutomateConfig'
@@ -293,25 +293,31 @@ export class DeployTool {
   adjustLPConfig(marketInfo: MarketInfo, lpConfig: LPConfig): LPConfig {
     const iscBTC = marketInfo.settlementToken.symbol === 'cBTC'
     const iscUSDT = marketInfo.settlementToken.symbol === 'cUSDT'
-
+    const decimals = marketInfo.settlementToken.decimals
     console.log('is cBTC?: ', iscBTC)
+
+    const automationFeeReserved = parseUnits(
+      formatEther(lpConfig.config.automationFeeReserved),
+      decimals
+    )
+    const minHoldingValueToRebalance = parseUnits(
+      formatEther(lpConfig.config.minHoldingValueToRebalance),
+      decimals
+    )
+    const initialLiquidity = parseUnits(formatEther(lpConfig.initialLiquidity!), decimals)
 
     let config = {
       ...lpConfig,
       config: {
         ...lpConfig.config,
-        automationFeeReserved: iscBTC
-          ? BigInt(lpConfig.config.automationFeeReserved) / 10n
-          : BigInt(lpConfig.config.automationFeeReserved),
+        automationFeeReserved: iscBTC ? automationFeeReserved / 10n : automationFeeReserved,
         minHoldingValueToRebalance: iscBTC
-          ? BigInt(lpConfig.config.minHoldingValueToRebalance) / 10n
-          : BigInt(lpConfig.config.minHoldingValueToRebalance)
+          ? minHoldingValueToRebalance / 10n
+          : minHoldingValueToRebalance
       },
       automateConfig: DEPLOYED.automateLP || this.helper.deployed.automateLP,
       initialLiquidity:
-        iscBTC && lpConfig.initialLiquidity
-          ? BigInt(lpConfig.initialLiquidity) / 10n
-          : lpConfig.initialLiquidity
+        iscBTC && lpConfig.initialLiquidity ? initialLiquidity / 10n : initialLiquidity
     }
     return config
   }
