@@ -92,37 +92,44 @@ export class Helper {
     return await this.c.marketFactory.registeredSettlementTokens()
   }
 
+  async marketsOfSettlementToken(settlementToken: AddressType): Promise<MarketInfo[]> {
+    const markets = await this.c.marketFactory.getMarketsBySettlmentToken(settlementToken)
+
+    const erc20 = this.c.erc20(settlementToken)
+    const name = await erc20.name()
+    const symbol = await erc20.symbol()
+    const decimals = await erc20.decimals()
+
+    console.log(
+      chalk.green(`✨ registered token of marketFactory: ${name}, ${symbol}, ${settlementToken}`)
+    )
+    console.log(chalk.green(`✨ total ${markets.length} market`))
+
+    const marketInfos = await Promise.all(
+      markets.map(async (x) => {
+        const market = this.c.market(x)
+        const settlementToken = await market.settlementToken()
+        return {
+          address: x,
+          settlementToken: {
+            name: name,
+            symbol: symbol,
+            decimals: decimals,
+            address: settlementToken
+          }
+        } as MarketInfo
+      })
+    )
+    return marketInfos
+  }
+
   async markets(): Promise<MarketInfo[]> {
     const allMarkets = []
     const tokens = await this.settlementTokens()
     console.log(chalk.green(`✨ total ${tokens.length} settlement tokens in marketFactory`))
 
     for (let token of tokens) {
-      const markets = await this.c.marketFactory.getMarketsBySettlmentToken(token)
-
-      const erc20 = this.c.erc20(token)
-      const name = await erc20.name()
-      const symbol = await erc20.symbol()
-      const decimals = await erc20.decimals()
-
-      console.log(chalk.green(`✨ registered token of marketFactory: ${name}, ${symbol}, ${token}`))
-      console.log(chalk.green(`✨ total ${markets.length} market`))
-
-      const marketInfos = await Promise.all(
-        markets.map(async (x) => {
-          const market = this.c.market(x)
-          const settlementToken = await market.settlementToken()
-          return {
-            address: x,
-            settlementToken: {
-              name: name,
-              symbol: symbol,
-              decimals: decimals,
-              address: settlementToken
-            }
-          } as MarketInfo
-        })
-      )
+      const marketInfos = await this.marketsOfSettlementToken(token as AddressType)
       allMarkets.push(...marketInfos)
     }
     return allMarkets
