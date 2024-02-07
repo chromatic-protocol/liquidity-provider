@@ -5,9 +5,9 @@ const prompt = require('prompt-sync')({ sigint: true })
 import { DeployOptions, DeployResult } from 'hardhat-deploy/types'
 import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
-import { ChromaticLP__factory, ChromaticLPRegistry } from '~/typechain-types'
+import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
 
-import { formatEther } from 'ethers'
+import { formatEther, parseUnits } from 'ethers'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
 import { getAutomateAddress } from './getAutomateConfig'
@@ -237,6 +237,44 @@ export class DeployTool {
     }
   }
 
+  async deployLPsOfSettlementToken(
+    settlementToken: AddressType,
+    lpConfigs?: LPConfig[]
+  ): Promise<LPDeployedResultMap> {
+    const markets = await this.helper.marketsOfSettlementToken(settlementToken)
+    lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
+    const lpDeployed: LPDeployedResultMap = {}
+
+    let i = 0
+    for (let market of markets) {
+      console.log(`\n${i++}th market [${market.address}]`)
+      const deployedResults = await this.deployLPs(market, lpConfigs)
+
+      lpDeployed[market.address] = deployedResults
+    }
+    return lpDeployed
+  }
+
+  async deployLPs(market: MarketInfo, lpConfigs?: LPConfig[]): Promise<DeployResult[]> {
+    const deployedResults = []
+    let i = 0
+
+    lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
+    for (let lpConfig of lpConfigs) {
+      const config = this.adjustLPConfig(market, lpConfig)
+      console.log(`\n\n${i++}th LP`)
+      try {
+        const deployed = await this.deployLP(market.address, config, false, market)
+        deployedResults.push(deployed)
+      } catch (e) {
+        console.log(`skipped`, e)
+        continue
+      }
+    }
+
+    return deployedResults
+  }
+
   async deployAllLP(lpConfigs?: LPConfig[]): Promise<LPDeployedResultMap> {
     const markets = await this.helper.markets()
     lpConfigs = lpConfigs == undefined ? this.defaultLPConfigs : lpConfigs
@@ -244,18 +282,8 @@ export class DeployTool {
 
     let i = 0
     for (let market of markets) {
-      const deployedResults = []
-      for (let lpConfig of lpConfigs) {
-        const config = this.adjustLPConfig(market, lpConfig)
-        console.log(`\n\n${i++}th LP`)
-        try {
-          const deployed = await this.deployLP(market.address, config, false, market)
-          deployedResults.push(deployed)
-        } catch (e) {
-          console.log(`skipped`, e)
-          continue
-        }
-      }
+      console.log(`\n${i++}th market [${market.address}]`)
+      const deployedResults = await this.deployLPs(market, lpConfigs)
 
       lpDeployed[market.address] = deployedResults
     }
@@ -264,21 +292,32 @@ export class DeployTool {
 
   adjustLPConfig(marketInfo: MarketInfo, lpConfig: LPConfig): LPConfig {
     const iscBTC = marketInfo.settlementToken.symbol === 'cBTC'
+    const iscUSDT = marketInfo.settlementToken.symbol === 'cUSDT'
+    const decimals = marketInfo.settlementToken.decimals
     console.log('is cBTC?: ', iscBTC)
+
+    const automationFeeReserved = parseUnits(
+      formatEther(lpConfig.config.automationFeeReserved),
+      decimals
+    )
+    const minHoldingValueToRebalance = parseUnits(
+      formatEther(lpConfig.config.minHoldingValueToRebalance),
+      decimals
+    )
+    const initialLiquidity = parseUnits(formatEther(lpConfig.initialLiquidity!), decimals)
 
     let config = {
       ...lpConfig,
       config: {
         ...lpConfig.config,
-        automationFeeReserved: iscBTC
-          ? BigInt(lpConfig.config.automationFeeReserved) / 10n
-          : BigInt(lpConfig.config.automationFeeReserved)
+        automationFeeReserved: iscBTC ? automationFeeReserved / 10n : automationFeeReserved,
+        minHoldingValueToRebalance: iscBTC
+          ? minHoldingValueToRebalance / 10n
+          : minHoldingValueToRebalance
       },
       automateConfig: DEPLOYED.automateLP || this.helper.deployed.automateLP,
       initialLiquidity:
-        iscBTC && lpConfig.initialLiquidity
-          ? BigInt(lpConfig.initialLiquidity) / 10n
-          : lpConfig.initialLiquidity
+        iscBTC && lpConfig.initialLiquidity ? initialLiquidity / 10n : initialLiquidity
     }
     return config
   }
