@@ -25,7 +25,7 @@ function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-function retry(f: any, maxRetry = 10) {
+export function retry(f: any, maxRetry = 10) {
   async function _retry(...args: any[]) {
     let waitInterval = 1000
     await sleep(100)

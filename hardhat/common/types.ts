@@ -10,6 +10,7 @@ export interface LPConfig {
   meta: {
     lpName?: string
     tag?: string
+    longShortInfo?: number
   }
   config: {
     utilizationTargetBPS: number

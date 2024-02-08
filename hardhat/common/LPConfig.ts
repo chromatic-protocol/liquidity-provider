@@ -60,7 +60,8 @@ export function getDefaultLPConfigs(): LPConfig[] {
       const config = {
         meta: {
           lpName: info.lpName,
-          tag: info.tag
+          tag: info.tag,
+          longShortInfo: info.isLongShorts[i]
         },
 
         config: {
