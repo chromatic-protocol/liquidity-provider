@@ -22,7 +22,8 @@ import {ChromaticVaultMock} from "~/mocks/ChromaticVaultMock.sol";
 import {DiamondLoupeFacet} from "@chromatic-protocol/contracts/core/facets/DiamondLoupeFacet.sol";
 import {MarketDiamondCutFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketDiamondCutFacet.sol";
 import {MarketStateFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketStateFacet.sol";
-import {MarketLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLiquidityFacet.sol";
+import {MarketAddLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketAddLiquidityFacet.sol";
+import {MarketRemoveLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketRemoveLiquidityFacet.sol";
 import {MarketLensFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLensFacet.sol";
 import {MarketTradeOpenPositionFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketTradeOpenPositionFacet.sol";
 import {MarketTradeClosePositionFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketTradeClosePositionFacet.sol";
@@ -115,7 +116,8 @@ abstract contract BaseSetup is Test {
             address(new MarketDiamondCutFacet()),
             address(new DiamondLoupeFacet()),
             address(new MarketStateFacet()),
-            address(new MarketLiquidityFacet()),
+            address(new MarketAddLiquidityFacet()),
+            address(new MarketRemoveLiquidityFacet()),
             address(new MarketLensFacet()),
             address(new MarketTradeOpenPositionFacet()),
             address(new MarketTradeClosePositionFacet()),
