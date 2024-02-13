@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 /**
  * @title The IChromaticLPErrors interface houses a set of custom errors that developers may encounter when interacting with liquidity providers for the Chromatic Protocol. These errors are designed to provide meaningful feedback about specific issues that may arise during the execution of smart contracts.

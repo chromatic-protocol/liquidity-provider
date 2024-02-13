@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -79,5 +79,4 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     ) external view override returns (address[] memory) {
         return _lpsBySettlementToken[token].values();
     }
-
 }

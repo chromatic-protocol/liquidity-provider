@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 
@@ -70,5 +70,4 @@ interface IChromaticLPRegistry {
     function lpListBySettlementToken(
         address token
     ) external view returns (address[] memory lpAddresses);
-
 }
