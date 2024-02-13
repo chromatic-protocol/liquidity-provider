@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {AutomateReady} from "@chromatic-protocol/contracts/core/automation/gelato/AutomateReady.sol";
 import {Module, ModuleData, TriggerType} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
@@ -9,12 +9,12 @@ import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
 import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {IAutomateGelatoBP} from "~/automation/gelato/interfaces/IAutomateGelatoBP.sol";
 
-contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable, IAutomateGelatoBP {
+contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable2Step, IAutomateGelatoBP {
     mapping(IChromaticBP => bytes32) internal _boostTasks;
 
     constructor(
         address gelatoAutomate
-    ) ReentrancyGuard() AutomateReady(gelatoAutomate, address(this)) Ownable() {}
+    ) ReentrancyGuard() AutomateReady(gelatoAutomate, address(this)) Ownable2Step() {}
 
     modifier onlyAutomation() virtual {
         if (msg.sender != dedicatedMsgSender) revert NotAutomationCalled();

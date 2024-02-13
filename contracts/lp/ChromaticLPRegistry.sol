@@ -2,13 +2,13 @@
 pragma solidity 0.8.19;
 
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IChromaticLPRegistry} from "~/lp/interfaces/IChromaticLPRegistry.sol";
 
-contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
+contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable2Step {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     IChromaticMarketFactory public immutable factory;
@@ -17,7 +17,7 @@ contract ChromaticLPRegistry is IChromaticLPRegistry, Ownable {
     mapping(address => EnumerableSet.AddressSet) _lpsBySettlementToken;
     EnumerableSet.AddressSet _lpsAll;
 
-    constructor(IChromaticMarketFactory _factory) Ownable() {
+    constructor(IChromaticMarketFactory _factory) Ownable2Step() {
         factory = _factory;
     }
 

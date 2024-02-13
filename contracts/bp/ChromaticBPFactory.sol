@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
@@ -13,7 +13,7 @@ import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
  * @title ChromaticBPFactory
  * @dev A contract to create and manage instances of ChromaticBP.
  */
-contract ChromaticBPFactory is Ownable, IChromaticBPFactory {
+contract ChromaticBPFactory is Ownable2Step, IChromaticBPFactory {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     mapping(address => EnumerableSet.AddressSet) private _lpToBpSet;
@@ -23,7 +23,7 @@ contract ChromaticBPFactory is Ownable, IChromaticBPFactory {
     /**
      * @dev Creates a new ChromaticBPFactory contract.
      */
-    constructor(IAutomateBP automate) {
+    constructor(IAutomateBP automate) Ownable2Step() {
         setAutomateBP(automate);
     }
 

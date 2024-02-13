@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {IMate2Automation} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation.sol";
@@ -12,7 +12,7 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IAutomateMate2LP} from "~/automation/mate2/interfaces/IAutomateMate2LP.sol";
 
-contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automation {
+contract AutomateLP is ReentrancyGuard, Ownable2Step, IAutomateMate2LP, IMate2Automation {
     enum UpkeepType {
         Rebalance,
         Settle
@@ -33,7 +33,7 @@ contract AutomateLP is ReentrancyGuard, Ownable, IAutomateMate2LP, IMate2Automat
     IMate2AutomationRegistry public immutable automate;
     mapping(IChromaticLP => LPTasks) internal _taskMap;
 
-    constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable() {
+    constructor(IMate2AutomationRegistry _automate) ReentrancyGuard() Ownable2Step() {
         automate = _automate;
     }
 
