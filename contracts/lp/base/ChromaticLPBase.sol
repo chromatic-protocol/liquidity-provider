@@ -161,7 +161,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
         }
 
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
-        if (receipt.id > 0 && receipt.oracleVersion < s_state.oracleVersion()) {
+        if (receipt.needSettle && receipt.oracleVersion < s_state.oracleVersion()) {
             return true;
         }
 

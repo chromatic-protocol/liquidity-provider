@@ -179,7 +179,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         receiptIds = lp.getReceiptIdsOf(address(this));
         assertEq(0, receiptIds.length);
         receipt = lp.getReceipt(receipt.id);
-        assertEq(0, receipt.id);
+        assertEq(false, receipt.needSettle);
     }
 
     function testRemoveLiquidity() public {

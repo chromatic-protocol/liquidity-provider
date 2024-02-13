@@ -62,14 +62,13 @@ library LPStateLogicLib {
     }
 
     /**
-     * @dev Removes a receipt from the LPState, cleaning up associated mappings and sets.
+     * @dev Update a receipt settled from the LPState, cleaning up associated mappings and sets.
      * @param s_state The storage state of the liquidity provider.
      * @param receiptId The ID of the Chromatic LP Receipt to be removed.
      */
     function removeReceipt(LPState storage s_state, uint256 receiptId) internal {
-        ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
-        delete s_state.receipts[receiptId];
-        delete s_state.lpReceiptMap[receiptId];
+        ChromaticLPReceipt storage receipt = s_state.receipts[receiptId];
+        receipt.needSettle = false;
 
         EnumerableSet.UintSet storage receiptIdSet = s_state.providerReceiptIds[receipt.provider];
         //slither-disable-next-line unused-return
@@ -188,7 +187,8 @@ library LPStateLogicLib {
             oracleVersion: lpReceipts[0].oracleVersion,
             amount: amount,
             pendingLiquidity: liquidityAmount,
-            action: ChromaticLPAction.ADD_LIQUIDITY
+            action: ChromaticLPAction.ADD_LIQUIDITY,
+            needSettle: true
         });
 
         s_state.addReceipt(receipt, lpReceipts);
@@ -232,7 +232,8 @@ library LPStateLogicLib {
             oracleVersion: lpReceipts[0].oracleVersion,
             amount: lpTokenAmount,
             pendingLiquidity: 0,
-            action: ChromaticLPAction.REMOVE_LIQUIDITY
+            action: ChromaticLPAction.REMOVE_LIQUIDITY,
+            needSettle: true
         });
 
         s_state.addReceipt(receipt, lpReceipts);
