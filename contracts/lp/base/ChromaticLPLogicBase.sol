@@ -309,17 +309,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
      * @dev implementation of IChromaticLiquidityCallback
      */
     function withdrawLiquidityBatchCallback(
-        uint256[] calldata receiptIds,
+        uint256[] calldata /* receiptIds */,
         int16[] calldata /* _feeRates */,
         uint256[] calldata /* withdrawnAmounts */,
         uint256[] calldata /* burnedCLBTokenAmounts */,
         bytes calldata data
     ) external verifyCallback {
-        (ChromaticLPReceipt memory receipt, uint256 keeperFee) = abi.decode(
-            data,
-            (ChromaticLPReceipt, uint256)
-        );
-        LpReceipt[] memory lpReceits = s_state.market.getLpReceipts(receiptIds);
+        (ChromaticLPReceipt memory receipt, uint256 keeperFee, LpReceipt[] memory lpReceits) = abi
+            .decode(data, (ChromaticLPReceipt, uint256, LpReceipt[]));
         s_state.decreasePendingClb(lpReceits);
         // burn and transfer settlementToken
 
