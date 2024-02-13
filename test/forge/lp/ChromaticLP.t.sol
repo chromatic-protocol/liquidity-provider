@@ -21,12 +21,15 @@ import {ChromaticLP} from "~/lp/ChromaticLP.sol";
 import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 
 import {LogUtil, Taker} from "./Helper.sol";
+import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
+import {AutomateLP} from "~/automation/gelato/AutomateLP.sol";
 
 import "forge-std/console.sol";
 
 contract ChromaticLPTest is BaseSetup, LogUtil {
     using Math for uint256;
 
+    AutomateLP automateLP;
     ChromaticLP lp;
     ChromaticLPLogic lpLogic;
 
@@ -90,12 +93,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
             distributionRates[i] = _distributions[i];
         }
 
-        lpLogic = new ChromaticLPLogic(
-            ChromaticLPStorage.AutomateParam({
-                automate: address(automate),
-                opsProxyFactory: address(opf)
-            })
-        );
+        automateLP = new AutomateLP(address(automate));
+        lpLogic = new ChromaticLPLogic(automateLP);
 
         lp = new ChromaticLP(
             lpLogic,
@@ -105,15 +104,15 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
                 utilizationTargetBPS: 5000,
                 rebalanceBPS: 500,
                 rebalanceCheckingInterval: 1 hours,
-                automationFeeReserved: 1 ether
+                automationFeeReserved: 1 ether,
+                minHoldingValueToRebalance: 2 ether
             }),
             feeRates,
             distributionRates,
-            ChromaticLPStorage.AutomateParam({
-                automate: address(automate),
-                opsProxyFactory: address(opf)
-            })
+            automateLP
         );
+        lp.createRebalanceTask();
+
         console.log("LP address: ", address(lp));
         console.log("LP logic address: ", address(lpLogic));
     }
@@ -123,15 +122,15 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         logInfo(lp);
 
         // by super.setUp()
-        assertEq(usdc.balanceOf(address(this)), 1000000 ether);
+        assertEq(ctst.balanceOf(address(this)), 1000000 ether);
         oracleProvider.increaseVersion(3 ether);
         // approve first
-        usdc.approve(address(lp), 1000000 ether);
+        ctst.approve(address(lp), 1000000 ether);
 
         vm.expectEmit(true, true, false, true, address(lp));
         uint256 amount = 1000 ether;
         emit AddLiquidity(
-            1,
+            2,
             address(this),
             address(this),
             oracleProvider.currentVersion().version,
@@ -154,12 +153,12 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
 
         uint256 tokenBalanceBefore = lp.balanceOf(address(this));
 
-        (bool canExec, ) = lp.resolveSettle(receipt.id);
+        bool canExec = lp.checkSettle(receipt.id);
         assertEq(false, canExec);
 
         oracleProvider.increaseVersion(3 ether);
 
-        (canExec, ) = lp.resolveSettle(receipt.id);
+        canExec = lp.checkSettle(receipt.id);
         assertEq(true, canExec);
 
         vm.expectEmit(true, false, false, true, address(lp));
@@ -193,7 +192,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
 
         vm.expectEmit(true, true, false, true, address(lp));
         emit RemoveLiquidity(
-            2,
+            3,
             address(this),
             address(this),
             oracleProvider.currentVersion().version,
@@ -209,7 +208,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
 
         assertEq(false, lp.settle(receipt.id));
 
-        uint256 tokenBalanceBefore = usdc.balanceOf(address(this));
+        uint256 tokenBalanceBefore = ctst.balanceOf(address(this));
         oracleProvider.increaseVersion(3 ether);
 
         vm.expectEmit(true, false, false, true, address(lp));
@@ -223,7 +222,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
             0
         );
         assertEq(true, lp.settle(receipt.id));
-        uint256 tokenBalanceAfter = usdc.balanceOf(address(this));
+        uint256 tokenBalanceAfter = ctst.balanceOf(address(this));
         assertEq(tokenBalanceAfter - tokenBalanceBefore, receipt.amount);
     }
 
@@ -234,8 +233,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
 
         Taker taker = new Taker(router);
         taker.createAccount();
-        usdc.transfer(taker.getAccount(), 100 ether);
-        uint256 balanceBefore = usdc.balanceOf(taker.getAccount());
+        ctst.transfer(taker.getAccount(), 100 ether);
+        uint256 balanceBefore = ctst.balanceOf(taker.getAccount());
 
         OpenPositionInfo memory openinfo = taker.openPosition(
             address(market),
@@ -246,7 +245,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         );
         logInfo(openinfo);
 
-        (bool canExec, ) = lp.resolveRebalance();
+        bool canExec = lp.checkRebalance();
         assertEq(canExec, false);
 
         int256 entryPrice = 1 ether;
@@ -258,7 +257,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         taker.closePosition(address(market), openinfo.id);
 
         oracleProvider.increaseVersion(exitPrice);
-        (canExec, ) = lp.resolveRebalance();
+        canExec = lp.checkRebalance();
         assertEq(canExec, false);
 
         market.settleAll();
@@ -275,12 +274,12 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         );
         taker.claimPosition(address(market), openinfo.id);
 
-        uint256 balanceAfter = usdc.balanceOf(taker.getAccount());
+        uint256 balanceAfter = ctst.balanceOf(taker.getAccount());
         console.log("balance before and after", balanceBefore / 10 ** 18, balanceAfter / 10 ** 18);
-        (canExec, ) = lp.resolveRebalance();
+        canExec = lp.checkRebalance();
         assertEq(canExec, true);
 
-        lp.rebalance();
+        automateLP.rebalance(address(lp));
     }
 
     function testTradeRemoveLiquidity() public {
@@ -290,7 +289,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
 
         Taker taker = new Taker(router);
         taker.createAccount();
-        usdc.transfer(taker.getAccount(), 100 ether);
+        ctst.transfer(taker.getAccount(), 100 ether);
         // uint256 balanceBefore = usdc.balanceOf(taker.getAccount());
 
         OpenPositionInfo memory openinfo = taker.openPosition(
@@ -302,7 +301,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         );
         logInfo(openinfo);
 
-        (bool canExec, ) = lp.resolveRebalance();
+        bool canExec = lp.checkRebalance();
         assertEq(canExec, false);
 
         int256 entryPrice = 1 ether;
@@ -318,7 +317,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         oracleProvider.increaseVersion(entryPrice);
 
         uint256 lpTokenBefore = lp.balanceOf(address(this));
-        uint256 usdcTokenBefore = usdc.balanceOf(address(this));
+        uint256 tokenBalanceBefore = ctst.balanceOf(address(this));
 
         logInfo(lp);
 
@@ -337,8 +336,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         );
         console.log(
             "Settlement token \n - before: %d\n - after remove: %d",
-            usdcTokenBefore / 10 ** 18,
-            usdc.balanceOf(address(this)) / 10 ** 18
+            tokenBalanceBefore / 10 ** 18,
+            ctst.balanceOf(address(this)) / 10 ** 18
         );
         logInfo(lp);
         // taker.closePosition(address(market), openinfo.id);
