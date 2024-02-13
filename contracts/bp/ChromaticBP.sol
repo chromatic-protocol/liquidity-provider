@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -114,8 +114,7 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
         if (currentPeriod() == BPPeriod.WARMUP) {
             uint256 maxDepositable = s_state.maxDepositable();
             uint256 _minDeposit = s_state.config.minDeposit;
-            if (maxDepositable > _minDeposit && amount < _minDeposit)
-                revert TooSmallDepositError();
+            if (maxDepositable > _minDeposit && amount < _minDeposit) revert TooSmallDepositError();
 
             uint256 depositAmount = maxDepositable >= amount ? amount : maxDepositable;
             if (depositAmount > 0) {

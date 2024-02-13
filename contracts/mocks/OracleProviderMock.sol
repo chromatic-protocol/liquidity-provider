@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 import {ChainlinkAggregator} from "@chromatic-protocol/contracts/oracle/types/ChainlinkAggregator.sol";
 import {OracleProviderBase, IOracleProvider} from "@chromatic-protocol/contracts/oracle/base/OracleProviderBase.sol";

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -91,7 +91,7 @@ abstract contract BaseSetup is Test {
         vm.mockCall(
             address(_automate),
             abi.encodeWithSelector(IOpsProxyFactory(address(_automate)).getProxyOf.selector),
-            abi.encode(address(this), true)  // dedicatedMsgSender
+            abi.encode(address(this), true) // dedicatedMsgSender
         );
         vm.mockCall(
             address(_automate),

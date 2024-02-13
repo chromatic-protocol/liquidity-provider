@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 /**
  * @title The IChromaticLPMeta interface exposes methods that developers can use to obtain metadata information related to Chromatic Protocol liquidity provider. These functions provide details such as the name and tag associated with a liquidity pool.
