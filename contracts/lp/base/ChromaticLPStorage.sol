@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 import {BaseSetup} from "../BaseSetup.sol";
 
@@ -179,7 +179,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         receiptIds = lp.getReceiptIdsOf(address(this));
         assertEq(0, receiptIds.length);
         receipt = lp.getReceipt(receipt.id);
-        assertEq(0, receipt.id);
+        assertEq(false, receipt.needSettle);
     }
 
     function testRemoveLiquidity() public {

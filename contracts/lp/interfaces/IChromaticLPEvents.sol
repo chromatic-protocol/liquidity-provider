@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 /**
  * @title The IChromaticLPEvents interface declares events that developers can utilize to track and react to different actions within the Chromatic Protocol. These events offer transparency and can be subscribed to for monitoring the state changes of the liquidity providers.

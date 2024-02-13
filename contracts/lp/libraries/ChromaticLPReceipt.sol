@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
 /**
  * @dev The ChromaticLPAction enum represents the types of LP actions that can be performed.
@@ -19,6 +19,7 @@ enum ChromaticLPAction {
  * @param amount Amount associated with the liquidity action.
  * @param pendingLiquidity Pending liquidity awaiting settlement.
  * @param action ChromaticLPAction indicating the type of liquidity-related action.
+ * @param needSettle bool flag indicating whether settlement is needed
  */
 struct ChromaticLPReceipt {
     uint256 id;
@@ -28,4 +29,5 @@ struct ChromaticLPReceipt {
     uint256 amount;
     uint256 pendingLiquidity;
     ChromaticLPAction action;
+    bool needSettle;
 }

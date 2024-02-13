@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity 0.8.19;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IMate2Automation1_1, ExtraModule} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2Automation1_1.sol";
 import {IMate2AutomationRegistry1_1} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry1_1.sol";
@@ -10,7 +10,7 @@ import {IChromaticBP} from "~/bp/interfaces/IChromaticBP.sol";
 import {IAutomateBP} from "~/bp/interfaces/IAutomateBP.sol";
 import {IAutomateMate2BP} from "~/automation/mate2/interfaces/IAutomateMate2BP.sol";
 
-contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automation1_1 {
+contract AutomateBP is ReentrancyGuard, Ownable2Step, IAutomateMate2BP, IMate2Automation1_1 {
     enum UpkeepType {
         Boost
     }
@@ -21,7 +21,7 @@ contract AutomateBP is ReentrancyGuard, Ownable, IAutomateMate2BP, IMate2Automat
     uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
 
-    constructor(IMate2AutomationRegistry1_1 _automate) ReentrancyGuard() Ownable() {
+    constructor(IMate2AutomationRegistry1_1 _automate) ReentrancyGuard() Ownable2Step() {
         automate = _automate;
         upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
     }
