@@ -162,6 +162,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
 
     function _addLiquidity(
         uint256 amount,
+        address provider,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
         if (amount <= s_config.automationFeeReserved) {
@@ -170,6 +171,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         receipt = s_state.addLiquidity(
             amount,
             (amount - s_config.automationFeeReserved).mulDiv(s_config.utilizationTargetBPS, BPS),
+            provider,
             recipient
         );
 
@@ -180,9 +182,10 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function _removeLiquidity(
         uint256[] memory clbTokenAmounts,
         uint256 lpTokenAmount,
+        address provider,
         address recipient
     ) internal returns (ChromaticLPReceipt memory receipt) {
-        receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, recipient);
+        receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, provider, recipient);
 
         // slither-disable-next-line reentrancy-benign
         _createSettleTask(receipt.id);
@@ -200,15 +203,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             data,
             (AddLiquidityBatchCallbackData)
         );
-        //slither-disable-next-line arbitrary-send-erc20
-        SafeERC20.safeTransferFrom(
-            IERC20(settlementToken),
-            callbackData.provider,
-            vault,
-            callbackData.liquidityAmount
-        );
-
         if (callbackData.provider != address(this)) {
+            //slither-disable-next-line arbitrary-send-erc20
+            SafeERC20.safeTransferFrom(
+                IERC20(settlementToken),
+                callbackData.provider,
+                vault,
+                callbackData.liquidityAmount
+            );
             //slither-disable-next-line arbitrary-send-erc20
             SafeERC20.safeTransferFrom(
                 IERC20(settlementToken),
@@ -216,6 +218,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 address(this),
                 callbackData.holdingAmount
             );
+        } else {
+            SafeERC20.safeTransfer(IERC20(settlementToken), vault, callbackData.liquidityAmount);
         }
     }
 
@@ -286,7 +290,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             bytes("")
         );
 
-        if (callbackData.recipient != address(this) && callbackData.lpTokenAmount > 0) {
+        if (callbackData.provider != address(this) && callbackData.lpTokenAmount > 0) {
             //slither-disable-next-line arbitrary-send-erc20
             SafeERC20.safeTransferFrom(
                 IERC20(this),
@@ -403,7 +407,12 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
                 ++i;
             }
         }
-        ChromaticLPReceipt memory receipt = _removeLiquidity(clbTokenAmounts, 0, address(this));
+        ChromaticLPReceipt memory receipt = _removeLiquidity(
+            clbTokenAmounts,
+            0,
+            address(this),
+            address(this)
+        );
         //slither-disable-next-line reentrancy-events
         emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
         return receipt.id;
@@ -412,7 +421,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function _rebalanceAddLiquidity(uint256 currentUtility) private returns (uint256 receiptId) {
         uint256 amount = _estimateRebalanceAddAmount(currentUtility);
 
-        ChromaticLPReceipt memory receipt = _addLiquidity(amount, address(this));
+        ChromaticLPReceipt memory receipt = _addLiquidity(amount, address(this), address(this));
         //slither-disable-next-line reentrancy-events
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;
