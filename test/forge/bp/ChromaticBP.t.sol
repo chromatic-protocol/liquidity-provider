@@ -78,7 +78,8 @@ contract ChromaticBPTest is BaseSetup, IChromaticBPEvents {
             maxRaisingTarget: 600 ether,
             startTimeOfWarmup: (block.timestamp + 60),
             maxDurationOfWarmup: 1 days,
-            durationOfLockup: 1 days
+            durationOfLockup: 1 days,
+            minDeposit: 3 ether
         });
 
         bpFactory.createBP(bpConfig);
