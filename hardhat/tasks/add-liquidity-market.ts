@@ -9,8 +9,10 @@ import { HardhatRuntimeEnvironment, TaskArguments } from 'hardhat/types'
 
 task('add-liquidity-market', 'add liquidity to LPs of market')
   .addParam('market', 'The market address')
+  .addOptionalParam('longShort', 'pool longshort', undefined)
   .setAction(async (taskArgs: TaskArguments, hre: HardhatRuntimeEnvironment) => {
     const marketAddress = taskArgs.market.toLowerCase()
+    const longShort = taskArgs.longShort === undefined ? undefined : BigInt(taskArgs.longShort)
     const tool = await DeployTool.createAsync(hre, getDefaultLPConfigs())
     const marketAddresses = (await tool.helper.marketAddresses()).map((x) => x.toLowerCase())
     console.log(chalk.green(`marketAddresses: ${JSON.stringify(marketAddresses, null, 2)}`))
@@ -54,6 +56,10 @@ task('add-liquidity-market', 'add liquidity to LPs of market')
       assert(found.length === 1, 'not unique lp found')
       const lpInfo = found[0]
 
+      if (longShort !== undefined && BigInt(longShort) !== BigInt(lpInfo.longShortInfo)) {
+        continue
+      }
+
       console.log(`${i++}th lp`, lpInfo)
       const initialLiquidity = isBTC
         ? BigInt(config.initialLiquidity!) / 10n
@@ -65,7 +71,6 @@ task('add-liquidity-market', 'add liquidity to LPs of market')
           `add liquidity ... \nlp ${lpInfo.address}\namount: ${formatUnits(amount, decimals)}`
         )
       )
-
       await tool.addLiquidity(lpInfo.address as any, amount)
     }
   })
