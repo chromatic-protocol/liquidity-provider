@@ -7,7 +7,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {MarketLiquidityFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLiquidityFacet.sol";
 import {IChromaticRouter} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticRouter.sol";
-import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketTrade.sol";
+import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/Types.sol";
 import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";

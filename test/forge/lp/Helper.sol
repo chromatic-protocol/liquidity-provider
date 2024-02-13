@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import {IChromaticRouter} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticRouter.sol";
-import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/IMarketTrade.sol";
+import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/Types.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {Test} from "forge-std/Test.sol";
