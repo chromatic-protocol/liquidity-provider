@@ -110,9 +110,12 @@ library LPStateLogicLib {
     ) internal {
         // do claim
         // pass ChromaticLPReceipt as calldata
+        uint256[] memory receiptIds = s_state.lpReceiptMap[receipt.id].values();
+        LpReceipt[] memory lpReceits = s_state.market.getLpReceipts(receiptIds);
+
         s_state.market.withdrawLiquidityBatch(
             s_state.lpReceiptMap[receipt.id].values(),
-            abi.encode(receipt, keeperFee)
+            abi.encode(receipt, keeperFee, lpReceits)
         );
 
         s_state.removeReceipt(receipt.id);
