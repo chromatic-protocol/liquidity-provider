@@ -124,7 +124,11 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
     function _settle(uint256 receiptId, uint256 keeperFee) internal returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
 
-        if (receipt.id > REBALANCE_ID && receipt.oracleVersion < s_state.oracleVersion()) {
+        if (
+            receipt.id > REBALANCE_ID &&
+            receipt.needSettle &&
+            receipt.oracleVersion < s_state.oracleVersion()
+        ) {
             _cancelSettleTask(receiptId);
 
             if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {

@@ -153,7 +153,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         }
 
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
-        if (receipt.id > 0 && receipt.oracleVersion < s_state.oracleVersion()) {
+        if (receipt.needSettle && receipt.oracleVersion < s_state.oracleVersion()) {
             return true;
         }
 
@@ -296,7 +296,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     function rebalanceCheckingInterval() external view returns (uint256) {
         return s_config.rebalanceCheckingInterval;
     }
-
 
     /**
      * @inheritdoc IChromaticLPConfigLens
