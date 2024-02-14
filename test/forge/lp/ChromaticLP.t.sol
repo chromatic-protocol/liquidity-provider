@@ -1,75 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import {BaseSetup} from "../BaseSetup.sol";
-
-import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {OpenPositionInfo, CLAIM_USER} from "@chromatic-protocol/contracts/core/interfaces/market/Types.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-import {IChromaticRouter} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticRouter.sol";
-import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/market/Types.sol";
-import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
-import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
-import {IChromaticAccount} from "@chromatic-protocol/contracts/periphery/interfaces/IChromaticAccount.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-
-import {CLAIM_USER} from "@chromatic-protocol/contracts/core/interfaces/market/Types.sol";
-
-import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLP} from "~/lp/ChromaticLP.sol";
 import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
-import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {AutomateLP} from "~/automation/gelato/AutomateLP.sol";
-
+import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
+import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
+import {BaseSetup} from "../BaseSetup.sol";
 import {LogUtil, Taker} from "./Helper.sol";
 
 import "forge-std/console.sol";
 
-contract ChromaticLPTest is BaseSetup, LogUtil {
+contract ChromaticLPTest is BaseSetup, LogUtil, IChromaticLPEvents {
     using Math for uint256;
 
     AutomateLP automateLP;
     ChromaticLP lp;
     ChromaticLPLogic lpLogic;
 
-    event AddLiquidity(
-        uint256 indexed receiptId,
-        address indexed provider,
-        address indexed recipient,
-        uint256 oracleVersion,
-        uint256 amount
-    );
-
-    event AddLiquiditySettled(
-        uint256 indexed receiptId,
-        address indexed provider,
-        address indexed recipient,
-        uint256 settlementAdded,
-        uint256 lpTokenAmount,
-        uint256 keeperFee
-    );
-
-    event RemoveLiquidity(
-        uint256 indexed receiptId,
-        address indexed provider,
-        address indexed recipient,
-        uint256 oracleVersion,
-        uint256 lpTokenAmount
-    );
-
-    event RemoveLiquiditySettled(
-        uint256 indexed receiptId,
-        address indexed provider,
-        address indexed recipient,
-        uint256 burningAmount,
-        uint256 witdrawnSettlementAmount,
-        uint256 refundedAmount,
-        uint256 keeperFee
-    );
-
-    event RebalanceLiquidity(uint256 indexed receiptId);
-    event RebalanceSettled(uint256 indexed receiptId);
-
+    // from IChromaticAccount
     event ClaimPosition(
         address indexed marketAddress,
         uint256 indexed positionId,
@@ -273,9 +226,19 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         taker.claimPosition(address(market), openinfo.id);
 
         uint256 balanceAfter = ctst.balanceOf(taker.getAccount());
-        console.log("balance before and after", balanceBefore / 10 ** 18, balanceAfter / 10 ** 18);
+        console.log(
+            "taker balance before and after",
+            balanceBefore / 10 ** 18,
+            balanceAfter / 10 ** 18
+        );
         canExec = lp.checkRebalance();
         assertEq(canExec, true);
+
+        vm.expectEmit(true, false, false, false);
+        emit RebalanceAddLiquidity(3, 5, 1 ether /* don't care */, 1111 /* don't care */);
+
+        // vm.expectEmit(true, false, false, false);
+        // emit RebalanceRemoveLiquidity(3, 5, 1111 /* don't care */);
 
         automateLP.rebalance(address(lp));
     }
@@ -288,7 +251,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         Taker taker = new Taker(router);
         taker.createAccount();
         ctst.transfer(taker.getAccount(), 100 ether);
-        // uint256 balanceBefore = ctst.balanceOf(taker.getAccount());
+        uint256 balanceBefore = ctst.balanceOf(taker.getAccount());
 
         OpenPositionInfo memory openinfo = taker.openPosition(
             address(market),
@@ -303,7 +266,7 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
         assertEq(canExec, false);
 
         int256 entryPrice = 1 ether;
-        int256 exitPrice = 2 ether;
+        int256 exitPrice = 1.2 ether;
 
         oracleProvider.increaseVersion(entryPrice);
         market.settleAll();
@@ -325,45 +288,51 @@ contract ChromaticLPTest is BaseSetup, LogUtil {
 
         oracleProvider.increaseVersion(entryPrice);
         assertEq(true, lp.settle(receipt.id));
-        uint256 lpTokenAfter = lp.balanceOf(address(this));
+        // uint256 lpTokenAfter = lp.balanceOf(address(this));
 
-        console.log(
-            "LP token \n - before: %d\n - after remove: %d",
-            lpTokenBefore / 10 ** 18,
-            lpTokenAfter / 10 ** 18
+        // console.log(
+        //     "LP token \n - before: %d\n - after remove: %d",
+        //     lpTokenBefore / 10 ** 18,
+        //     lpTokenAfter / 10 ** 18
+        // );
+        // console.log(
+        //     "Settlement token \n - before: %d\n - after remove: %d",
+        //     usdcTokenBefore / 10 ** 18,
+        //     ctst.balanceOf(address(this)) / 10 ** 18
+        // );
+        // // logInfo(lp);
+
+        taker.closePosition(address(market), openinfo.id);
+
+        oracleProvider.increaseVersion(exitPrice);
+        canExec = lp.checkRebalance();
+        assertEq(canExec, false);
+
+        market.settleAll();
+
+        vm.expectEmit(true, true, false, true, taker.getAccount());
+        emit ClaimPosition(
+            address(market),
+            openinfo.id,
+            uint256(entryPrice),
+            uint256(exitPrice),
+            (openinfo.qty * (exitPrice - entryPrice)) / 10 ** 18,
+            0,
+            CLAIM_USER
         );
+        taker.claimPosition(address(market), openinfo.id);
+
+        uint256 balanceAfter = ctst.balanceOf(taker.getAccount());
         console.log(
-            "Settlement token \n - before: %d\n - after remove: %d",
-            usdcTokenBefore / 10 ** 18,
-            ctst.balanceOf(address(this)) / 10 ** 18
+            "taker balance before and after",
+            balanceBefore / 10 ** 18,
+            balanceAfter / 10 ** 18
         );
+
         logInfo(lp);
 
-        // WIP
-        // taker.closePosition(address(market), openinfo.id);
-
-        // oracleProvider.increaseVersion(exitPrice);
-        // canExec = lp.checkRebalance();
-        // assertEq(canExec, false);
-
-        // market.settleAll();
-
-        // vm.expectEmit(true, true, false, true, taker.getAccount());
-        // emit ClaimPosition(
-        //     address(market),
-        //     openinfo.id,
-        //     uint256(entryPrice),
-        //     uint256(exitPrice),
-        //     (openinfo.qty * (exitPrice - entryPrice)) / 10 ** 18,
-        //     0,
-        //     CLAIM_USER
-        // );
-        // taker.claimPosition(address(market), openinfo.id);
-
-        // uint256 balanceAfter = ctst.balanceOf(taker.getAccount());
-        // console.log("balance before and after", balanceBefore / 10 ** 18, balanceAfter / 10 ** 18);
-        // canExec = lp.checkRebalance();
-        // assertEq(canExec, true);
+        canExec = lp.checkRebalance();
+        assertEq(canExec, false);
         // canExec = lp.checkRebalance();
         // assertEq(canExec, true);
 
