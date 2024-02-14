@@ -12,15 +12,14 @@ import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 import {BaseSetup} from "../BaseSetup.sol";
 import {LogUtil, Taker} from "./Helper.sol";
+import {LPHelper} from "./LPHelper.sol";
 
 import "forge-std/console.sol";
 
-contract ChromaticLPTest is BaseSetup, LogUtil, IChromaticLPEvents {
+contract ChromaticLPTest is BaseSetup, LPHelper, LogUtil, IChromaticLPEvents {
     using Math for uint256;
 
-    AutomateLP automateLP;
     ChromaticLP lp;
-    ChromaticLPLogic lpLogic;
 
     // from IChromaticAccount
     event ClaimPosition(
@@ -35,21 +34,9 @@ contract ChromaticLPTest is BaseSetup, LogUtil, IChromaticLPEvents {
 
     function setUp() public override {
         super.setUp();
-        int8[8] memory _feeRates = [-4, -3, -2, -1, 1, 2, 3, 4];
-        uint16[8] memory _distributions = [2000, 1500, 1000, 500, 500, 1000, 1500, 2000];
+        init(address(automate));
 
-        int16[] memory feeRates = new int16[](_feeRates.length);
-        uint16[] memory distributionRates = new uint16[](_feeRates.length);
-        for (uint256 i; i < _feeRates.length; ++i) {
-            feeRates[i] = _feeRates[i];
-            distributionRates[i] = _distributions[i];
-        }
-        automateLP = new AutomateLP(address(automate));
-        lpLogic = new ChromaticLPLogic(automateLP);
-
-        lp = new ChromaticLP(
-            lpLogic,
-            ChromaticLPStorageCore.LPMeta({lpName: "lp pool", tag: "N"}),
+        lp = deployLP(
             ChromaticLPStorageCore.ConfigParam({
                 market: market,
                 utilizationTargetBPS: 5000,
@@ -57,14 +44,8 @@ contract ChromaticLPTest is BaseSetup, LogUtil, IChromaticLPEvents {
                 rebalanceCheckingInterval: 1 hours,
                 automationFeeReserved: 1 ether,
                 minHoldingValueToRebalance: 2 ether
-            }),
-            feeRates,
-            distributionRates,
-            automateLP
+            })
         );
-        lp.createRebalanceTask();
-        console.log("LP address: ", address(lp));
-        console.log("LP logic address: ", address(lpLogic));
     }
 
     function testAddLiquidity() public {
