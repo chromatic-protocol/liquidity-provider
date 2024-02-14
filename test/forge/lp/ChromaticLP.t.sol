@@ -10,13 +10,12 @@ import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {AutomateLP} from "~/automation/gelato/AutomateLP.sol";
 import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
-import {BaseSetup} from "../BaseSetup.sol";
 import {LogUtil, Taker} from "./Helper.sol";
 import {LPHelper} from "./LPHelper.sol";
 
 import "forge-std/console.sol";
 
-contract ChromaticLPTest is BaseSetup, LPHelper, LogUtil, IChromaticLPEvents {
+contract ChromaticLPTest is LPHelper, LogUtil, IChromaticLPEvents {
     using Math for uint256;
 
     ChromaticLP lp;
@@ -34,7 +33,6 @@ contract ChromaticLPTest is BaseSetup, LPHelper, LogUtil, IChromaticLPEvents {
 
     function setUp() public override {
         super.setUp();
-        init(address(automate));
 
         lp = deployLP(
             ChromaticLPStorageCore.ConfigParam({

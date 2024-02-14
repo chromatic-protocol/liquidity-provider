@@ -20,7 +20,7 @@ import {LPHelper} from "../lp/LPHelper.sol";
 
 import "forge-std/console.sol";
 
-contract ChromaticBPTest is BaseSetup, LPHelper, IChromaticBPEvents {
+contract ChromaticBPTest is LPHelper, IChromaticBPEvents {
     using Math for uint256;
 
     ChromaticLP lp;
@@ -33,7 +33,6 @@ contract ChromaticBPTest is BaseSetup, LPHelper, IChromaticBPEvents {
 
     function setUp() public override {
         super.setUp();
-        init(address(automate));
 
         lp = deployLP(
             ChromaticLPStorageCore.ConfigParam({
