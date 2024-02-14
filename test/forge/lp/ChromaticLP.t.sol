@@ -189,8 +189,7 @@ contract ChromaticLPTest is LPHelper, LogUtil {
 
         // vm.expectEmit(true, false, false, false);
         // emit RebalanceRemoveLiquidity(3, 5, 1111 /* don't care */);
-
-        automateLP.rebalance(address(lp));
+        mockRebalance(lp, receipt.id + 1);
     }
 
     function testTradeRemoveLiquidity() public {
@@ -286,18 +285,17 @@ contract ChromaticLPTest is LPHelper, LogUtil {
 
         assertEq(canRebalance, lp.checkRebalance());
 
-        // if (canRebalance) {
-        //     vm.startPrank(address(automateLP));
-        //     automateLP.rebalance(address(lp));
-        //     vm.stopPrank();
+        if (canRebalance) {
+            mockRebalance(lp, receipt.id + 1);
 
-        //     bytes32 rebalanceTaskId = automateLP.getRebalanceTaskId(lp);
-        //     console.log(string(abi.encodePacked(rebalanceTaskId)));
+            // bytes32 rebalanceTaskId = automateLP.getRebalanceTaskId(lp);
+            // console.log(string(abi.encodePacked(rebalanceTaskId)));
 
-        //     oracleProvider.increaseVersion(3 ether);
-        //     lp.settle(1);
+            // increaseVersion();
+            // lp.settle(receipt.id + 1);
 
-        //     logInfo(lp, "after rebalancing");
-        // }
+            logInfo(lp, "after rebalancing");
+            assertEq(lp.utilizationTargetBPS(), lp.utilization());
+        }
     }
 }

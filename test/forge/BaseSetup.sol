@@ -56,6 +56,7 @@ abstract contract BaseSetup is Test {
     IChromaticMarket market;
     ICLBToken clbToken;
     ChromaticRouter router;
+    address dedicatedMsgSender;
 
     IWETH9 weth;
     IAutomate automate;
@@ -63,42 +64,8 @@ abstract contract BaseSetup is Test {
     function setUp() public virtual {
         IAutomate _automate = IAutomate(address(5555));
         automate = _automate;
-
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(_automate.getFeeDetails.selector),
-            abi.encode(0, address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(_automate.gelato.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(IGelato(address(_automate)).feeCollector.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(_automate.taskModuleAddresses.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(IProxyModule(address(_automate)).opsProxyFactory.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(IOpsProxyFactory(address(_automate)).getProxyOf.selector),
-            abi.encode(address(this), true) // dedicatedMsgSender
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(_automate.createTask.selector),
-            abi.encode(bytes32(""))
-        );
+        dedicatedMsgSender = address(1234);
+        mockGelatoAutomate(_automate, dedicatedMsgSender);
 
         oracleProvider = new OracleProviderMock();
         oracleProvider.increaseVersion(1 ether);
@@ -161,5 +128,43 @@ abstract contract BaseSetup is Test {
         market = IChromaticMarket(factory.getMarkets()[0]);
         clbToken = market.clbToken();
         router = new ChromaticRouter(address(factory));
+    }
+
+    function mockGelatoAutomate(IAutomate _automate, address _dedicatedMsgSender) internal {
+        vm.mockCall(
+            address(_automate),
+            abi.encodeWithSelector(_automate.getFeeDetails.selector),
+            abi.encode(0, address(_automate))
+        );
+        vm.mockCall(
+            address(_automate),
+            abi.encodeWithSelector(_automate.gelato.selector),
+            abi.encode(address(_automate))
+        );
+        vm.mockCall(
+            address(_automate),
+            abi.encodeWithSelector(IGelato(address(_automate)).feeCollector.selector),
+            abi.encode(address(_automate))
+        );
+        vm.mockCall(
+            address(_automate),
+            abi.encodeWithSelector(_automate.taskModuleAddresses.selector),
+            abi.encode(address(_automate))
+        );
+        vm.mockCall(
+            address(_automate),
+            abi.encodeWithSelector(IProxyModule(address(_automate)).opsProxyFactory.selector),
+            abi.encode(address(_automate))
+        );
+        vm.mockCall(
+            address(_automate),
+            abi.encodeWithSelector(IOpsProxyFactory(address(_automate)).getProxyOf.selector),
+            abi.encode(_dedicatedMsgSender, true) // dedicatedMsgSender
+        );
+        vm.mockCall(
+            address(_automate),
+            abi.encodeWithSelector(_automate.createTask.selector),
+            abi.encode(bytes32(""))
+        );
     }
 }

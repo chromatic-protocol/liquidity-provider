@@ -116,7 +116,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
 
     function increaseVersion() public {
         // any value
-        oracleProvider.increaseVersion(1 ether);
+        oracleProvider.increaseVersion(int256(oracleProvider.currentVersion().version));
     }
 
     function increaseVersion(int256 price) public {
@@ -166,5 +166,13 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
             0
         );
         assertTrue(lp.settle(receipt.id), "settleRemoveFailed");
+    }
+
+    function mockRebalance(ChromaticLP lp, uint256 receiptId) internal {
+        vm.prank(dedicatedMsgSender);
+        automateLP.rebalance(address(lp));
+        vm.stopPrank();
+        increaseVersion();
+        lp.settle(receiptId);
     }
 }
