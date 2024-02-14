@@ -10,12 +10,11 @@ import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {ChromaticLP} from "~/lp/ChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
-
+import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
 import {BaseSetup} from "../BaseSetup.sol";
-
 import "forge-std/console.sol";
 
-contract LPHelper is BaseSetup {
+contract LPHelper is BaseSetup, IChromaticLPEvents {
     AutomateLP automateLP;
     ChromaticLPLogic lpLogic;
 
@@ -54,14 +53,118 @@ contract LPHelper is BaseSetup {
 
     function addLiquidity(
         ChromaticLP lp,
-        uint256 amount
+        uint256 amount,
+        address who
+    ) public returns (ChromaticLPReceipt memory receipt) {
+        return addLiquidity(lp, amount, who, true, 0);
+    }
+
+    function addLiquidity(
+        ChromaticLP lp,
+        uint256 amount,
+        address who,
+        bool dealAmount,
+        uint256 expectedReceiptId
     ) public returns (ChromaticLPReceipt memory receipt) {
         IERC20 token = IERC20(lp.settlementToken());
-        // deal(lp.settlementToken(), msg.sender, amount);
-        oracleProvider.increaseVersion(3 ether);
-
+        if (dealAmount) {
+            deal(lp.settlementToken(), who, amount);
+        }
+        vm.startPrank(who);
         token.approve(address(lp), amount);
-        receipt = lp.addLiquidity(amount, msg.sender);
-        console.log("ChromaticLPReceipt:", receipt.id);
+        if (expectedReceiptId == 0) {
+            vm.expectEmit(false, true, false, true, address(lp));
+        } else {
+            vm.expectEmit(true, true, false, true, address(lp));
+        }
+        emit AddLiquidity(
+            expectedReceiptId,
+            who,
+            who,
+            oracleProvider.currentVersion().version,
+            amount
+        );
+        receipt = lp.addLiquidity(amount, who);
+
+        vm.stopPrank();
+    }
+
+    function removeLiquidity(
+        ChromaticLP lp,
+        uint256 amount,
+        address who,
+        uint256 expectedReceiptId
+    ) public returns (ChromaticLPReceipt memory receipt) {
+        vm.startPrank(who);
+        lp.approve(address(lp), amount);
+        if (expectedReceiptId == 0) {
+            vm.expectEmit(false, true, false, true, address(lp));
+        } else {
+            vm.expectEmit(true, true, false, true, address(lp));
+        }
+        emit RemoveLiquidity(
+            expectedReceiptId,
+            who,
+            who,
+            oracleProvider.currentVersion().version,
+            amount
+        );
+        receipt = lp.removeLiquidity(amount, who);
+
+        vm.stopPrank();
+    }
+
+    function increaseVersion() public {
+        // any value
+        oracleProvider.increaseVersion(1 ether);
+    }
+
+    function increaseVersion(int256 price) public {
+        oracleProvider.increaseVersion(price);
+    }
+
+    function expectSettleAdd(ChromaticLP lp, ChromaticLPReceipt memory receipt) public {
+        expectSettleAdd(lp, receipt, 3 ether);
+    }
+
+    function expectSettleRemove(ChromaticLP lp, ChromaticLPReceipt memory receipt) public {
+        expectSettleRemove(lp, receipt, 3 ether);
+    }
+
+    function expectSettleAdd(
+        ChromaticLP lp,
+        ChromaticLPReceipt memory receipt,
+        int256 price
+    ) public {
+        oracleProvider.increaseVersion(price);
+        vm.expectEmit(true, false, false, false, address(lp));
+        emit AddLiquiditySettled(
+            receipt.id,
+            receipt.provider /* dont care */,
+            receipt.recipient /* dont care */,
+            receipt.amount /* dont care */,
+            receipt.amount /* dont care */,
+            0
+        );
+        assertTrue(lp.settle(receipt.id), "settleAddFailed");
+    }
+
+    function expectSettleRemove(
+        ChromaticLP lp,
+        ChromaticLPReceipt memory receipt,
+        int256 price
+    ) public {
+        oracleProvider.increaseVersion(price);
+        vm.expectEmit(true, false, false, false, address(lp));
+        emit RemoveLiquiditySettled(
+            receipt.id,
+            receipt.provider /* dont care */,
+            receipt.recipient /* dont care */,
+            receipt.amount /* dont care */,
+            receipt.amount /* dont care */,
+            0,
+            0
+        );
+        assertTrue(lp.settle(receipt.id), "settleRemoveFailed");
     }
 }

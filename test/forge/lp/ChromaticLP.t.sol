@@ -15,7 +15,7 @@ import {LPHelper} from "./LPHelper.sol";
 
 import "forge-std/console.sol";
 
-contract ChromaticLPTest is LPHelper, LogUtil, IChromaticLPEvents {
+contract ChromaticLPTest is LPHelper, LogUtil {
     using Math for uint256;
 
     ChromaticLP lp;
@@ -50,26 +50,16 @@ contract ChromaticLPTest is LPHelper, LogUtil, IChromaticLPEvents {
         assertEq(lp.totalSupply(), 0);
         logInfo(lp);
 
-        // by super.setUp()
-        assertEq(ctst.balanceOf(address(this)), 1000000 ether);
-        oracleProvider.increaseVersion(3 ether);
-        // approve first
-        ctst.approve(address(lp), 1000000 ether);
+        address user1 = makeAddr("user1");
 
-        vm.expectEmit(true, true, false, true, address(lp));
+        // assertEq(ctst.balanceOf(address(this)), 1000000 ether);
+
         uint256 amount = 1000 ether;
-        emit AddLiquidity(
-            2,
-            address(this),
-            address(this),
-            oracleProvider.currentVersion().version,
-            amount
-        );
 
-        ChromaticLPReceipt memory receipt = lp.addLiquidity(amount, address(this));
+        ChromaticLPReceipt memory receipt = addLiquidity(lp, amount, user1);
         console.log("ChromaticLPReceipt:", receipt.id);
 
-        uint256[] memory receiptIds = lp.getReceiptIdsOf(address(this));
+        uint256[] memory receiptIds = lp.getReceiptIdsOf(user1);
 
         assertEq(receiptIds.length, 1);
         assertEq(receipt.id, receiptIds[0]);
@@ -80,78 +70,56 @@ contract ChromaticLPTest is LPHelper, LogUtil, IChromaticLPEvents {
 
         assertEq(false, lp.settle(receipt.id));
 
-        uint256 tokenBalanceBefore = lp.balanceOf(address(this));
+        uint256 tokenBalanceBefore = lp.balanceOf(user1);
 
         bool canExec = lp.checkSettle(receipt.id);
         assertEq(false, canExec);
 
-        oracleProvider.increaseVersion(3 ether);
+        increaseVersion();
 
         canExec = lp.checkSettle(receipt.id);
         assertEq(true, canExec);
 
-        vm.expectEmit(true, false, false, true, address(lp));
-        emit AddLiquiditySettled(
-            receipt.id,
-            address(this),
-            address(this),
-            receipt.amount,
-            receipt.amount,
-            0
-        );
-        assertEq(true, lp.settle(receipt.id));
+        expectSettleAdd(lp, receipt);
 
-        uint256 tokenBalanceAfter = lp.balanceOf(address(this));
+        uint256 tokenBalanceAfter = lp.balanceOf(user1);
         assertEq(tokenBalanceBefore, 0);
         assertEq(tokenBalanceAfter - tokenBalanceBefore, receipt.amount);
         console.log("totalSupply:", lp.totalSupply());
-        assertEq(lp.totalSupply(), receipt.amount);
+        assertEq(lp.totalSupply(), receipt.amount); // because no other tx exists
 
-        receiptIds = lp.getReceiptIdsOf(address(this));
+        // check whether there are no pending receipts
+        receiptIds = lp.getReceiptIdsOf(user1);
         assertEq(0, receiptIds.length);
+
+        // check flag of settlement
         receipt = lp.getReceipt(receipt.id);
         assertEq(false, receipt.needSettle);
     }
 
     function testRemoveLiquidity() public {
-        testAddLiquidity();
-        uint256 lptoken = lp.balanceOf(address(this)); // 1000 ether
+        address user1 = makeAddr("user1");
+        uint256 addAmount = 1000 ether;
 
-        lp.approve(address(lp), lptoken);
+        ChromaticLPReceipt memory receiptAdd = addLiquidity(lp, addAmount, user1);
+        expectSettleAdd(lp, receiptAdd);
 
-        vm.expectEmit(true, true, false, true, address(lp));
-        emit RemoveLiquidity(
-            3,
-            address(this),
-            address(this),
-            oracleProvider.currentVersion().version,
-            lptoken
-        );
+        uint256 lptoken = lp.balanceOf(user1); // 1000 ether
 
-        ChromaticLPReceipt memory receipt = lp.removeLiquidity(lptoken, address(this));
+        ChromaticLPReceipt memory receipt = removeLiquidity(lp, lptoken, user1, 3);
 
-        uint256[] memory receiptIds = lp.getReceiptIdsOf(address(this));
+        uint256[] memory receiptIds = lp.getReceiptIdsOf(user1);
 
         assertEq(receiptIds.length, 1);
         assertEq(receipt.id, receiptIds[0]);
 
         assertEq(false, lp.settle(receipt.id));
 
-        uint256 tokenBalanceBefore = ctst.balanceOf(address(this));
-        oracleProvider.increaseVersion(3 ether);
+        uint256 tokenBalanceBefore = ctst.balanceOf(user1);
 
-        vm.expectEmit(true, false, false, true, address(lp));
-        emit RemoveLiquiditySettled(
-            receipt.id,
-            address(this),
-            address(this),
-            receipt.amount,
-            receipt.amount,
-            0,
-            0
-        );
-        assertEq(true, lp.settle(receipt.id));
-        uint256 tokenBalanceAfter = ctst.balanceOf(address(this));
+        expectSettleRemove(lp, receipt);
+
+        uint256 tokenBalanceAfter = ctst.balanceOf(user1);
         assertEq(tokenBalanceAfter - tokenBalanceBefore, receipt.amount);
     }
 
