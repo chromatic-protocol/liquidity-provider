@@ -307,8 +307,10 @@ contract ChromaticBP is ERC20, ReentrancyGuard, IChromaticBP, IChromaticLPCallba
 
     function _boostLP() internal {
         IChromaticLP lp = s_state.targetLP();
-        uint256 balance = s_state.settlementToken().balanceOf(address(this));
+        IERC20 token = s_state.settlementToken();
+        uint256 balance = token.balanceOf(address(this));
 
+        SafeERC20.forceApprove(token, address(lp), balance);
         ChromaticLPReceipt memory receipt = lp.addLiquidity(balance, address(this));
         emit BPBoostTaskExecuted();
         s_state.setBoostingReceiptId(receipt.id);
