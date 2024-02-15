@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import {BaseSetup} from "../BaseSetup.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {AutomateBP} from "~/automation/gelato/AutomateBP.sol";
+import {AutomateBP} from "~/automation/mate2/AutomateBP.sol";
 import {ChromaticBP} from "~/bp/ChromaticBP.sol";
 import {IChromaticMarketFactory} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarketFactory.sol";
 
@@ -11,7 +11,7 @@ import {IChromaticLP} from "~/lp/interfaces/IChromaticLP.sol";
 import {ChromaticLP} from "~/lp/ChromaticLP.sol";
 import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
-import {AutomateLP} from "~/automation/gelato/AutomateLP.sol";
+import {AutomateLP} from "~/automation/mate2/AutomateLP.sol";
 import {ChromaticBPFactory} from "~/bp/ChromaticBPFactory.sol";
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
@@ -45,7 +45,7 @@ contract ChromaticBPTest is LPHelper, IChromaticBPEvents {
             })
         );
 
-        automateBP = new AutomateBP(address(automate));
+        automateBP = new AutomateBP(automate);
         dao = factory.dao();
 
         bpFactory = new ChromaticBPFactory(IChromaticMarketFactory(factory), automateBP);

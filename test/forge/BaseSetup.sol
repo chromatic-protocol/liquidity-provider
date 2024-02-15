@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IAutomate, IGelato, IProxyModule, IOpsProxyFactory} from "@chromatic-protocol/contracts/core/automation/gelato/Types.sol";
+import {IMate2AutomationRegistry1_1} from "@chromatic-protocol/contracts/core/automation/mate2/IMate2AutomationRegistry1_1.sol";
 import {IWETH9} from "@chromatic-protocol/contracts/core/interfaces/IWETH9.sol";
 import {IOracleProviderRegistry} from "@chromatic-protocol/contracts/core/interfaces/factory/IOracleProviderRegistry.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
@@ -12,12 +12,11 @@ import {ICLBToken} from "@chromatic-protocol/contracts/core/interfaces/ICLBToken
 import {OracleProviderProperties} from "@chromatic-protocol/contracts/core/libraries/registry/OracleProviderProperties.sol";
 import {ChromaticMarketFactory} from "@chromatic-protocol/contracts/core/ChromaticMarketFactory.sol";
 import {KeeperFeePayer} from "@chromatic-protocol/contracts/core/KeeperFeePayer.sol";
-// import {KeeperFeePayerMock} from "~/mocks/KeeperFeePayerMock.sol";
+import {Mate2Liquidator} from "@chromatic-protocol/contracts/core/automation/Mate2Liquidator.sol";
 import {FixedPriceSwapRouter} from "~/mocks/FixedPriceSwapRouter.sol";
 import {OracleProviderMock} from "~/mocks/OracleProviderMock.sol";
 import {TestSettlementToken} from "~/mocks/TestSettlementToken.sol";
 import {Token} from "~/mocks/Token.sol";
-import {GelatoLiquidatorMock} from "~/mocks/GelatoLiquidatorMock.sol";
 import {ChromaticVaultMock} from "~/mocks/ChromaticVaultMock.sol";
 import {DiamondLoupeFacet} from "@chromatic-protocol/contracts/core/facets/DiamondLoupeFacet.sol";
 import {MarketDiamondCutFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketDiamondCutFacet.sol";
@@ -30,7 +29,8 @@ import {MarketTradeClosePositionFacet} from "@chromatic-protocol/contracts/core/
 import {MarketLiquidateFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketLiquidateFacet.sol";
 import {MarketSettleFacet} from "@chromatic-protocol/contracts/core/facets/market/MarketSettleFacet.sol";
 import {ChromaticRouter} from "@chromatic-protocol/contracts/periphery/ChromaticRouter.sol";
-import {AutomateLP} from "~/automation/gelato/AutomateLP.sol";
+
+import "forge-std/console.sol";
 
 contract WETH is IWETH9, ERC20 {
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
@@ -52,20 +52,18 @@ abstract contract BaseSetup is Test {
     TestSettlementToken ctst;
     ChromaticMarketFactory factory;
     ChromaticVaultMock vault;
-    GelatoLiquidatorMock liquidator;
+    Mate2Liquidator liquidator;
     IChromaticMarket market;
     ICLBToken clbToken;
     ChromaticRouter router;
-    address dedicatedMsgSender;
 
     IWETH9 weth;
-    IAutomate automate;
+    IMate2AutomationRegistry1_1 automate;
 
     function setUp() public virtual {
-        IAutomate _automate = IAutomate(address(5555));
+        IMate2AutomationRegistry1_1 _automate = IMate2AutomationRegistry1_1(address(5555));
+        mockMate2AutomationRegistry(_automate);
         automate = _automate;
-        dedicatedMsgSender = address(1234);
-        mockGelatoAutomate(_automate, dedicatedMsgSender);
 
         oracleProvider = new OracleProviderMock();
         oracleProvider.increaseVersion(1 ether);
@@ -99,7 +97,7 @@ abstract contract BaseSetup is Test {
         vault = new ChromaticVaultMock(factory, IVaultEarningDistributor(address(this)));
         factory.setVault(address(vault));
 
-        liquidator = new GelatoLiquidatorMock(factory, address(_automate));
+        liquidator = new Mate2Liquidator(factory, address(_automate));
         factory.updateLiquidator(address(liquidator));
 
         factory.registerOracleProvider(
@@ -130,41 +128,16 @@ abstract contract BaseSetup is Test {
         router = new ChromaticRouter(address(factory));
     }
 
-    function mockGelatoAutomate(IAutomate _automate, address _dedicatedMsgSender) internal {
+    function mockMate2AutomationRegistry(IMate2AutomationRegistry1_1 _automate) internal {
         vm.mockCall(
             address(_automate),
-            abi.encodeWithSelector(_automate.getFeeDetails.selector),
-            abi.encode(0, address(_automate))
+            abi.encodeWithSelector(_automate.getPerformUpkeepFee.selector),
+            abi.encode(0)
         );
         vm.mockCall(
             address(_automate),
-            abi.encodeWithSelector(_automate.gelato.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(IGelato(address(_automate)).feeCollector.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(_automate.taskModuleAddresses.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(IProxyModule(address(_automate)).opsProxyFactory.selector),
-            abi.encode(address(_automate))
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(IOpsProxyFactory(address(_automate)).getProxyOf.selector),
-            abi.encode(_dedicatedMsgSender, true) // dedicatedMsgSender
-        );
-        vm.mockCall(
-            address(_automate),
-            abi.encodeWithSelector(_automate.createTask.selector),
-            abi.encode(bytes32(""))
+            abi.encodeWithSelector(_automate.registerUpkeep.selector),
+            abi.encode(1234567890)
         );
     }
 }
