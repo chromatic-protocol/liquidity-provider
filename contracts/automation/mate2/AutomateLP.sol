@@ -38,6 +38,11 @@ contract AutomateLP is ReentrancyGuard, Ownable2Step, IAutomateMate2LP, IMate2Au
     uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
 
+    modifier onlyAutomation() virtual {
+        if (msg.sender != address(automate)) revert NotAutomationCalled();
+        _;
+    }
+
     constructor(IMate2AutomationRegistry1_1 _automate) ReentrancyGuard() Ownable2Step() {
         automate = _automate;
         upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
@@ -136,7 +141,7 @@ contract AutomateLP is ReentrancyGuard, Ownable2Step, IAutomateMate2LP, IMate2Au
     /**
      * @inheritdoc IAutomateLP
      */
-    function rebalance(address lp) public {
+    function rebalance(address lp) public onlyAutomation {
         (uint256 fee, address feePayee) = _getFeeInfo();
 
         _updateNextRebalanceCheckingTime(IChromaticLP(lp));
@@ -177,7 +182,7 @@ contract AutomateLP is ReentrancyGuard, Ownable2Step, IAutomateMate2LP, IMate2Au
     /**
      * @inheritdoc IAutomateLP
      */
-    function settle(address lp, uint256 receiptId) public {
+    function settle(address lp, uint256 receiptId) public onlyAutomation {
         (uint256 fee, address feePayee) = _getFeeInfo();
 
         IChromaticLP(lp).settleTask(receiptId, feePayee, fee);
