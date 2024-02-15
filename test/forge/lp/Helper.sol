@@ -43,6 +43,11 @@ contract Taker {
 }
 
 contract LogUtil is Test {
+    function logInfo(ChromaticLPReceipt memory receipt, string memory message) public view {
+        console.log(message);
+        logInfo(receipt);
+    }
+
     function logInfo(ChromaticLPReceipt memory receipt) internal view {
         console.log("{");
         console.log("Receipt");
@@ -52,6 +57,11 @@ contract LogUtil is Test {
         console.log("  recipient:", receipt.recipient);
         console.log("  action:", uint256(receipt.action));
         console.log("}");
+    }
+
+    function logInfo(IChromaticLPLens lp, string memory message) public view {
+        console.log(message);
+        logInfo(lp);
     }
 
     function logInfo(IChromaticLPLens lp) public view {

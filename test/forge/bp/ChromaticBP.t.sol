@@ -16,15 +16,14 @@ import {ChromaticBPFactory} from "~/bp/ChromaticBPFactory.sol";
 import {BPConfig} from "~/bp/libraries/BPConfig.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {IChromaticBPEvents} from "~/bp/interfaces/IChromaticBPEvents.sol";
+import {LPHelper} from "../lp/LPHelper.sol";
 
 import "forge-std/console.sol";
 
-contract ChromaticBPTest is BaseSetup, IChromaticBPEvents {
+contract ChromaticBPTest is LPHelper, IChromaticBPEvents {
     using Math for uint256;
 
-    AutomateLP automateLP;
     ChromaticLP lp;
-    ChromaticLPLogic lpLogic;
 
     AutomateBP automateBP;
     ChromaticBP bp;
@@ -35,21 +34,7 @@ contract ChromaticBPTest is BaseSetup, IChromaticBPEvents {
     function setUp() public override {
         super.setUp();
 
-        int8[8] memory _feeRates = [-4, -3, -2, -1, 1, 2, 3, 4];
-        uint16[8] memory _distributions = [2000, 1500, 1000, 500, 500, 1000, 1500, 2000];
-
-        int16[] memory feeRates = new int16[](_feeRates.length);
-        uint16[] memory distributionRates = new uint16[](_feeRates.length);
-        for (uint256 i; i < _feeRates.length; ++i) {
-            feeRates[i] = _feeRates[i];
-            distributionRates[i] = _distributions[i];
-        }
-        automateLP = new AutomateLP(address(automate));
-        lpLogic = new ChromaticLPLogic(automateLP);
-
-        lp = new ChromaticLP(
-            lpLogic,
-            ChromaticLPStorageCore.LPMeta({lpName: "lp pool", tag: "N"}),
+        lp = deployLP(
             ChromaticLPStorageCore.ConfigParam({
                 market: market,
                 utilizationTargetBPS: 5000,
@@ -57,14 +42,8 @@ contract ChromaticBPTest is BaseSetup, IChromaticBPEvents {
                 rebalanceCheckingInterval: 1 hours,
                 automationFeeReserved: 1 ether,
                 minHoldingValueToRebalance: 2 ether
-            }),
-            feeRates,
-            distributionRates,
-            automateLP
+            })
         );
-        lp.createRebalanceTask();
-        console.log("LP address: ", address(lp));
-        console.log("LP logic address: ", address(lpLogic));
 
         automateBP = new AutomateBP(address(automate));
         dao = factory.dao();
