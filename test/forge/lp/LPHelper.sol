@@ -5,7 +5,7 @@ import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {ChromaticLP} from "~/lp/ChromaticLP.sol";
-import {AutomateLP} from "~/automation/gelato/AutomateLP.sol";
+import {AutomateLP} from "~/automation/mate2/AutomateLP.sol";
 import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {ChromaticLP} from "~/lp/ChromaticLP.sol";
@@ -20,7 +20,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
 
     function setUp() public virtual override {
         super.setUp();
-        automateLP = new AutomateLP(address(automate));
+        automateLP = new AutomateLP(automate);
         lpLogic = new ChromaticLPLogic(automateLP);
     }
 
@@ -169,7 +169,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
     }
 
     function mockRebalance(ChromaticLP lp, uint256 receiptId) internal {
-        vm.prank(dedicatedMsgSender);
+        vm.prank(address(automate));
         automateLP.rebalance(address(lp));
         vm.stopPrank();
         increaseVersion();
