@@ -36,6 +36,7 @@
     "@wagmi/cli": "^1.5.0",
     "chai": "^4.2.0",
     "dotenv": "^16.0.3",
+    "dotenv-cli": "^7.3.0",
     "ethers": "^6.4.0",
     "hardhat": "2.17.0",
     "hardhat-contract-sizer": "^2.8.0",
@@ -65,7 +66,11 @@
     "flat": "^5.0.2"
   },
   "scripts": {
-    "anvil:arbitrum": "hardhat --network anvil_arbitrum --config hardhat.repl.config.ts",
-    "arbitrum_sepolia": "hardhat --network arbitrum_sepolia --config hardhat.repl.config.ts"
+    "anvil:arbitrum": "dotenv -c staging -- yarn hardhat --network anvil_arbitrum --config hardhat.repl.config.ts",
+    "arbitrum_sepolia": "dotenv -c staging -- yarn hardhat --network arbitrum_sepolia --config hardhat.repl.config.ts",
+    "arbitrum_one": "dotenv -c production -- yarn hardhat --network arbitrum_one --config hardhat.repl.config.ts",
+    "deploy": "hardhat deploy",
+    "deploy:arbitrum_sepolia": "yarn arbitrum_sepolia deploy",
+    "deploy:arbitrum_one": "yarn hardhat:arbitrum_one deploy"
   }
 }
