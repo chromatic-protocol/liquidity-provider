@@ -73,7 +73,7 @@ export function getDefaultLPConfigs(): LPConfig[] {
         },
         feeRates: feeRates,
         distributionRates: distInfo.distributionRates,
-        initialLiquidity: info.initialLiquidities[i]
+        initialLiquidity: process.env.STAGE === 'production' ? 0n : info.initialLiquidities[i]
       }
 
       lpConfigs.push(config)
