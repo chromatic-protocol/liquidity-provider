@@ -72,7 +72,7 @@ const config: HardhatUserConfig = {
     arbitrum_one: {
       // mainnet
       ...common,
-      url: `https://arb-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
+      url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
       chainId: 42161,
       tags: ['mainnet', 'arbitrum', 'mate2']
     }
