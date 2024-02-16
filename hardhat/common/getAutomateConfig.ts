@@ -3,11 +3,11 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import type { AddressType } from '~/hardhat/common/types'
 
 export const MATE2_AUTOMATION_ADDRESS: { [key: number]: AddressType } = {
-  421614: '0x14cC9A5B88425d357AEca1B13B8cd6F81388Fe86'  // arbitrum_sepolia
-  // 42161: '0x14cC9A5B88425d357AEca1B13B8cd6F81388Fe86' // FIXME arbitrum mainnet
+  421614: '0x14cC9A5B88425d357AEca1B13B8cd6F81388Fe86', // arbitrum_sepolia
+  42161: '0x2959Cac7c8fB17Af213f6aA9ea50C3779FcEbbEa' // arbitrum_one
 }
 
-export function getAutomateAddress(hre: HardhatRuntimeEnvironment, tag=undefined): AddressType {
+export function getAutomateAddress(hre: HardhatRuntimeEnvironment, tag = undefined): AddressType {
   if (hre.network.tags.mate2) {
     if (hre.network.tags.testnet || hre.network.tags.local) {
       return MATE2_AUTOMATION_ADDRESS[CHAIN_ID.ARBSEPOLIA]

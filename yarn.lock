@@ -80,10 +80,10 @@
     "@chainsafe/persistent-merkle-tree" "^0.4.2"
     case "^1.6.3"
 
-"@chromatic-protocol/contracts@^0.0.1-rc.318":
-  version "0.0.1-rc.318"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.318.tgz#a1cd582a5526a6022006a77b202d087885a55f65"
-  integrity sha512-eYxiA6aCVKoQsGJg0C1bjCy9RRBjwcXQv6+mtn8U86bocHnu4tqbcgALXwGz4zcDVWS9pp68B8mL1B7if9iLuQ==
+"@chromatic-protocol/contracts@^0.0.1-rc.319":
+  version "0.0.1-rc.319"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/contracts/-/contracts-0.0.1-rc.319.tgz#27fdb6aa3e4487e38f53f557f5390c9331ecc905"
+  integrity sha512-WYcKLiE7wVNa1qvOd79F9118pc+EhS7gWL8/3C/FoU5O5EQiG8HMxdYjIw5wmDPMfx9oBMlInxU8N0HkkbPtWg==
   dependencies:
     "@chainlink/contracts" "^0.8.0"
     "@openzeppelin/contracts" "^4.9.3"
@@ -113,10 +113,10 @@
   dependencies:
     viem "^1.5.0"
 
-"@chromatic-protocol/sdk-viem@0.1.0-rc.194":
-  version "0.1.0-rc.194"
-  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-viem/-/sdk-viem-0.1.0-rc.194.tgz#7893e330cfcfc92cd479c3e1c35fb53f042fac86"
-  integrity sha512-RMNRY4M/kLgubjop15Pi618R4bDRU5FA0FxZkX2YxOzLG2X5QaNIpq1I1crMj8f+TNmvPZNIhpq9LsSi/aTUjA==
+"@chromatic-protocol/sdk-viem@0.1.0-rc.195":
+  version "0.1.0-rc.195"
+  resolved "https://registry.yarnpkg.com/@chromatic-protocol/sdk-viem/-/sdk-viem-0.1.0-rc.195.tgz#1a4fe383e945d2b250677db3166d022fc93cfa29"
+  integrity sha512-/Znqn3KdobMeYGUK6uUotrzpnba1BLk1vfMyXLrCspGC9ZSt6tgTuLS6mowkan4PiiaaKHjC6xzKDV+60AEMBg==
   dependencies:
     "@chromatic-protocol/graphql-request" "0.0.1-rc.7"
     graphql "^16.8.1"

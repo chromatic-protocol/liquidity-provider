@@ -1,4 +1,4 @@
-import { parseEther } from 'ethers'
+import { parseUnits } from 'ethers'
 import type { DeployFunction } from 'hardhat-deploy/types'
 import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployTool } from '~/hardhat/common/DeployTool'
@@ -11,40 +11,41 @@ export function toTimestamp(date: Date) {
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tool = await DeployTool.createAsync(hre)
 
-  const aday = BigInt(24 * 3600)
+  const week = BigInt(24 * 3600) * 7n
 
-  // FIXME this is just sample config
+  const startTimeOfWarmup = 1708473600 // 2024.02.21 UTC 00:00 (1708473600)
+  const maxDurationOfWarmup = week
 
   const bpConfigs: BPConfigStruct[] = [
     {
-      lp: '0x538CbcFa0d6013DE1C75de30F08F416033D543F0',
-      totalReward: parseEther('100'),
-      minRaisingTarget: parseEther('500'),
-      maxRaisingTarget: parseEther('600'),
-      startTimeOfWarmup: toTimestamp(new Date(Date.now() + 60000)),
-      maxDurationOfWarmup: aday,
-      durationOfLockup: aday,
-      minDeposit: parseEther('100')
+      lp: '0xAD6FE0A0d746aEEEDEeAb19AdBaDBE58249cD0c7',
+      totalReward: parseUnits((100_000).toString(), 18),
+      minRaisingTarget: parseUnits((100_000).toString(), 6),
+      maxRaisingTarget: parseUnits((400_000).toString(), 6),
+      startTimeOfWarmup: startTimeOfWarmup,
+      maxDurationOfWarmup: maxDurationOfWarmup,
+      durationOfLockup: week * 8n,
+      minDeposit: parseUnits((100).toString(), 6)
     },
     {
-      lp: '0x98F315bBE115F1Ef5fC049FdcA8fAfd8C74ef49E',
-      totalReward: parseEther('200'),
-      minRaisingTarget: parseEther('500'),
-      maxRaisingTarget: parseEther('600'),
-      startTimeOfWarmup: toTimestamp(new Date(Date.now() + 60000)),
-      maxDurationOfWarmup: aday,
-      durationOfLockup: aday,
-      minDeposit: parseEther('100')
+      lp: '0xFa334bE13bA4cdc5C3D9A25344FFBb312d2423A2',
+      totalReward: parseUnits((100_000).toString(), 18),
+      minRaisingTarget: parseUnits((100_000).toString(), 6),
+      maxRaisingTarget: parseUnits((400_000).toString(), 6),
+      startTimeOfWarmup: startTimeOfWarmup,
+      maxDurationOfWarmup: maxDurationOfWarmup,
+      durationOfLockup: week * 8n,
+      minDeposit: parseUnits((100).toString(), 6)
     },
     {
-      lp: '0xA0ae1aC42B325913D8a2FF23F8e8030c5E6B6F2e',
-      totalReward: parseEther('100'),
-      minRaisingTarget: parseEther('300'),
-      maxRaisingTarget: parseEther('400'),
-      startTimeOfWarmup: toTimestamp(new Date(Date.now() + 60000)),
-      maxDurationOfWarmup: aday * 2n,
-      durationOfLockup: aday,
-      minDeposit: parseEther('100')
+      lp: '0x9706DE4B4Bb1027ce059344Cd42Bb57E079f64c7',
+      totalReward: parseUnits((100_000).toString(), 18),
+      minRaisingTarget: parseUnits((100_000).toString(), 6),
+      maxRaisingTarget: parseUnits((400_000).toString(), 6),
+      startTimeOfWarmup: startTimeOfWarmup,
+      maxDurationOfWarmup: maxDurationOfWarmup,
+      durationOfLockup: week * 8n,
+      minDeposit: parseUnits((100).toString(), 6)
     }
   ]
   for (let config of bpConfigs) {
