@@ -71,6 +71,6 @@
     "arbitrum_one": "dotenv -c production -- yarn hardhat --network arbitrum_one --config hardhat.repl.config.ts",
     "deploy": "hardhat deploy",
     "deploy:arbitrum_sepolia": "yarn arbitrum_sepolia deploy",
-    "deploy:arbitrum_one": "yarn hardhat:arbitrum_one deploy"
+    "deploy:arbitrum_one": "yarn arbitrum_one deploy"
   }
 }
