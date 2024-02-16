@@ -4,14 +4,14 @@
   "license": "MIT",
   "dependencies": {
     "@chainlink/contracts": "^0.8.0",
-    "@chromatic-protocol/contracts": "^0.0.1-rc.318",
+    "@chromatic-protocol/contracts": "^0.0.1-rc.319",
     "@openzeppelin/contracts": "^4.9.3",
     "@uniswap/v3-periphery": "^1.4.4"
   },
   "devDependencies": {
     "@chromatic-protocol/hardhat-package": "^0.0.1-dev.18",
     "@chromatic-protocol/liquidity-provider-sdk": "^1.0.1-rc.44",
-    "@chromatic-protocol/sdk-viem": "0.1.0-rc.194",
+    "@chromatic-protocol/sdk-viem": "0.1.0-rc.195",
     "@gelatonetwork/automate-sdk": "^3.0.0",
     "@graphprotocol/graph-cli": "^0.58.0",
     "@graphprotocol/graph-ts": "^0.31.0",
