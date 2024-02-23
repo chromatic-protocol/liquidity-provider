@@ -187,6 +187,13 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
     /**
      * @inheritdoc IChromaticLPLens
      */
+    function valueOfSupply() public view override returns (uint256 value) {
+        value = s_state.valueOfSupply();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
     function valueInfo() public view override returns (ValueInfo memory info) {
         return s_state.valueInfo();
     }

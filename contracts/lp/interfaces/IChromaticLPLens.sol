@@ -25,6 +25,11 @@ interface IChromaticLPLens is IChromaticLPConfigLens {
     function totalValue() external view returns (uint256);
 
     /**
+     * @dev The total value of the liquidity provider token supplied.
+     */
+    function valueOfSupply() external view returns (uint256);
+
+    /**
      * @dev Retrieves the total value of the liquidity provider, including both holding and pending values.
      * @return info A ValueInfo struct containing total, holding, pending, holdingClb, and pendingClb values.
      */
