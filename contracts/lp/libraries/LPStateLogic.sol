@@ -46,10 +46,10 @@ library LPStateLogicLib {
         LpReceipt[] memory lpReceipts
     ) internal {
         s_state.receipts[receipt.id] = receipt;
-        EnumerableSet.UintSet storage lpReceiptIdSet = s_state.lpReceiptMap[receipt.id];
+        uint256[] storage lpReceiptIds = s_state.lpReceiptMap[receipt.id];
         for (uint256 i; i < lpReceipts.length; ) {
             //slither-disable-next-line unused-return
-            lpReceiptIdSet.add(lpReceipts[i].id);
+            lpReceiptIds.push(lpReceipts[i].id);
 
             unchecked {
                 ++i;
@@ -90,7 +90,7 @@ library LPStateLogicLib {
         // mint and transfer lp pool token to provider in callback
         // valueOfSupply() : aleady keeperFee excluded
         s_state.market.claimLiquidityBatch(
-            s_state.lpReceiptMap[receipt.id].values(),
+            s_state.lpReceiptMap[receipt.id],
             abi.encode(receipt, s_state.valueOfSupply(), keeperFee)
         );
 
@@ -110,11 +110,11 @@ library LPStateLogicLib {
     ) internal {
         // do claim
         // pass ChromaticLPReceipt as calldata
-        uint256[] memory receiptIds = s_state.lpReceiptMap[receipt.id].values();
+        uint256[] memory receiptIds = s_state.lpReceiptMap[receipt.id];
         LpReceipt[] memory lpReceits = s_state.market.getLpReceipts(receiptIds);
 
         s_state.market.withdrawLiquidityBatch(
-            s_state.lpReceiptMap[receipt.id].values(),
+            s_state.lpReceiptMap[receipt.id],
             abi.encode(receipt, lpReceits, s_state.valueOfSupply(), keeperFee) // FIXME
         );
 

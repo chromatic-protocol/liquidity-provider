@@ -13,7 +13,7 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
  * @param totalRate Total rate representing the sum of fee rates.
  * @param clbTokenIds Array of CLB token IDs associated with the liquidity pool.
  * @param receipts Mapping of receipt IDs to ChromaticLPReceipts.
- * @param lpReceiptMap Mapping of receipt IDs to lpReceiptIds using EnumerableSet.
+ * @param lpReceiptMap Mapping of receipt IDs to lpReceiptIds.
  * @param providerReceiptIds Mapping of provider addresses to receipt IDs using EnumerableSet.
  * @param pendingAddLp Amount pending for addition to the liquidity pool in settlement token.
  * @param pendingAddMarket Amount pending for addition to the market in settlement token.
@@ -27,7 +27,7 @@ struct LPState {
     uint256 totalRate;
     uint256[] clbTokenIds;
     mapping(uint256 => ChromaticLPReceipt) receipts; // receiptId => receipt
-    mapping(uint256 => EnumerableSet.UintSet) lpReceiptMap; // receiptId => lpReceiptIds
+    mapping(uint256 => uint256[]) lpReceiptMap; // receiptId => lpReceiptIds
     mapping(address => EnumerableSet.UintSet) providerReceiptIds; // provider => receiptIds
     uint256 pendingAddLp; // in settlement token
     uint256 pendingAddMarket; // in settlement token
