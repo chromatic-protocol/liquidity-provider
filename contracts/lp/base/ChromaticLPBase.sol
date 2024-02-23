@@ -9,7 +9,6 @@ import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPR
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
 import {SuspendMode} from "~/lp/base/SuspendMode.sol";
-import {Privatable} from "~/lp/base/Privatable.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
@@ -30,7 +29,7 @@ import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.s
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
-abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable, IChromaticLP {
+abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromaticLP {
     using Math for uint256;
     using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;
@@ -371,48 +370,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, Privatable
      */
     function suspendMode() external view returns (uint8) {
         return _suspendMode();
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function setPrivateMode(bool isPrivate) external onlyOwner {
-        return _setPrivateMode(isPrivate);
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function privateMode() external view returns (bool) {
-        return _privateMode();
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function registerProvider(address provider) external onlyOwner {
-        _registerProvider(provider);
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function unregisterProvider(address provider) external onlyOwner {
-        _unregisterProvider(provider);
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function allowedProviders() external view returns (address[] memory) {
-        return _allowedProviders();
-    }
-
-    /**
-     * @inheritdoc IChromaticLPAdmin
-     */
-    function isAllowedProvider(address provider) external view returns (bool) {
-        return _containsAllowed(provider);
     }
 
     /**

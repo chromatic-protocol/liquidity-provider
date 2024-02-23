@@ -51,43 +51,6 @@ interface IChromaticLPAdmin {
     function setSuspendMode(uint8 mode) external;
 
     /**
-     * @dev Sets the private mode for the LP.
-     * @param isPrivate The new private mode status.
-     */
-    function setPrivateMode(bool isPrivate) external;
-
-    /**
-     * @dev Retrieves the current private mode status of the LP.
-     * @return true if private mode is enabled, false otherwise.
-     */
-    function privateMode() external view returns (bool);
-
-    /**
-     * @dev Registers a provider as allowed for addLiquidity during private mode.
-     * @param provider The address of the provider to register.
-     */
-    function registerProvider(address provider) external;
-
-    /**
-     * @dev Unregisters a provider as allowed for addLiquidity during private mode.
-     * @param provider The address of the provider to unregister.
-     */
-    function unregisterProvider(address provider) external;
-
-    /**
-     * @dev Retrieves the list of allowed providers for addLiquidity during private mode.
-     * @return An array containing the addresses of allowed providers.
-     */
-    function allowedProviders() external view returns (address[] memory);
-
-    /**
-     * @dev Checks if a provider is allowed for addLiquidity during private mode.
-     * @param provider The address of the provider to check.
-     * @return true if the provider is allowed, false otherwise.
-     */
-    function isAllowedProvider(address provider) external view returns (bool);
-
-    /**
      * @dev Transfers ownership of the contract to a new account (`newOwner`).
      * Can only be called by the current owner.
      */
