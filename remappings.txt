@@ -9,3 +9,4 @@ hardhat/=node_modules/hardhat/
 @eth-optimism/=node_modules/@eth-optimism/
 @uniswap/=node_modules/@uniswap/
 base64-sol/=node_modules/base64-sol/
+foundry-random=lib/foundry-random/src/
