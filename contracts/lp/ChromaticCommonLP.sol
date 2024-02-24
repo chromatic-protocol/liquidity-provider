@@ -184,6 +184,13 @@ contract ChromaticCommonLP is
     }
 
     /**
+     * @inheritdoc IChromaticLPLiquidity
+     */
+    function getMarketReceiptsOf(uint256 receiptId) external view returns (uint256[] memory) {
+        return s_state.lpReceiptMap[receiptId];
+    }
+
+    /**
      * @inheritdoc IChromaticLiquidityCallback
      * @dev not implemented
      */

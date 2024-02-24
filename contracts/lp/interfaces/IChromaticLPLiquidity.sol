@@ -49,6 +49,13 @@ interface IChromaticLPLiquidity {
     function getReceipt(uint256 id) external view returns (ChromaticLPReceipt memory);
 
     /**
+     * @dev Retrieves the receipt ids of market belongs to receiptId of LP.
+     * @param receiptId The unique identifier of the liquidity receipt to retrieve.
+     * @return A list of market receiptIds of the liquidity receipt of LP.
+     */
+    function getMarketReceiptsOf(uint256 receiptId) external view returns (uint256[] memory);
+
+    /**
      * @dev Estimates the minimum amount of liquidity that can be added by automation.
      * @return The minimum amount of liquidity in the settlement token that can be added.
      */
