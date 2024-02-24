@@ -103,7 +103,7 @@ contract ChromaticCommonLP is
     /**
      * @inheritdoc IChromaticLPLiquidity
      */
-    function settle(uint256 /* receiptId */) external override returns (bool) {
+    function settle(uint256 /* receiptId */) external override {
         _fallback();
     }
 

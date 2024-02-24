@@ -146,7 +146,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
             receipt.amount /* dont care */,
             0
         );
-        assertTrue(lp.settle(receipt.id), "settleAddFailed");
+        lp.settle(receipt.id);
     }
 
     function expectSettleRemove(
@@ -165,7 +165,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
             0,
             0
         );
-        assertTrue(lp.settle(receipt.id), "settleRemoveFailed");
+        lp.settle(receipt.id);
     }
 
     function mockRebalance(ChromaticLP lp, uint256 receiptId) internal {

@@ -63,8 +63,8 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     /**
      * @dev implementation of IChromaticLP
      */
-    function settle(uint256 receiptId) external nonReentrant returns (bool) {
-        return _settle(receiptId, 0);
+    function settle(uint256 receiptId) external nonReentrant {
+        _settle(receiptId, 0);
     }
 
     function cancelSettleTask(uint256 receiptId) external /* onlyOwner */ {

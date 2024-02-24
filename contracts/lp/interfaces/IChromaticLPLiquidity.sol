@@ -31,9 +31,8 @@ interface IChromaticLPLiquidity {
     /**
      * @dev Initiates the settlement process for a specific liquidity receipt identified by receiptId.
      * @param receiptId The unique identifier of the liquidity receipt to settle.
-     * @return true if the settlement is successful, false otherwise.
      */
-    function settle(uint256 receiptId) external returns (bool);
+    function settle(uint256 receiptId) external;
 
     /**
      * @dev Retrieves the unique identifiers of all liquidity receipts owned by a given address.

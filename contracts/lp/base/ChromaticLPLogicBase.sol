@@ -121,26 +121,20 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         feeInSettlementAmount = payer.payKeeperFee(address(token), keeperFee, feePayee);
     }
 
-    function _settle(uint256 receiptId, uint256 keeperFee) internal returns (bool) {
+    function _settle(uint256 receiptId, uint256 keeperFee) internal {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
 
-        if (
-            receipt.id > REBALANCE_ID &&
-            receipt.needSettle &&
-            receipt.oracleVersion < s_state.oracleVersion()
-        ) {
-            _cancelSettleTask(receiptId);
+        if (receipt.id <= REBALANCE_ID) revert InvalidReceiptId();
+        if (!receipt.needSettle) revert AlreadySettled();
+        if (receipt.oracleVersion >= s_state.oracleVersion()) revert OracleVersionError();
+        _cancelSettleTask(receiptId);
 
-            if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
-                s_state.claimLiquidity(receipt, keeperFee);
-            } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
-                s_state.withdrawLiquidity(receipt, keeperFee);
-            } else {
-                revert UnknownLPAction();
-            }
-            return true;
+        if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
+            s_state.claimLiquidity(receipt, keeperFee);
+        } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
+            s_state.withdrawLiquidity(receipt, keeperFee);
         } else {
-            return false;
+            revert UnknownLPAction();
         }
     }
 
