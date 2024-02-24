@@ -68,7 +68,7 @@ contract ChromaticLPTest is LPHelper, LogUtil {
         logInfo(lp);
 
         vm.expectRevert();
-        lp.settle(receipt.id);
+        settle(lp, receipt.id);
 
         uint256 tokenBalanceBefore = lp.balanceOf(user1);
 

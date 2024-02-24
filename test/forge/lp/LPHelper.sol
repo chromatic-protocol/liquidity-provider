@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
@@ -12,11 +14,19 @@ import {ChromaticLP} from "~/lp/ChromaticLP.sol";
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
 import {BaseSetup} from "../BaseSetup.sol";
+import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
+
 import "forge-std/console.sol";
 
 contract LPHelper is BaseSetup, IChromaticLPEvents {
+    using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.UintSet;
+
     AutomateLP automateLP;
     ChromaticLPLogic lpLogic;
+
+    EnumerableSet.AddressSet holders;
+    EnumerableSet.UintSet receiptIds;
 
     function setUp() public virtual override {
         super.setUp();
@@ -51,12 +61,67 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
         return lp;
     }
 
+    function addMint(
+        ChromaticLP lp,
+        uint256 amount,
+        address who
+    ) internal returns (uint256 minted) {
+        return addMint(lp, amount, who, int256(oracleProvider.currentVersion().version));
+    }
+
+    function addMint(
+        ChromaticLP lp,
+        uint256 amount,
+        address who,
+        int256 price
+    ) internal returns (uint256 minted) {
+        uint256 balanceBefore = lp.balanceOf(who);
+        ChromaticLPReceipt memory receipt = addLiquidity(lp, amount, who);
+        increaseVersion(price);
+        settle(lp, receipt.id);
+        minted = lp.balanceOf(who) - balanceBefore;
+    }
+
+    function removeBurn(
+        ChromaticLP lp,
+        uint256 amount,
+        address who
+    ) internal returns (uint256 minted) {
+        return removeBurn(lp, amount, who, int256(oracleProvider.currentVersion().version));
+    }
+
+    function removeBurn(
+        ChromaticLP lp,
+        uint256 amount,
+        address who,
+        int256 price
+    ) internal returns (uint256 burned) {
+        uint256 balanceBefore = lp.balanceOf(who);
+        ChromaticLPReceipt memory receipt = removeLiquidity(lp, amount, who);
+        increaseVersion(price);
+        settle(lp, receipt.id);
+        burned = balanceBefore - lp.balanceOf(who);
+    }
+
     function addLiquidity(
         ChromaticLP lp,
         uint256 amount,
         address who
     ) public returns (ChromaticLPReceipt memory receipt) {
         return addLiquidity(lp, amount, who, true, 0);
+    }
+
+    function actionLiquidity(
+        ChromaticLP lp,
+        address who,
+        ChromaticLPAction action,
+        uint256 amount
+    ) internal returns (ChromaticLPReceipt memory receipt) {
+        if (action == ChromaticLPAction.ADD_LIQUIDITY) {
+            return addLiquidity(lp, amount, who);
+        } else {
+            return removeLiquidity(lp, amount, who);
+        }
     }
 
     function addLiquidity(
@@ -87,6 +152,14 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
         receipt = lp.addLiquidity(amount, who);
 
         vm.stopPrank();
+    }
+
+    function removeLiquidity(
+        ChromaticLP lp,
+        uint256 amount,
+        address who
+    ) public returns (ChromaticLPReceipt memory receipt) {
+        return removeLiquidity(lp, amount, who, 0);
     }
 
     function removeLiquidity(
@@ -146,7 +219,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
             receipt.amount /* dont care */,
             0
         );
-        lp.settle(receipt.id);
+        settle(lp, receipt.id);
     }
 
     function expectSettleRemove(
@@ -165,7 +238,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
             0,
             0
         );
-        lp.settle(receipt.id);
+        settle(lp, receipt.id);
     }
 
     function mockRebalance(ChromaticLP lp, uint256 receiptId) internal {
@@ -173,6 +246,16 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
         automateLP.rebalance(address(lp));
         vm.stopPrank();
         increaseVersion();
+        settle(lp, receiptId);
+    }
+
+    function settle(ChromaticLP lp, uint256 receiptId) internal {
+        ChromaticLPReceipt memory receipt = lp.getReceipt(receiptId);
         lp.settle(receiptId);
+        if (lp.balanceOf(receipt.recipient) > 0) {
+            holders.add(receipt.recipient);
+        } else if (lp.balanceOf(receipt.recipient) == 0) {
+            holders.remove(receipt.recipient);
+        }
     }
 }
