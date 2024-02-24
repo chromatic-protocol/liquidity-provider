@@ -100,4 +100,12 @@ interface IChromaticLPLens is IChromaticLPConfigLens {
      * @return longShortInfo An integer representing long (1), short (-1), or both side(0).
      */
     function longShortInfo() external view returns (int8);
+
+    /**
+     * @dev Checks whether a settle is possible by user for a specific receipt ID.
+     * @param receiptId The unique identifier of the receipt associated with the task.
+     * @return A boolean indicating whether a settle is possible by user.
+     */
+    function checkSettleByUser(uint256 receiptId) external view returns (bool);
+
 }

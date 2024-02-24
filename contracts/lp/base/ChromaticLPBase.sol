@@ -158,13 +158,21 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromatic
         if (s_state.holdingValue() < s_config.automationFeeReserved) {
             return false;
         }
+        return _checkSettle(receiptId);
+    }
 
+    /**
+     * @inheritdoc IChromaticLPLens
+     */
+    function checkSettleByUser(uint256 receiptId) external view returns (bool) {
+        return _checkSettle(receiptId);
+    }
+
+    function _checkSettle(uint256 receiptId) internal view returns (bool) {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
         if (receipt.needSettle && receipt.oracleVersion < s_state.oracleVersion()) {
             return true;
         }
-
-        // for pending add/remove by user and by self
         return false;
     }
 
