@@ -47,6 +47,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
         uint256 lpTokenAmount,
         address recipient
     ) external nonReentrant returns (ChromaticLPReceipt memory receipt) {
+        if (lpTokenAmount == 0) revert ZeroRemoveLiquidityError();
         uint256[] memory clbTokenAmounts = _calcRemoveClbAmounts(lpTokenAmount);
 
         receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, msg.sender, recipient);

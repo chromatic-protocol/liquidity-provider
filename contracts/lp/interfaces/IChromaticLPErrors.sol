@@ -106,4 +106,10 @@ interface IChromaticLPErrors {
      * @dev Error indicating that the action has already been settled.
      */
     error AlreadySettled();
+
+    /**
+     * @dev Error indicating that removing zero amount of liquidity is invalid.
+     */
+    error ZeroRemoveLiquidityError();
+
 }
