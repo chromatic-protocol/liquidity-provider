@@ -8,7 +8,6 @@ import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBToken
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
-import {SuspendMode} from "~/lp/base/SuspendMode.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
@@ -29,7 +28,7 @@ import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.s
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
-abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromaticLP {
+abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using Math for uint256;
     using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;

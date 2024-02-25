@@ -5,8 +5,6 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
@@ -31,7 +29,7 @@ import {REBALANCE_ID} from "~/lp/libraries/LPState.sol";
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
-abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
+abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
     using Math for uint256;
 
     using LPStateValueLib for LPState;

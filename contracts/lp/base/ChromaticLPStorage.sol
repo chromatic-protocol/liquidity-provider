@@ -2,6 +2,8 @@
 pragma solidity 0.8.19;
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {SuspendMode} from "~/lp/base/SuspendMode.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
@@ -10,7 +12,7 @@ import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-abstract contract ChromaticLPStorage is ChromaticLPStorageCore {
+abstract contract ChromaticLPStorage is ChromaticLPStorageCore, ReentrancyGuard, SuspendMode {
     using Math for uint256;
     using LPStateValueLib for LPState;
 
