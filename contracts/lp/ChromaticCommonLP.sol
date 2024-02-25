@@ -37,10 +37,10 @@ contract ChromaticCommonLP is
         int16[] memory _feeRates,
         uint16[] memory _distributionRates,
         IAutomateLP automate
-    ) ChromaticLPBase(automate) {
+    ) ChromaticLPBase() {
         CHROMATIC_LP_LOGIC = address(lpLogic);
 
-        _initialize(lpMeta, config, _feeRates, _distributionRates);
+        _initialize(lpMeta, config, _feeRates, _distributionRates, automate);
     }
 
     /**

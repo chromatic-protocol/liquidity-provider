@@ -24,9 +24,6 @@ abstract contract ChromaticLPStorage is ChromaticLPStorageCore, ReentrancyGuard,
     mapping(uint256 => IAutomateLP) internal s_task;
     IAutomateLP internal s_automate;
 
-    constructor(IAutomateLP automate) ChromaticLPStorageCore() {
-        _setAutomateLP(automate);
-    }
 
     function _setAutomateLP(IAutomateLP automate) internal virtual {
         s_automate = automate;

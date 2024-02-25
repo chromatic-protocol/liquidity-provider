@@ -70,8 +70,6 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         _;
     }
 
-    constructor(IAutomateLP automate) ChromaticLPStorage(automate) ReentrancyGuard() {}
-
     function _createSettleTask(uint256 receiptId) internal {
         s_task[receiptId] = s_automate;
         s_automate.createSettleTask(receiptId);

@@ -42,7 +42,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         _;
     }
 
-    constructor(IAutomateLP automate) ChromaticLPStorage(automate) {
+    constructor() {
         _owner = msg.sender;
     }
 
@@ -54,8 +54,10 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         LPMeta memory meta,
         ConfigParam memory config,
         int16[] memory _feeRates,
-        uint16[] memory _distributionRates
+        uint16[] memory _distributionRates,
+        IAutomateLP automate
     ) internal {
+        _setAutomateLP(automate);
         _validateConfig(
             config.utilizationTargetBPS,
             config.rebalanceBPS,
