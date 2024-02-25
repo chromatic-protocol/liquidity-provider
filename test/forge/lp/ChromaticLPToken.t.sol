@@ -105,7 +105,7 @@ contract ChromaticLPTokenTest is LPHelper, FoundryRandom, LogUtil {
                 amount = balance;
             }
 
-            console.log("AddLiquidity", user, amount);
+            console.log("RemoveLiquidity", user, amount);
             receipt = removeLiquidity(lp, amount, user);
 
             if (lp.balanceOf(user) == 0) {
