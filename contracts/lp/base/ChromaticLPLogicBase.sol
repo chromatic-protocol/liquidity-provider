@@ -237,9 +237,9 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
             (ChromaticLPReceipt, uint256, uint256)
         );
 
-        s_state.decreasePendingAdd(receipt.amount, receipt.pendingLiquidity);
-
         uint256 netAmount = receipt.amount - keeperFee;
+        s_state.decreasePendingAdd(netAmount, receipt.pendingLiquidity);
+
         if (receipt.recipient != address(this)) {
             //slither-disable-next-line incorrect-equality
             uint256 lpTokenMint = valuOfSupply == 0

@@ -89,6 +89,8 @@ library LPStateLogicLib {
         // pass ChromaticLPReceipt as calldata
         // mint and transfer lp pool token to provider in callback
         // valueOfSupply() : aleady keeperFee excluded
+        s_state.decreasePendingAdd(keeperFee, 0);
+        
         s_state.market.claimLiquidityBatch(
             s_state.lpReceiptMap[receipt.id],
             abi.encode(receipt, s_state.valueOfSupply(), keeperFee)
