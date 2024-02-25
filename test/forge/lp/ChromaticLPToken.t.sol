@@ -63,47 +63,51 @@ contract ChromaticLPTokenTest is LPHelper, FoundryRandom, LogUtil {
         }
     }
 
+    function randomAction(uint256 reservedAddAmount) internal returns (ChromaticLPAction) {
+        ChromaticLPAction action = ChromaticLPAction(randomNumber(1));
+        if (holders.length() == 0) {
+            return ChromaticLPAction.ADD_LIQUIDITY;
+        } else if (type(uint256).max - lp.totalSupply() < reservedAddAmount) {
+            return ChromaticLPAction.REMOVE_LIQUIDITY;
+        }
+        return action;
+    }
+
+    function randomAddAmount() internal returns (uint256) {
+        return
+            randomNumber(lp.estimateMinAddLiquidityAmount(), type(uint256).max - lp.totalSupply());
+    }
+
+    function randomRemoveAmount(address holder) internal returns (uint256 amount) {
+        uint256 balance = lp.balanceOf(holder);
+        if (balance > lp.estimateMinRemoveLiquidityAmount()) {
+            amount = randomNumber(lp.estimateMinRemoveLiquidityAmount(), balance);
+            if (balance - amount < lp.estimateMinRemoveLiquidityAmount()) {
+                amount = balance;
+            }
+        } else {
+            amount = balance;
+        }
+        amount;
+    }
+
     function randomAddOrRmove(
         uint256 reservedAddAmount,
         uint256 maxAccount
     ) internal returns (ChromaticLPReceipt memory receipt) {
-        uint256 action = randomNumber(1);
+        ChromaticLPAction action = randomAction(reservedAddAmount);
         address user;
-        if (holders.length() == 0) {
-            action = 0;
-        } else if (type(uint256).max - lp.totalSupply() < reservedAddAmount) {
-            action = 1;
-        }
 
-        // if (action == 1) {
-        //     user = holders.at(randomNumber(holders.length() - 1));
-        //     if (lp.balanceOf(user) == 0) {
-        //         action = 0;
-        //     }
-        // }
-
-        if (action == 0) {
+        if (action == ChromaticLPAction.ADD_LIQUIDITY) {
             user = randomUser(maxAccount);
 
-            uint256 amount = randomNumber(
-                lp.estimateMinAddLiquidityAmount(),
-                type(uint256).max - lp.totalSupply()
-            );
+            uint256 amount = randomAddAmount();
 
             console.log("AddLiquidity", user, amount);
             receipt = addLiquidity(lp, amount, user);
         } else {
             user = randomHolder();
-            uint256 amount;
-            uint256 balance = lp.balanceOf(user);
-            if (balance > lp.estimateMinRemoveLiquidityAmount()) {
-                amount = randomNumber(lp.estimateMinRemoveLiquidityAmount(), lp.balanceOf(user));
-                if (balance - amount < lp.estimateMinRemoveLiquidityAmount()) {
-                    amount = lp.balanceOf(user);
-                }
-            } else {
-                amount = balance;
-            }
+            uint256 amount = randomRemoveAmount(user);
 
             console.log("RemoveLiquidity", user, amount);
             receipt = removeLiquidity(lp, amount, user);
