@@ -53,9 +53,9 @@ interface IChromaticLPErrors {
     error NotKeeperCalled();
 
     /**
-     * @dev Signifies that the function is only accessible by the owner
+     * @dev Signifies that the function is only accessible by the DAO
      */
-    error OnlyAccessableByOwner();
+    error OnlyAccessableByDao();
 
     /**
      * @dev Thrown when an automation call is not made
@@ -111,5 +111,4 @@ interface IChromaticLPErrors {
      * @dev Error indicating that removing zero amount of liquidity is invalid.
      */
     error ZeroRemoveLiquidityError();
-
 }

@@ -51,14 +51,8 @@ interface IChromaticLPAdmin {
     function setSuspendMode(uint8 mode) external;
 
     /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
+     * @dev Returns the address of the DAO.
+     * @return The address of the DAO.
      */
-    function transferOwnership(address newOwner) external;
-
-    /**
-     * @dev Retrieves the address of the current owner.
-     * @return The address of the owner.
-     */
-    function owner() external view returns (address);
+    function dao() external view returns (address);
 }

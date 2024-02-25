@@ -35,19 +35,9 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using LPStateSetupLib for LPState;
     using LPConfigLib for LPConfig;
 
-    address _owner;
-
-    modifier onlyOwner() virtual {
-        if (!_checkOwner()) revert OnlyAccessableByOwner();
+    modifier onlyDao() virtual {
+        if (!_checkDao()) revert OnlyAccessableByDao();
         _;
-    }
-
-    constructor() {
-        _owner = msg.sender;
-    }
-
-    function _checkOwner() internal view virtual returns (bool) {
-        return msg.sender == _owner;
     }
 
     function _initialize(
@@ -286,7 +276,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPMeta
      */
-    function setLpName(string memory newName) external onlyOwner {
+    function setLpName(string memory newName) external onlyDao {
         emit SetLpName(newName);
         s_meta.lpName = newName;
     }
@@ -294,7 +284,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPMeta
      */
-    function setLpTag(string memory tag) external onlyOwner {
+    function setLpTag(string memory tag) external onlyDao {
         emit SetLpTag(tag);
         s_meta.tag = tag;
     }
@@ -370,7 +360,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function setSuspendMode(uint8 mode) external onlyOwner {
+    function setSuspendMode(uint8 mode) external onlyDao {
         _setSuspendMode(mode);
     }
 
@@ -384,26 +374,11 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function owner() external view virtual returns (address) {
-        return _owner;
+    function dao() public view virtual returns (address) {
+        return s_state.market.factory().dao();
     }
 
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
-     */
-    function transferOwnership(address newOwner) public virtual onlyOwner {
-        if (newOwner == address(0)) revert ZeroAddressError();
-        _transferOwnership(newOwner);
-    }
-
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Internal function without access restriction.
-     */
-    function _transferOwnership(address newOwner) internal virtual {
-        address oldOwner = _owner;
-        _owner = newOwner;
-        emit OwnershipTransferred(oldOwner, newOwner);
+    function _checkDao() internal view virtual returns (bool) {
+        return msg.sender == dao();
     }
 }

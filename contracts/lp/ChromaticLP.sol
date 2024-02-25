@@ -19,12 +19,7 @@ import {BPS} from "~/lp/libraries/Constants.sol";
 import {IChromaticLPAutomate} from "~/lp/interfaces/IChromaticLPAutomate.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
-contract ChromaticCommonLP is
-    IChromaticLiquidityCallback,
-    IERC1155Receiver,
-    ChromaticLPBase,
-    Proxy
-{
+contract ChromaticLP is ChromaticLPBase, Proxy, IChromaticLiquidityCallback, IERC1155Receiver {
     using EnumerableSet for EnumerableSet.UintSet;
     using LPStateViewLib for LPState;
 
@@ -46,7 +41,7 @@ contract ChromaticCommonLP is
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function createRebalanceTask() public onlyOwner {
+    function createRebalanceTask() public onlyDao {
         s_task[REBALANCE_ID] = s_automate;
         s_automate.createRebalanceTask();
     }
@@ -54,7 +49,7 @@ contract ChromaticCommonLP is
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function cancelRebalanceTask() external onlyOwner {
+    function cancelRebalanceTask() external onlyDao {
         IAutomateLP automate = s_task[REBALANCE_ID];
         delete s_task[REBALANCE_ID];
         automate.cancelRebalanceTask();
@@ -63,7 +58,7 @@ contract ChromaticCommonLP is
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function cancelSettleTask(uint256 /* receiptId */) external onlyOwner {
+    function cancelSettleTask(uint256 /* receiptId */) external onlyDao {
         _fallback();
     }
 
@@ -112,7 +107,7 @@ contract ChromaticCommonLP is
      */
     function setAutomationFeeReserved(
         uint256 _automationFeeReserved
-    ) external override(IChromaticLPAdmin) onlyOwner {
+    ) external override(IChromaticLPAdmin) onlyDao {
         emit SetAutomationFeeReserved(_automationFeeReserved);
         s_config.automationFeeReserved = _automationFeeReserved;
     }
@@ -122,7 +117,7 @@ contract ChromaticCommonLP is
      */
     function setMinHoldingValueToRebalance(
         uint256 _minHoldingValueToRebalance
-    ) external override(IChromaticLPAdmin) onlyOwner {
+    ) external override(IChromaticLPAdmin) onlyDao {
         if (_minHoldingValueToRebalance < s_config.automationFeeReserved) {
             revert InvalidMinHoldingValueToRebalance();
         }
@@ -349,7 +344,7 @@ contract ChromaticCommonLP is
     /**
      * @inheritdoc IChromaticLPAutomate
      */
-    function setAutomateLP(IAutomateLP automate) external override onlyOwner {
+    function setAutomateLP(IAutomateLP automate) external override onlyDao {
         emit SetAutomateLP(address(automate));
         _setAutomateLP(automate);
     }
