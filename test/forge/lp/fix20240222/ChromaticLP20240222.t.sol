@@ -30,7 +30,7 @@ contract ChromaitcLP20240222Test is Test {
 
         ChromaticLPLogic lpLogic = new ChromaticLPLogic();
         lp = new ChromaticLP(
-            lpLogic,
+            address(lpLogic),
             ChromaticLPStorageCore.LPMeta({lpName: "lp pool", tag: "N"}),
             ChromaticLPStorageCore.ConfigParam({
                 market: util.MARKET,

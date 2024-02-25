@@ -45,9 +45,12 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
         ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory _distributionRates,
-        IAutomateLP automate
+        IAutomateLP automate,
+        address _logicAddress
     ) internal {
+        _setLogicAddress(_logicAddress);
         _setAutomateLP(automate);
+
         _validateConfig(
             config.utilizationTargetBPS,
             config.rebalanceBPS,
@@ -380,5 +383,20 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
 
     function _checkDao() internal view virtual returns (bool) {
         return msg.sender == dao();
+    }
+
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
+    function upgradeTo(address newLogicAddress) external onlyDao {
+        emit Upgraded(s_logicAddress, newLogicAddress);
+        _setLogicAddress(newLogicAddress);
+    }
+
+    /**
+     * @inheritdoc IChromaticLPAdmin
+     */
+    function logicAddress() external view returns (address) {
+        return s_logicAddress;
     }
 }

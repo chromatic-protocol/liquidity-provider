@@ -48,7 +48,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
         }
 
         ChromaticLP lp = new ChromaticLP(
-            lpLogic,
+            address(lpLogic),
             ChromaticLPStorageCore.LPMeta({lpName: "lp pool", tag: "N"}),
             params,
             feeRates,

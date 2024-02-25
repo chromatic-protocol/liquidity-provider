@@ -23,19 +23,15 @@ contract ChromaticLP is ChromaticLPBase, Proxy, IChromaticLiquidityCallback, IER
     using EnumerableSet for EnumerableSet.UintSet;
     using LPStateViewLib for LPState;
 
-    address public immutable CHROMATIC_LP_LOGIC;
-
     constructor(
-        ChromaticLPLogic lpLogic,
+        address logicAddress,
         LPMeta memory lpMeta,
         ConfigParam memory config,
         int16[] memory _feeRates,
         uint16[] memory _distributionRates,
         IAutomateLP automate
     ) ChromaticLPBase() {
-        CHROMATIC_LP_LOGIC = address(lpLogic);
-
-        _initialize(lpMeta, config, _feeRates, _distributionRates, automate);
+        _initialize(lpMeta, config, _feeRates, _distributionRates, automate, logicAddress);
     }
 
     /**
@@ -66,7 +62,7 @@ contract ChromaticLP is ChromaticLPBase, Proxy, IChromaticLiquidityCallback, IER
      * @dev This is the address to which proxy functions are delegated to
      */
     function _implementation() internal view virtual override returns (address) {
-        return CHROMATIC_LP_LOGIC;
+        return s_logicAddress;
     }
 
     /**

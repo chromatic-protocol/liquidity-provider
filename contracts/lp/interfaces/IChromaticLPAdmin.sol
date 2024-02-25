@@ -55,4 +55,14 @@ interface IChromaticLPAdmin {
      * @return The address of the DAO.
      */
     function dao() external view returns (address);
+
+    /**
+     * @dev upgrade logic contract to new one.
+     */
+    function upgradeTo(address logicAddress) external;
+
+    /**
+     * @dev Returns the address of the logic contract.
+     */
+    function logicAddress() external view returns (address);
 }

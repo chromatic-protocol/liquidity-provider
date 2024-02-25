@@ -56,6 +56,8 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
     //slither-disable-next-line uninitialized-state
     LPConfig internal s_config;
     LPState internal s_state;
+    // locate logic contract address in slot common
+    address internal s_logicAddress;
 
     constructor() ERC20("", "") {}
 
@@ -64,5 +66,9 @@ abstract contract ChromaticLPStorageCore is ERC20, IChromaticLPEvents, IChromati
      */
     function decimals() public view virtual override returns (uint8) {
         return s_state.settlementToken().decimals();
+    }
+
+    function _setLogicAddress(address logicAddress) internal {
+        s_logicAddress = logicAddress;
     }
 }
