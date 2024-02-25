@@ -28,7 +28,7 @@ contract ChromaitcLP20240222Test is Test {
         payer.approveToRouter(address(util.USDT), true);
         vm.stopPrank();
 
-        ChromaticLPLogic lpLogic = new ChromaticLPLogic(util.AUTOMATE_LP);
+        ChromaticLPLogic lpLogic = new ChromaticLPLogic();
         lp = new ChromaticLP(
             lpLogic,
             ChromaticLPStorageCore.LPMeta({lpName: "lp pool", tag: "N"}),
