@@ -31,9 +31,8 @@ interface IChromaticLPLiquidity {
     /**
      * @dev Initiates the settlement process for a specific liquidity receipt identified by receiptId.
      * @param receiptId The unique identifier of the liquidity receipt to settle.
-     * @return true if the settlement is successful, false otherwise.
      */
-    function settle(uint256 receiptId) external returns (bool);
+    function settle(uint256 receiptId) external;
 
     /**
      * @dev Retrieves the unique identifiers of all liquidity receipts owned by a given address.
@@ -48,6 +47,13 @@ interface IChromaticLPLiquidity {
      * @return A data structure representing the liquidity receipt.
      */
     function getReceipt(uint256 id) external view returns (ChromaticLPReceipt memory);
+
+    /**
+     * @dev Retrieves the receipt ids of market belongs to receiptId of LP.
+     * @param receiptId The unique identifier of the liquidity receipt to retrieve.
+     * @return A list of market receiptIds of the liquidity receipt of LP.
+     */
+    function getMarketReceiptsOf(uint256 receiptId) external view returns (uint256[] memory);
 
     /**
      * @dev Estimates the minimum amount of liquidity that can be added by automation.

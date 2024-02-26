@@ -48,6 +48,15 @@ library LPStateValueLib {
     }
 
     /**
+     * @dev Retrieves the total value of the CLP token.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The total value of the CLP token.
+     */
+    function valueOfSupply(LPState storage s_state) internal view returns (uint256) {
+        return s_state.totalValue() - s_state.pendingAdd();
+    }
+
+    /**
      * @dev Retrieves the value information of the LPState.
      * @param s_state The storage state of the liquidity provider.
      * @return info The ValueInfo struct containing total, holding, pending, holdingClb, and pendingClb values.
@@ -58,9 +67,11 @@ library LPStateValueLib {
             holding: s_state.holdingValue(),
             pending: s_state.pendingValue(),
             holdingClb: s_state.holdingClbValue(),
-            pendingClb: s_state.pendingClbValue()
+            pendingClb: s_state.pendingClbValue(),
+            valueOfSupply: 0
         });
         info.total = info.holding + info.pending + info.holdingClb + info.pendingClb;
+        info.valueOfSupply = info.total - s_state.pendingAddLp;
     }
 
     /**
@@ -73,12 +84,21 @@ library LPStateValueLib {
     }
 
     /**
-     * @dev Retrieves the pending value (amount pending for addition to the liquidity pool) of the LPState.
+     * @dev Retrieves the pending value (amount pending for addition to the market) of the LPState.
      * @param s_state The storage state of the liquidity provider.
      * @return value The pending value of the LPState.
      */
     function pendingValue(LPState storage s_state) internal view returns (uint256) {
-        return s_state.pendingAddAmount;
+        return s_state.pendingAddMarket;
+    }
+
+    /**
+     * @dev Retrieves the pending value (amount pending for addition to the liquidity pool) of the LPState.
+     * @param s_state The storage state of the liquidity provider.
+     * @return value The pending value of the LPState.
+     */
+    function pendingAdd(LPState storage s_state) internal view returns (uint256) {
+        return s_state.pendingAddLp;
     }
 
     /**

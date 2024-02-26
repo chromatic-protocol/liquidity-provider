@@ -46,10 +46,10 @@ library LPStateLogicLib {
         LpReceipt[] memory lpReceipts
     ) internal {
         s_state.receipts[receipt.id] = receipt;
-        EnumerableSet.UintSet storage lpReceiptIdSet = s_state.lpReceiptMap[receipt.id];
+        uint256[] storage lpReceiptIds = s_state.lpReceiptMap[receipt.id];
         for (uint256 i; i < lpReceipts.length; ) {
             //slither-disable-next-line unused-return
-            lpReceiptIdSet.add(lpReceipts[i].id);
+            lpReceiptIds.push(lpReceipts[i].id);
 
             unchecked {
                 ++i;
@@ -88,9 +88,12 @@ library LPStateLogicLib {
     ) internal {
         // pass ChromaticLPReceipt as calldata
         // mint and transfer lp pool token to provider in callback
+        // valueOfSupply() : aleady keeperFee excluded
+        s_state.decreasePendingAdd(keeperFee, 0);
+        
         s_state.market.claimLiquidityBatch(
-            s_state.lpReceiptMap[receipt.id].values(),
-            abi.encode(receipt, keeperFee)
+            s_state.lpReceiptMap[receipt.id],
+            abi.encode(receipt, s_state.valueOfSupply(), keeperFee)
         );
 
         s_state.removeReceipt(receipt.id);
@@ -109,12 +112,12 @@ library LPStateLogicLib {
     ) internal {
         // do claim
         // pass ChromaticLPReceipt as calldata
-        uint256[] memory receiptIds = s_state.lpReceiptMap[receipt.id].values();
+        uint256[] memory receiptIds = s_state.lpReceiptMap[receipt.id];
         LpReceipt[] memory lpReceits = s_state.market.getLpReceipts(receiptIds);
 
         s_state.market.withdrawLiquidityBatch(
-            s_state.lpReceiptMap[receipt.id].values(),
-            abi.encode(receipt, keeperFee, lpReceits)
+            s_state.lpReceiptMap[receipt.id],
+            abi.encode(receipt, lpReceits, s_state.valueOfSupply(), keeperFee) // FIXME
         );
 
         s_state.removeReceipt(receipt.id);
@@ -192,7 +195,7 @@ library LPStateLogicLib {
         });
 
         s_state.addReceipt(receipt, lpReceipts);
-        s_state.pendingAddAmount += liquidityAmount;
+        s_state.increasePendingAdd(amount, liquidityAmount);
     }
 
     /**
@@ -238,6 +241,35 @@ library LPStateLogicLib {
 
         s_state.addReceipt(receipt, lpReceipts);
         s_state.increasePendingClb(lpReceipts);
+    }
+
+    /**
+     * @dev Increases the pending add amounts
+     * @param s_state The storage state of the liquidity provider.
+     * @param amountToLp pending amount to the lp when addLiquidity called.
+     * @param amountToMarket pending addLiquidity amount to market not claimed.
+     */
+    function increasePendingAdd(
+        LPState storage s_state,
+        uint256 amountToLp,
+        uint256 amountToMarket
+    ) internal {
+        s_state.pendingAddLp += amountToLp;
+        s_state.pendingAddMarket += amountToMarket;
+    }
+
+    /**
+     * @dev Decreases the pending add amounts.
+     * @param amountToLp pending amount to the lp when addLiquidity called.
+     * @param amountToMarket pending addLiquidity amount to the market claimed.
+     */
+    function decreasePendingAdd(
+        LPState storage s_state,
+        uint256 amountToLp,
+        uint256 amountToMarket
+    ) internal {
+        s_state.pendingAddLp -= amountToLp;
+        s_state.pendingAddMarket -= amountToMarket;
     }
 
     /**

@@ -121,26 +121,20 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         feeInSettlementAmount = payer.payKeeperFee(address(token), keeperFee, feePayee);
     }
 
-    function _settle(uint256 receiptId, uint256 keeperFee) internal returns (bool) {
+    function _settle(uint256 receiptId, uint256 keeperFee) internal {
         ChromaticLPReceipt memory receipt = s_state.getReceipt(receiptId);
 
-        if (
-            receipt.id > REBALANCE_ID &&
-            receipt.needSettle &&
-            receipt.oracleVersion < s_state.oracleVersion()
-        ) {
-            _cancelSettleTask(receiptId);
+        if (receipt.id <= REBALANCE_ID) revert InvalidReceiptId();
+        if (!receipt.needSettle) revert AlreadySettled();
+        if (receipt.oracleVersion >= s_state.oracleVersion()) revert OracleVersionError();
+        _cancelSettleTask(receiptId);
 
-            if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
-                s_state.claimLiquidity(receipt, keeperFee);
-            } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
-                s_state.withdrawLiquidity(receipt, keeperFee);
-            } else {
-                revert UnknownLPAction();
-            }
-            return true;
+        if (receipt.action == ChromaticLPAction.ADD_LIQUIDITY) {
+            s_state.claimLiquidity(receipt, keeperFee);
+        } else if (receipt.action == ChromaticLPAction.REMOVE_LIQUIDITY) {
+            s_state.withdrawLiquidity(receipt, keeperFee);
         } else {
-            return false;
+            revert UnknownLPAction();
         }
     }
 
@@ -238,19 +232,19 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256[] calldata /* mintedCLBTokenAmounts */,
         bytes calldata data
     ) external verifyCallback {
-        (ChromaticLPReceipt memory receipt, uint256 keeperFee) = abi.decode(
+        (ChromaticLPReceipt memory receipt, uint256 valuOfSupply, uint256 keeperFee) = abi.decode(
             data,
-            (ChromaticLPReceipt, uint256)
+            (ChromaticLPReceipt, uint256, uint256)
         );
-        s_state.pendingAddAmount -= receipt.pendingLiquidity;
-        uint256 netAmount = receipt.amount - keeperFee;
-        if (receipt.recipient != address(this)) {
-            uint256 total = s_state.totalValue();
 
+        uint256 netAmount = receipt.amount - keeperFee;
+        s_state.decreasePendingAdd(netAmount, receipt.pendingLiquidity);
+
+        if (receipt.recipient != address(this)) {
             //slither-disable-next-line incorrect-equality
-            uint256 lpTokenMint = totalSupply() == 0
+            uint256 lpTokenMint = valuOfSupply == 0
                 ? netAmount
-                : netAmount.mulDiv(totalSupply(), total - netAmount);
+                : netAmount.mulDiv(totalSupply(), valuOfSupply);
             _mint(receipt.recipient, lpTokenMint);
             emit AddLiquiditySettled({
                 receiptId: receipt.id,
@@ -316,14 +310,17 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         uint256[] calldata /* burnedCLBTokenAmounts */,
         bytes calldata data
     ) external verifyCallback {
-        (ChromaticLPReceipt memory receipt, uint256 keeperFee, LpReceipt[] memory lpReceits) = abi
-            .decode(data, (ChromaticLPReceipt, uint256, LpReceipt[]));
+        (
+            ChromaticLPReceipt memory receipt,
+            LpReceipt[] memory lpReceits,
+            uint256 valueOfSupply,
+            uint256 keeperFee
+        ) = abi.decode(data, (ChromaticLPReceipt, LpReceipt[], uint256, uint256));
         s_state.decreasePendingClb(lpReceits);
         // burn and transfer settlementToken
 
         if (receipt.recipient != address(this)) {
-            uint256 totalValue = s_state.totalValue();
-            uint256 totalValueBefore = totalValue + keeperFee;
+            uint256 totalValueBefore = valueOfSupply + keeperFee;
 
             uint256 withdrawingMaxAmount = totalValueBefore.mulDiv(receipt.amount, totalSupply());
 

@@ -6,6 +6,8 @@ import {OpenPositionInfo} from "@chromatic-protocol/contracts/core/interfaces/ma
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticLPLens, ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {Test} from "forge-std/Test.sol";
+import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
+
 import "forge-std/console.sol";
 
 contract Taker {
@@ -110,6 +112,22 @@ contract LogUtil is Test {
         console.log("  takerMargin:", info.takerMargin / 10 ** 18, "ether");
         console.log("  makerMargin:", info.makerMargin / 10 ** 18, "ether");
         console.log("  tradingFee:", info.tradingFee / 10 ** 18, "ether");
+        console.log("}");
+    }
+
+    function logInfo(LpReceipt memory lpReceit) internal view {
+        console.log("LpReceipt(market)");
+        console.log("{");
+        console.log("id:", lpReceit.id);
+        console.log("oracleVersion:", lpReceit.oracleVersion);
+        console.log("amount:", lpReceit.amount);
+        console.log("recipient:", lpReceit.recipient);
+        console.log("action:", uint(lpReceit.action));
+        if (lpReceit.tradingFeeRate > 0) {
+            console.log("tradingFeeRate:", uint16(lpReceit.tradingFeeRate));
+        } else {
+            console.log("tradingFeeRate: -", uint16(-lpReceit.tradingFeeRate));
+        }
         console.log("}");
     }
 }

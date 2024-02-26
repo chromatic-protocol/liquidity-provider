@@ -91,4 +91,25 @@ interface IChromaticLPErrors {
      * @dev Error indicating an attempt to use a zero address.
      */
     error ZeroAddressError();
+
+    /**
+     * @dev Error indicating invalid receitp ID.
+     */
+    error InvalidReceiptId();
+
+    /**
+     * @dev Error indicating an invalid oracle version.
+     */
+    error OracleVersionError();
+
+    /**
+     * @dev Error indicating that the action has already been settled.
+     */
+    error AlreadySettled();
+
+    /**
+     * @dev Error indicating that removing zero amount of liquidity is invalid.
+     */
+    error ZeroRemoveLiquidityError();
+
 }

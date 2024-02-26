@@ -8,6 +8,7 @@ struct ValueInfo {
     uint256 pending;
     uint256 holdingClb;
     uint256 pendingClb;
+    uint256 valueOfSupply;
 }
 
 /**
@@ -23,6 +24,11 @@ interface IChromaticLPLens is IChromaticLPConfigLens {
      * @dev The total value of the liquidity provider
      */
     function totalValue() external view returns (uint256);
+
+    /**
+     * @dev The total value of the liquidity provider token supplied.
+     */
+    function valueOfSupply() external view returns (uint256);
 
     /**
      * @dev Retrieves the total value of the liquidity provider, including both holding and pending values.
@@ -95,4 +101,12 @@ interface IChromaticLPLens is IChromaticLPConfigLens {
      * @return longShortInfo An integer representing long (1), short (-1), or both side(0).
      */
     function longShortInfo() external view returns (int8);
+
+    /**
+     * @dev Checks whether a settle is possible by user for a specific receipt ID.
+     * @param receiptId The unique identifier of the receipt associated with the task.
+     * @return A boolean indicating whether a settle is possible by user.
+     */
+    function checkSettleByUser(uint256 receiptId) external view returns (bool);
+
 }

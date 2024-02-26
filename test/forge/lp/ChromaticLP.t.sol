@@ -67,7 +67,8 @@ contract ChromaticLPTest is LPHelper, LogUtil {
         logInfo(receipt);
         logInfo(lp);
 
-        assertEq(false, lp.settle(receipt.id));
+        vm.expectRevert();
+        lp.settle(receipt.id);
 
         uint256 tokenBalanceBefore = lp.balanceOf(user1);
 
@@ -107,7 +108,8 @@ contract ChromaticLPTest is LPHelper, LogUtil {
         assertEq(receiptIds.length, 1);
         assertEq(receipt.id, receiptIds[0]);
 
-        assertEq(false, lp.settle(receipt.id));
+        vm.expectRevert();
+        lp.settle(receipt.id);
 
         uint256 tokenBalanceBefore = ctst.balanceOf(user1);
 
@@ -236,7 +238,8 @@ contract ChromaticLPTest is LPHelper, LogUtil {
         // receipt = lp.removeLiquidity(lptoken, user1);
 
         oracleProvider.increaseVersion(entryPrice);
-        assertEq(true, lp.settle(receipt.id));
+        // vm.expectEmit();
+        lp.settle(receipt.id);
         logInfo(lp, "after removeLiquidity settled");
 
         // uint256 lpTokenAfter = lp.balanceOf(address(this));
