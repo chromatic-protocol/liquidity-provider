@@ -35,11 +35,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using LPStateSetupLib for LPState;
     using LPConfigLib for LPConfig;
 
-    modifier onlyDao() override {
-        if (!_checkDao()) revert OnlyAccessableByDao();
-        _;
-    }
-
     function _initialize(
         LPMeta memory meta,
         ConfigParam memory config,
@@ -379,10 +374,6 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
      */
     function dao() public view override returns (address) {
         return s_state.market.factory().dao();
-    }
-
-    function _checkDao() internal view override returns (bool) {
-        return msg.sender == dao();
     }
 
     /**
