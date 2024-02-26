@@ -35,7 +35,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using LPStateSetupLib for LPState;
     using LPConfigLib for LPConfig;
 
-    modifier onlyDao() virtual {
+    modifier onlyDao() override {
         if (!_checkDao()) revert OnlyAccessableByDao();
         _;
     }
@@ -377,11 +377,11 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function dao() public view virtual returns (address) {
+    function dao() public view override returns (address) {
         return s_state.market.factory().dao();
     }
 
-    function _checkDao() internal view virtual returns (bool) {
+    function _checkDao() internal view override returns (bool) {
         return msg.sender == dao();
     }
 

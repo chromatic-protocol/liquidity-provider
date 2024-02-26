@@ -21,9 +21,13 @@ abstract contract ChromaticLPStorage is ChromaticLPStorageCore, ReentrancyGuard,
         _;
     }
 
+    modifier onlyDao() virtual {
+        if (!_checkDao()) revert OnlyAccessableByDao();
+        _;
+    }
+
     mapping(uint256 => IAutomateLP) internal s_task;
     IAutomateLP internal s_automate;
-
 
     function _setAutomateLP(IAutomateLP automate) internal virtual {
         s_automate = automate;
@@ -43,5 +47,9 @@ abstract contract ChromaticLPStorage is ChromaticLPStorageCore, ReentrancyGuard,
                 currentUtility - s_config.utilizationTargetBPS,
                 currentUtility
             );
+    }
+
+    function _checkDao() internal view virtual returns (bool) {
+        return msg.sender == s_state.market.factory().dao();
     }
 }
