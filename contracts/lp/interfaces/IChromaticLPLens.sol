@@ -8,7 +8,6 @@ struct ValueInfo {
     uint256 pending;
     uint256 holdingClb;
     uint256 pendingClb;
-    uint256 valueOfSupply;
 }
 
 /**
