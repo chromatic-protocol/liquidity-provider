@@ -111,4 +111,14 @@ interface IChromaticLPErrors {
      * @dev Error indicating that removing zero amount of liquidity is invalid.
      */
     error ZeroRemoveLiquidityError();
+
+    /**
+     * @dev Error indicating that upgrading failed.
+     */
+    error UpgradeFailed();
+
+    /**
+     * @dev Error indicating that upgrading failed with a invalid contract address.
+     */
+    error UpgradeFailedNotContractAddress();
 }

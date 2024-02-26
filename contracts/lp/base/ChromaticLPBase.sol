@@ -388,7 +388,12 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function upgradeTo(address newLogicAddress) external onlyDao {
+    function upgradeTo(address newLogicAddress, bytes calldata data) external onlyDao {
+        if (!isContract(newLogicAddress)) revert UpgradeFailedNotContractAddress();
+        (bool success, ) = newLogicAddress.delegatecall(
+            abi.encodeWithSignature("onUpgrade(bytes)", data)
+        );
+        if (!success) revert UpgradeFailed();
         emit Upgraded(s_logicAddress, newLogicAddress);
         _setLogicAddress(newLogicAddress);
     }
@@ -398,5 +403,13 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
      */
     function logicAddress() external view returns (address) {
         return s_logicAddress;
+    }
+
+    function isContract(address _addr) private view returns (bool) {
+        uint32 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+        return (size > 0);
     }
 }

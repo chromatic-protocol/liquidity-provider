@@ -59,7 +59,7 @@ interface IChromaticLPAdmin {
     /**
      * @dev upgrade logic contract to new one.
      */
-    function upgradeTo(address logicAddress) external;
+    function upgradeTo(address logicAddress, bytes calldata data) external;
 
     /**
      * @dev Returns the address of the logic contract.

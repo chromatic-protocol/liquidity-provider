@@ -16,6 +16,8 @@ abstract contract ChromaticLPStorage is ChromaticLPStorageCore, ReentrancyGuard,
     using Math for uint256;
     using LPStateValueLib for LPState;
 
+    uint256[50] __proxyReserved;
+
     modifier onlyAutomation(uint256 rebalanceOrReceiptId) {
         if (msg.sender != address(s_task[rebalanceOrReceiptId])) revert NotAutomationCalled();
         _;

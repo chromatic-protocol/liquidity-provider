@@ -25,17 +25,21 @@ import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.s
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
 import {REBALANCE_ID} from "~/lp/libraries/LPState.sol";
+import {IChromaticLPLogic} from "~/lp/interfaces/IChromaticLPLogic.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
-abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
+abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic {
     using Math for uint256;
 
     using LPStateValueLib for LPState;
     using LPStateViewLib for LPState;
     using LPStateLogicLib for LPState;
     using LPConfigLib for LPConfig;
+
+    bytes32 public version;
+    address internal immutable _this;
 
     /**
      * @title AddLiquidityBatchCallbackData
@@ -68,6 +72,15 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
     modifier verifyCallback() virtual {
         if (address(s_state.market) != msg.sender) revert NotMarket();
         _;
+    }
+
+    modifier onlyDelegateCall() virtual {
+        if (address(this) == _this) revert OnlyDelegateCall();
+        _;
+    }
+
+    constructor() {
+        _this = address(this);
     }
 
     function _createSettleTask(uint256 receiptId) internal {
@@ -421,4 +434,17 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage {
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;
     }
+
+    /**
+     * @inheritdoc IChromaticLPLogic
+     */
+    function setVersion(bytes32 ver) external virtual onlyDao {
+        // call this not in delegate context
+        version = ver;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLogic
+     */
+    function onUpgrade(bytes calldata data) external virtual onlyDelegateCall onlyDao {}
 }
