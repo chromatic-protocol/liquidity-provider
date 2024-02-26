@@ -55,6 +55,7 @@ type ChromaticLPStat @entity(immutable: true) {
   pendingValue: BigInt!
   holdingClbValue: BigInt!
   pendingClbValue: BigInt!
+  valueOfSupply: BigInt
   utilization: Int!
   blockNumber: BigInt!
   blockTimestamp: BigInt!

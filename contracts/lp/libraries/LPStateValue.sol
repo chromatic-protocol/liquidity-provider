@@ -67,11 +67,9 @@ library LPStateValueLib {
             holding: s_state.holdingValue(),
             pending: s_state.pendingValue(),
             holdingClb: s_state.holdingClbValue(),
-            pendingClb: s_state.pendingClbValue(),
-            valueOfSupply: 0
+            pendingClb: s_state.pendingClbValue()
         });
         info.total = info.holding + info.pending + info.holdingClb + info.pendingClb;
-        info.valueOfSupply = info.total - s_state.pendingAddLp;
     }
 
     /**

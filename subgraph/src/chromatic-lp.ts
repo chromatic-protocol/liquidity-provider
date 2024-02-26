@@ -152,6 +152,7 @@ function saveChromaticLPStat(event: ethereum.Event): void {
   if (entity == null) {
     let lpContract = ChromaticLP.bind(event.address)
     let valueInfo = lpContract.valueInfo()
+    let valueOfSupply = lpContract.try_valueOfSupply()
 
     entity = new ChromaticLPStat(id)
     entity.lp = lpContract._address
@@ -160,6 +161,9 @@ function saveChromaticLPStat(event: ethereum.Event): void {
     entity.pendingValue = valueInfo.pending
     entity.holdingClbValue = valueInfo.holdingClb
     entity.pendingClbValue = valueInfo.pendingClb
+    if (!valueOfSupply.reverted) {
+      entity.valueOfSupply = valueOfSupply.value
+    }
     entity.utilization = lpContract.utilization()
     entity.blockNumber = event.block.number
     entity.blockTimestamp = event.block.timestamp
