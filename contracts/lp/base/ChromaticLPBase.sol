@@ -8,7 +8,6 @@ import {CLBTokenLib} from "@chromatic-protocol/contracts/core/libraries/CLBToken
 import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPReceipt.sol";
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {ChromaticLPStorage} from "~/lp/base/ChromaticLPStorage.sol";
-import {SuspendMode} from "~/lp/base/SuspendMode.sol";
 import {ValueInfo} from "~/lp/interfaces/IChromaticLPLens.sol";
 import {TrimAddress} from "~/lp/libraries/TrimAddress.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
@@ -29,34 +28,24 @@ import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.s
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
-abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromaticLP {
+abstract contract ChromaticLPBase is ChromaticLPStorage, IChromaticLP {
     using Math for uint256;
     using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;
     using LPStateSetupLib for LPState;
     using LPConfigLib for LPConfig;
 
-    address _owner;
-
-    modifier onlyOwner() virtual {
-        if (!_checkOwner()) revert OnlyAccessableByOwner();
-        _;
-    }
-
-    constructor(IAutomateLP automate) ChromaticLPStorage(automate) {
-        _owner = msg.sender;
-    }
-
-    function _checkOwner() internal view virtual returns (bool) {
-        return msg.sender == _owner;
-    }
-
     function _initialize(
         LPMeta memory meta,
         ConfigParam memory config,
         int16[] memory _feeRates,
-        uint16[] memory _distributionRates
+        uint16[] memory _distributionRates,
+        IAutomateLP automate,
+        address _logicAddress
     ) internal {
+        _setLogicAddress(_logicAddress);
+        _setAutomateLP(automate);
+
         _validateConfig(
             config.utilizationTargetBPS,
             config.rebalanceBPS,
@@ -285,7 +274,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromatic
     /**
      * @inheritdoc IChromaticLPMeta
      */
-    function setLpName(string memory newName) external onlyOwner {
+    function setLpName(string memory newName) external onlyDao {
         emit SetLpName(newName);
         s_meta.lpName = newName;
     }
@@ -293,7 +282,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromatic
     /**
      * @inheritdoc IChromaticLPMeta
      */
-    function setLpTag(string memory tag) external onlyOwner {
+    function setLpTag(string memory tag) external onlyDao {
         emit SetLpTag(tag);
         s_meta.tag = tag;
     }
@@ -369,7 +358,7 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromatic
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function setSuspendMode(uint8 mode) external onlyOwner {
+    function setSuspendMode(uint8 mode) external onlyDao {
         _setSuspendMode(mode);
     }
 
@@ -383,26 +372,35 @@ abstract contract ChromaticLPBase is ChromaticLPStorage, SuspendMode, IChromatic
     /**
      * @inheritdoc IChromaticLPAdmin
      */
-    function owner() external view virtual returns (address) {
-        return _owner;
+    function dao() public view override returns (address) {
+        return s_state.market.factory().dao();
     }
 
     /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
+     * @inheritdoc IChromaticLPAdmin
      */
-    function transferOwnership(address newOwner) public virtual onlyOwner {
-        if (newOwner == address(0)) revert ZeroAddressError();
-        _transferOwnership(newOwner);
+    function upgradeTo(address newLogicAddress, bytes calldata data) external onlyDao {
+        if (!isContract(newLogicAddress)) revert UpgradeFailedNotContractAddress();
+        (bool success, ) = newLogicAddress.delegatecall(
+            abi.encodeWithSignature("onUpgrade(bytes)", data)
+        );
+        if (!success) revert UpgradeFailed();
+        emit Upgraded(s_logicAddress, newLogicAddress);
+        _setLogicAddress(newLogicAddress);
     }
 
     /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Internal function without access restriction.
+     * @inheritdoc IChromaticLPAdmin
      */
-    function _transferOwnership(address newOwner) internal virtual {
-        address oldOwner = _owner;
-        _owner = newOwner;
-        emit OwnershipTransferred(oldOwner, newOwner);
+    function logicAddress() external view returns (address) {
+        return s_logicAddress;
+    }
+
+    function isContract(address _addr) private view returns (bool) {
+        uint32 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+        return (size > 0);
     }
 }

@@ -391,7 +391,7 @@ export class DeployTool {
 
     const { address: logicAddress } = await this.deploy('ChromaticLPLogic', {
       from: this.deployer,
-      args: [config.automateConfig]
+      args: []
     })
     if (config.feeRates.length != config.distributionRates.length) {
       console.log('feeRates:\n', chalk.red(JSON.stringify(config.feeRates, null)))

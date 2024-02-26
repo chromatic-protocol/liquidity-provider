@@ -53,9 +53,9 @@ interface IChromaticLPErrors {
     error NotKeeperCalled();
 
     /**
-     * @dev Signifies that the function is only accessible by the owner
+     * @dev Signifies that the function is only accessible by the DAO
      */
-    error OnlyAccessableByOwner();
+    error OnlyAccessableByDao();
 
     /**
      * @dev Thrown when an automation call is not made
@@ -112,4 +112,13 @@ interface IChromaticLPErrors {
      */
     error ZeroRemoveLiquidityError();
 
+    /**
+     * @dev Error indicating that upgrading failed.
+     */
+    error UpgradeFailed();
+
+    /**
+     * @dev Error indicating that upgrading failed with a invalid contract address.
+     */
+    error UpgradeFailedNotContractAddress();
 }

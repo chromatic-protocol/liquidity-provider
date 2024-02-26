@@ -6,7 +6,6 @@ import {ChromaticLPReceipt, ChromaticLPAction} from "~/lp/libraries/ChromaticLPR
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ChromaticLP} from "~/lp/ChromaticLP.sol";
-import {ChromaticLPLogic} from "~/lp/ChromaticLPLogic.sol";
 import {IChromaticLPEvents} from "~/lp/interfaces/IChromaticLPEvents.sol";
 import {IChromaticLPErrors} from "~/lp/interfaces/IChromaticLPErrors.sol";
 import {LogUtil, Taker} from "./Helper.sol";

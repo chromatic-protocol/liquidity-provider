@@ -2,6 +2,8 @@
 pragma solidity 0.8.19;
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {SuspendMode} from "~/lp/base/SuspendMode.sol";
 import {ChromaticLPStorageCore} from "~/lp/base/ChromaticLPStorageCore.sol";
 import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
@@ -10,21 +12,24 @@ import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 
-abstract contract ChromaticLPStorage is ChromaticLPStorageCore {
+abstract contract ChromaticLPStorage is ChromaticLPStorageCore, ReentrancyGuard, SuspendMode {
     using Math for uint256;
     using LPStateValueLib for LPState;
+
+    uint256[50] __proxyReserved;
 
     modifier onlyAutomation(uint256 rebalanceOrReceiptId) {
         if (msg.sender != address(s_task[rebalanceOrReceiptId])) revert NotAutomationCalled();
         _;
     }
 
+    modifier onlyDao() virtual {
+        if (!_checkDao()) revert OnlyAccessableByDao();
+        _;
+    }
+
     mapping(uint256 => IAutomateLP) internal s_task;
     IAutomateLP internal s_automate;
-
-    constructor(IAutomateLP automate) ChromaticLPStorageCore() {
-        _setAutomateLP(automate);
-    }
 
     function _setAutomateLP(IAutomateLP automate) internal virtual {
         s_automate = automate;
@@ -44,5 +49,9 @@ abstract contract ChromaticLPStorage is ChromaticLPStorageCore {
                 currentUtility - s_config.utilizationTargetBPS,
                 currentUtility
             );
+    }
+
+    function _checkDao() internal view virtual returns (bool) {
+        return msg.sender == s_state.market.factory().dao();
     }
 }

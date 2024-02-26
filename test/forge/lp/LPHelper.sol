@@ -31,7 +31,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
     function setUp() public virtual override {
         super.setUp();
         automateLP = new AutomateLP(automate);
-        lpLogic = new ChromaticLPLogic(automateLP);
+        lpLogic = new ChromaticLPLogic();
     }
 
     function deployLP(
@@ -48,7 +48,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
         }
 
         ChromaticLP lp = new ChromaticLP(
-            lpLogic,
+            address(lpLogic),
             ChromaticLPStorageCore.LPMeta({lpName: "lp pool", tag: "N"}),
             params,
             feeRates,

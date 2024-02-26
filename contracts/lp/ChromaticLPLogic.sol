@@ -20,7 +20,6 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     using LPStateValueLib for LPState;
     using LPConfigLib for LPConfig;
 
-    constructor(IAutomateLP automate) ChromaticLPLogicBase(automate) {}
 
     /**
      * @dev implementation of IChromaticLP

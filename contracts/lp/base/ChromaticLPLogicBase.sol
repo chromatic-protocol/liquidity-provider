@@ -5,8 +5,6 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {IERC1155} from "@openzeppelin/contracts/interfaces/IERC1155.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
 import {IChromaticMarket} from "@chromatic-protocol/contracts/core/interfaces/IChromaticMarket.sol";
 import {IChromaticLiquidityCallback} from "@chromatic-protocol/contracts/core/interfaces/callback/IChromaticLiquidityCallback.sol";
 import {LpReceipt} from "@chromatic-protocol/contracts/core/libraries/LpReceipt.sol";
@@ -27,17 +25,21 @@ import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.s
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
 import {REBALANCE_ID} from "~/lp/libraries/LPState.sol";
+import {IChromaticLPLogic} from "~/lp/interfaces/IChromaticLPLogic.sol";
 
 import {BPS} from "~/lp/libraries/Constants.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
 
-abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
+abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic {
     using Math for uint256;
 
     using LPStateValueLib for LPState;
     using LPStateViewLib for LPState;
     using LPStateLogicLib for LPState;
     using LPConfigLib for LPConfig;
+
+    bytes32 public version;
+    address internal immutable _this;
 
     /**
      * @title AddLiquidityBatchCallbackData
@@ -72,7 +74,14 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         _;
     }
 
-    constructor(IAutomateLP automate) ChromaticLPStorage(automate) ReentrancyGuard() {}
+    modifier onlyDelegateCall() virtual {
+        if (address(this) == _this) revert OnlyDelegateCall();
+        _;
+    }
+
+    constructor() {
+        _this = address(this);
+    }
 
     function _createSettleTask(uint256 receiptId) internal {
         s_task[receiptId] = s_automate;
@@ -425,4 +434,17 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, ReentrancyGuard {
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;
     }
+
+    /**
+     * @inheritdoc IChromaticLPLogic
+     */
+    function setVersion(bytes32 ver) external virtual onlyDao {
+        // call this not in delegate context
+        version = ver;
+    }
+
+    /**
+     * @inheritdoc IChromaticLPLogic
+     */
+    function onUpgrade(bytes calldata data) external virtual onlyDelegateCall onlyDao {}
 }

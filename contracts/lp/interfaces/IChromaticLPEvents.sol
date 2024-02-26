@@ -127,9 +127,9 @@ interface IChromaticLPEvents {
     event SetPrivateMode(bool mode);
 
     /**
-     * @dev Emitted when ownership of the LP contract is transferred.
-     * @param previousOwner The address of the previous owner.
-     * @param newOwner The address of the new owner.
+     * @dev Emitted when logic contract of the LP contract is upgraded.
+     * @param previousLogic The address of the previous logic.
+     * @param newLogic The address of the new logic.
      */
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event Upgraded(address previousLogic, address indexed newLogic);
 }
