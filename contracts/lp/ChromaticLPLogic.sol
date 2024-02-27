@@ -20,6 +20,7 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
     using LPStateValueLib for LPState;
     using LPConfigLib for LPConfig;
 
+    constructor(bytes32 _version) ChromaticLPLogicBase(_version) {}
 
     /**
      * @dev implementation of IChromaticLP
