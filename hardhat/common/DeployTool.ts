@@ -409,7 +409,7 @@ export class DeployTool {
     if (!config.meta?.tag) throw new Error('lp-tag not found')
 
     let { address: logicAddress } = await this.hre.deployments.get('ChromaticLPLogic')
-    console.assert(logicAddress, 'logicAddres required')
+    console.assert(logicAddress, 'logicAddress required')
 
     if (config.feeRates.length != config.distributionRates.length) {
       console.log('feeRates:\n', chalk.red(JSON.stringify(config.feeRates, null)))
