@@ -7,7 +7,7 @@ import { DEPLOYED } from '~/hardhat/common/DeployedStore'
 import { Helper } from '~/hardhat/common/Helper'
 import { ChromaticLPRegistry, ChromaticLP__factory } from '~/typechain-types'
 
-import { formatEther, parseUnits } from 'ethers'
+import { encodeBytes32String, formatEther, parseUnits } from 'ethers'
 import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
 import { getAutomateAddress } from './getAutomateConfig'
@@ -264,7 +264,8 @@ export class DeployTool {
       const config = this.adjustLPConfig(market, lpConfig)
       console.log(`\n\n${i++}th LP`)
       try {
-        const deployed = await this.deployLP(market.address, config, false, market)
+        const verify = i == 1
+        const deployed = await this.deployLP(market.address, config, false, market, verify)
         deployedResults.push(deployed)
       } catch (e) {
         console.log(`skipped`, e)
@@ -368,11 +369,29 @@ export class DeployTool {
     return res
   }
 
+  async deployLPLogic(
+    commitHash: string // commit hash
+  ): Promise<DeployResult> {
+    const version = encodeBytes32String(commitHash.substring(0, 7))
+
+    const result = await this.deploy('ChromaticLPLogic', {
+      from: this.deployer,
+      args: [version]
+    })
+
+    if (result.newlyDeployed) {
+      await this.verify({ address: result.address, constructorArguments: [version] })
+    }
+
+    return result
+  }
+
   async deployLP(
     marketAddress: string,
     lpConfig: LPConfig,
     adjust = true,
-    marketInfo: MarketInfo | undefined = undefined
+    marketInfo: MarketInfo | undefined = undefined,
+    verify = true
   ): Promise<DeployResult> {
     console.log(chalk.green(`✨ deploying LP for market: ${marketAddress}`))
     let config = lpConfig
@@ -389,10 +408,9 @@ export class DeployTool {
     if (!config.meta?.lpName) throw new Error('lpName not found')
     if (!config.meta?.tag) throw new Error('lp-tag not found')
 
-    const { address: logicAddress } = await this.deploy('ChromaticLPLogic', {
-      from: this.deployer,
-      args: []
-    })
+    let { address: logicAddress } = await this.hre.deployments.get('ChromaticLPLogic')
+    console.assert(logicAddress, 'logicAddres required')
+
     if (config.feeRates.length != config.distributionRates.length) {
       console.log('feeRates:\n', chalk.red(JSON.stringify(config.feeRates, null)))
       console.log('distributionRates:\n', chalk.red(JSON.stringify(config.distributionRates, null)))
@@ -421,7 +439,9 @@ export class DeployTool {
       from: this.deployer,
       args: args
     })
-    await this.verify({ address: result.address, constructorArguments: args })
+    if (verify && result.newlyDeployed) {
+      await this.verify({ address: result.address, constructorArguments: args })
+    }
 
     DEPLOYED.saveLP(result.address as AddressType, marketAddress as AddressType)
 
