@@ -79,7 +79,8 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic 
         _;
     }
 
-    constructor() {
+    constructor(bytes32 _version) {
+        version = _version;
         _this = address(this);
     }
 
@@ -433,14 +434,6 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic 
         //slither-disable-next-line reentrancy-events
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;
-    }
-
-    /**
-     * @inheritdoc IChromaticLPLogic
-     */
-    function setVersion(bytes32 ver) external virtual onlyDao {
-        // call this not in delegate context
-        version = ver;
     }
 
     /**
