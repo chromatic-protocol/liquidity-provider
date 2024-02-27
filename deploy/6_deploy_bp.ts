@@ -4,48 +4,47 @@ import type { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployTool } from '~/hardhat/common/DeployTool'
 import { BPConfigStruct } from '~/typechain-types/contracts/bp/ChromaticBP'
 
-export function toTimestamp(date: Date) {
-  return BigInt(Math.floor(date.getTime() / 1000))
+export function toTimestamp(year: number, month: number, date: number) {
+  return BigInt(Date.UTC(year, month - 1, date) / 1000)
 }
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tool = await DeployTool.createAsync(hre)
 
+  const day = BigInt(24 * 3600)
   const week = BigInt(24 * 3600) * 7n
-
-  const startTimeOfWarmup = 1708473600 // 2024.02.21 UTC 00:00 (1708473600)
-  const maxDurationOfWarmup = week
+  const minDeposit = parseUnits((250).toString(), 6)
 
   const bpConfigs: BPConfigStruct[] = [
     {
-      lp: '0xAD6FE0A0d746aEEEDEeAb19AdBaDBE58249cD0c7',
-      totalReward: parseUnits((100_000).toString(), 18),
-      minRaisingTarget: parseUnits((100_000).toString(), 6),
-      maxRaisingTarget: parseUnits((400_000).toString(), 6),
-      startTimeOfWarmup: startTimeOfWarmup,
-      maxDurationOfWarmup: maxDurationOfWarmup,
+      lp: '0xfE6e1F50BCebcd58a95E2f136fa4bcBFEbdC74F7', // Crescendo Long & Short
+      totalReward: parseUnits((60_000).toString(), 18),
+      minRaisingTarget: parseUnits((30_000).toString(), 6),
+      maxRaisingTarget: parseUnits((80_000).toString(), 6),
+      startTimeOfWarmup: toTimestamp(2024, 2, 28),
+      maxDurationOfWarmup: day,
       durationOfLockup: week * 8n,
-      minDeposit: parseUnits((100).toString(), 6)
+      minDeposit: minDeposit
     },
     {
-      lp: '0xFa334bE13bA4cdc5C3D9A25344FFBb312d2423A2',
-      totalReward: parseUnits((100_000).toString(), 18),
-      minRaisingTarget: parseUnits((100_000).toString(), 6),
-      maxRaisingTarget: parseUnits((400_000).toString(), 6),
-      startTimeOfWarmup: startTimeOfWarmup,
-      maxDurationOfWarmup: maxDurationOfWarmup,
+      lp: '0xfE6e1F50BCebcd58a95E2f136fa4bcBFEbdC74F7', // Cresendo Long&short
+      totalReward: parseUnits((30_000).toString(), 18),
+      minRaisingTarget: parseUnits((15_000).toString(), 6),
+      maxRaisingTarget: parseUnits((40_000).toString(), 6),
+      startTimeOfWarmup: toTimestamp(2024, 2, 29),
+      maxDurationOfWarmup: toTimestamp(2024, 3, 2) - toTimestamp(2024, 2, 29),
       durationOfLockup: week * 8n,
-      minDeposit: parseUnits((100).toString(), 6)
+      minDeposit: minDeposit
     },
     {
-      lp: '0x9706DE4B4Bb1027ce059344Cd42Bb57E079f64c7',
-      totalReward: parseUnits((100_000).toString(), 18),
-      minRaisingTarget: parseUnits((100_000).toString(), 6),
-      maxRaisingTarget: parseUnits((400_000).toString(), 6),
-      startTimeOfWarmup: startTimeOfWarmup,
-      maxDurationOfWarmup: maxDurationOfWarmup,
+      lp: '0x30ff22B782e6a09B34c2ff3206A8bd2E0D650912', // Plateau Long&Short
+      totalReward: parseUnits((30_000).toString(), 18),
+      minRaisingTarget: parseUnits((15_000).toString(), 6),
+      maxRaisingTarget: parseUnits((40_000).toString(), 6),
+      startTimeOfWarmup: toTimestamp(2024, 2, 29),
+      maxDurationOfWarmup: toTimestamp(2024, 3, 2) - toTimestamp(2024, 2, 29),
       durationOfLockup: week * 8n,
-      minDeposit: parseUnits((100).toString(), 6)
+      minDeposit: minDeposit
     }
   ]
   for (let config of bpConfigs) {
