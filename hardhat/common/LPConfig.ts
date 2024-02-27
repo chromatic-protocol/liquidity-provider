@@ -36,7 +36,7 @@ export function getDefaultLPConfigs(): LPConfig[] {
       initialLiquidities: [parseEther('150000'), parseEther('75000'), parseEther('75000')]
     },
     {
-      lpName: 'Decresendo',
+      lpName: 'Decrescendo',
       tag: 'High Risk',
       utilizationTargetBPS: 7500,
       startLevel: 100,

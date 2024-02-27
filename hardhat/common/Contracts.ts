@@ -12,6 +12,8 @@ import { DeployedStore } from './DeployedStore'
 import {
   ChromaticBPFactory,
   ChromaticBPFactory__factory,
+  ChromaticLPLogic,
+  ChromaticLPLogic__factory,
   ChromaticLPRegistry,
   ChromaticLPRegistry__factory,
   IChromaticBP,
@@ -84,5 +86,8 @@ export class Contracts {
   }
   automateBP(address: string): AutomateBP {
     return AutomateBP__factory.connect(address, this.signer)
+  }
+  lpLogic(address: string): ChromaticLPLogic {
+    return ChromaticLPLogic__factory.connect(address, this.signer)
   }
 }
