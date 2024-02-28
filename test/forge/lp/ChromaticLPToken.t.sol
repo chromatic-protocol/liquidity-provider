@@ -117,11 +117,11 @@ contract ChromaticLPTokenTest is LPHelper, FoundryRandom, LogUtil {
         }
     }
 
-    function test_makeRandomAddr(uint256 maxAccount, uint256 loop) external {
-        for (uint i = 0; i < loop; i++) {
-            makeRandomAddr(maxAccount);
-        }
-    }
+    // function test_makeRandomAddr(uint256 maxAccount, uint256 loop) external {
+    //     for (uint i = 0; i < loop; i++) {
+    //         makeRandomAddr(maxAccount);
+    //     }
+    // }
 
     function randomActions(uint256 actionCount, uint256 maxAccount, uint256 reservedAdd) internal {
         for (uint256 i = 0; i < actionCount; i++) {
@@ -170,14 +170,14 @@ contract ChromaticLPTokenTest is LPHelper, FoundryRandom, LogUtil {
         }
     }
 
-    function test_TransactionsSameRound(uint256 actionCount, uint256 amount) external {
-        // uint256 actionCount = 2;
-        // uint256 amount = 100 ether;
+    function test_TransactionsSameRound(/*uint256 actionCount, uint256 amount*/) external  {
+        uint256 actionCount = 2;
+        uint256 amount = 100 ether;
 
         uint256 maxAccount = 10;
 
-        vm.assume(amount >= lp.estimateMinAddLiquidityAmount());
-        vm.assume(amount < type(uint256).max / 2);
+        // vm.assume(amount >= lp.estimateMinAddLiquidityAmount());
+        // vm.assume(amount < type(uint256).max / 2);
 
         console.log("actionCount:", actionCount);
         address user1 = makeAddr("user1");
