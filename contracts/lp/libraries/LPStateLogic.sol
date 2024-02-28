@@ -13,6 +13,28 @@ import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {ChromaticLPLogicBase} from "~/lp/base/ChromaticLPLogicBase.sol";
 import {Errors} from "~/lp/libraries/Errors.sol";
+import {MIN_ADD_LIQUIDITY_BIN} from "~/lp/libraries/Constants.sol";
+
+/**
+ * @title AddLiquidityParam
+ * @dev Struct representing parameters for adding liquidity to a liquidity provider in the Chromatic Protocol.
+ */
+struct AddLiquidityParam {
+    uint256 amount; // Amount in settlement token to add liquidity in the LP
+    uint256 amountMarket; // Amount of adding to market
+    address provider; // Address of the liquidity provider
+    address recipient; // Address of the recipient
+}
+
+/**
+ * @title RemoveLiquidityParam
+ * @dev Struct representing parameters for removing liquidity from a liquidity provider in the Chromatic Protocol.
+ */
+struct RemoveLiquidityParam {
+    uint256 amount; // LP token requesting to burn
+    address provider; // Address of the liquidity provider
+    address recipient; // Address of the recipient
+}
 
 /**
  * @title LPStateLogicLib
@@ -90,7 +112,7 @@ library LPStateLogicLib {
         // mint and transfer lp pool token to provider in callback
         // valueOfSupply() : aleady keeperFee excluded
         s_state.decreasePendingAdd(keeperFee, 0);
-        
+
         s_state.market.claimLiquidityBatch(
             s_state.lpReceiptMap[receipt.id],
             abi.encode(receipt, s_state.valueOfSupply(), keeperFee)
@@ -127,22 +149,40 @@ library LPStateLogicLib {
      * @dev Distributes a given amount among different fee bins based on their distribution rates.
      * @param s_state The storage state of the liquidity provider.
      * @param amount The total amount to be distributed.
+     * @return feeRates An array containing the feeRate of bins.
      * @return amounts An array containing the distributed amounts for each fee bin.
      * @return totalAmount The total amount after distribution.
      */
     function distributeAmount(
         LPState storage s_state,
         uint256 amount
-    ) internal view returns (uint256[] memory amounts, uint256 totalAmount) {
-        amounts = new uint256[](s_state.binCount());
-        for (uint256 i = 0; i < s_state.binCount(); ) {
-            uint256 _amount = amount.mulDiv(
+    )
+        internal
+        view
+        returns (int16[] memory feeRates, uint256[] memory amounts, uint256 totalAmount)
+    {
+        uint256 binCount = s_state.binCount();
+
+        feeRates = new int16[](binCount);
+        amounts = new uint256[](binCount);
+        uint256 index;
+        for (uint256 i = 0; i < binCount; ) {
+            amounts[index] = amount.mulDiv(
                 s_state.distributionRates[s_state.feeRates[i]],
                 s_state.totalRate
             );
-
-            amounts[i] = _amount;
-            totalAmount += _amount;
+            if (amounts[index] > MIN_ADD_LIQUIDITY_BIN) {
+                totalAmount += amounts[index];
+                feeRates[index] = s_state.feeRates[i];
+                unchecked {
+                    ++index;
+                }
+            } else {
+                assembly {
+                    mstore(amounts, sub(mload(amounts), 1))
+                    mstore(feeRates, sub(mload(feeRates), 1))
+                }
+            }
 
             unchecked {
                 ++i;
@@ -153,76 +193,67 @@ library LPStateLogicLib {
     /**
      * @dev Adds liquidity to the liquidity pool and updates the LPState accordingly.
      * @param s_state The storage state of the liquidity provider.
-     * @param amount The total amount of liquidity to be added.
-     * @param liquidityTarget The target liquidity amount.
-     * @param provider The address of the liquidity provider.
-     * @param recipient The address to receive LP tokens.
+     * @param feeRates An array of fee rates for different actions within the liquidity pool.
+     * @param amounts An array of amounts representing the liquidity to be added.
+     * @param addParam Parameters for adding liquidity.
      * @return receipt The Chromatic LP Receipt representing the addition of liquidity.
      */
     function addLiquidity(
         LPState storage s_state,
-        uint256 amount,
-        uint256 liquidityTarget,
-        address provider,
-        address recipient
+        int16[] memory feeRates,
+        uint256[] memory amounts,
+        AddLiquidityParam memory addParam
     ) internal returns (ChromaticLPReceipt memory receipt) {
-        (uint256[] memory amounts, uint256 liquidityAmount) = s_state.distributeAmount(
-            liquidityTarget
-        );
-
         LpReceipt[] memory lpReceipts = s_state.market.addLiquidityBatch(
             address(this),
-            s_state.feeRates,
+            feeRates,
             amounts,
             abi.encode(
                 ChromaticLPLogicBase.AddLiquidityBatchCallbackData({
-                    provider: provider,
-                    liquidityAmount: liquidityAmount,
-                    holdingAmount: amount - liquidityAmount
+                    provider: addParam.provider,
+                    liquidityAmount: addParam.amountMarket,
+                    holdingAmount: addParam.amount - addParam.amountMarket
                 })
             )
         );
 
         receipt = ChromaticLPReceipt({
             id: s_state.nextReceiptId(),
-            provider: provider,
-            recipient: recipient,
+            provider: addParam.provider,
+            recipient: addParam.recipient,
             oracleVersion: lpReceipts[0].oracleVersion,
-            amount: amount,
-            pendingLiquidity: liquidityAmount,
+            amount: addParam.amount,
+            pendingLiquidity: addParam.amountMarket,
             action: ChromaticLPAction.ADD_LIQUIDITY,
             needSettle: true
         });
 
         s_state.addReceipt(receipt, lpReceipts);
-        s_state.increasePendingAdd(amount, liquidityAmount);
+        s_state.increasePendingAdd(addParam.amount, addParam.amountMarket);
     }
 
     /**
      * @dev Removes liquidity from the liquidity pool and updates the LPState accordingly.
      * @param s_state The storage state of the liquidity provider.
      * @param clbTokenAmounts The amounts of CLB tokens to be removed for each fee bin.
-     * @param lpTokenAmount The total amount of LP tokens to be removed.
-     * @param provider The address of calling removeLiquidity.
-     * @param recipient The address to receive the removed liquidity.
+     * @param removeParam Parameters for removing liquidity.
      * @return receipt The Chromatic LP Receipt representing the removal of liquidity.
      */
     function removeLiquidity(
         LPState storage s_state,
+        int16[] memory feeRates,
         uint256[] memory clbTokenAmounts,
-        uint256 lpTokenAmount,
-        address provider,
-        address recipient
+        RemoveLiquidityParam memory removeParam
     ) internal returns (ChromaticLPReceipt memory receipt) {
         LpReceipt[] memory lpReceipts = s_state.market.removeLiquidityBatch(
             address(this),
-            s_state.feeRates,
+            feeRates,
             clbTokenAmounts,
             abi.encode(
                 ChromaticLPLogicBase.RemoveLiquidityBatchCallbackData({
-                    provider: provider,
-                    recipient: recipient,
-                    lpTokenAmount: lpTokenAmount,
+                    provider: removeParam.provider,
+                    recipient: removeParam.recipient,
+                    lpTokenAmount: removeParam.amount,
                     clbTokenAmounts: clbTokenAmounts
                 })
             )
@@ -230,10 +261,10 @@ library LPStateLogicLib {
 
         receipt = ChromaticLPReceipt({
             id: s_state.nextReceiptId(),
-            provider: provider,
-            recipient: recipient,
+            provider: removeParam.provider,
+            recipient: removeParam.recipient,
             oracleVersion: lpReceipts[0].oracleVersion,
-            amount: lpTokenAmount,
+            amount: removeParam.amount,
             pendingLiquidity: 0,
             action: ChromaticLPAction.REMOVE_LIQUIDITY,
             needSettle: true
@@ -308,25 +339,75 @@ library LPStateLogicLib {
      * @param s_state The storage state of the liquidity provider.
      * @param lpTokenAmount The total amount of LP tokens to be removed.
      * @param totalSupply The total supply of LP tokens.
+     * @return feeRates An array containing the feeRate of bins.
      * @return removeAmounts An array containing the amounts of pending CLB tokens to be removed for each fee bin.
      */
     function calcRemoveClbAmounts(
         LPState storage s_state,
         uint256 lpTokenAmount,
         uint256 totalSupply
-    ) internal view returns (uint256[] memory removeAmounts) {
+    ) internal view returns (int16[] memory feeRates, uint256[] memory removeAmounts) {
         uint256 binCount = s_state.binCount();
+        feeRates = new int16[](binCount);
+        removeAmounts = new uint256[](binCount);
+
         uint256[] memory clbBalances = s_state.clbTokenBalances();
         uint256[] memory pendingClb = s_state.pendingRemoveClbBalances();
-        removeAmounts = new uint256[](binCount);
+
+        uint256 index;
         for (uint256 i; i < binCount; ) {
-            removeAmounts[i] = (clbBalances[i] + pendingClb[i]).mulDiv(
+            removeAmounts[index] = (clbBalances[i] + pendingClb[i]).mulDiv(
                 lpTokenAmount,
                 totalSupply,
                 Math.Rounding.Up
             );
-            if (removeAmounts[i] > clbBalances[i]) {
-                removeAmounts[i] = clbBalances[i];
+            if (removeAmounts[index] > clbBalances[i]) {
+                removeAmounts[index] = clbBalances[i];
+            }
+            if (removeAmounts[index] != 0) {
+                feeRates[index] = s_state.feeRates[i];
+                unchecked {
+                    ++index;
+                }
+            } else {
+                // decrease length
+                assembly {
+                    mstore(removeAmounts, sub(mload(removeAmounts), 1))
+                    mstore(feeRates, sub(mload(feeRates), 1))
+                }
+            }
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function calcRebalanceRemoveAmounts(
+        LPState storage s_state,
+        uint256 currentUtility,
+        uint256 utilizationTargetBPS
+    ) internal view returns (int16[] memory feeRates, uint256[] memory removeAmounts) {
+        uint256 binCount = s_state.binCount();
+        removeAmounts = new uint256[](binCount);
+        feeRates = new int16[](binCount);
+
+        uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
+        uint256 index;
+        for (uint256 i; i < binCount; ) {
+            removeAmounts[index] = _clbTokenBalances[i].mulDiv(
+                currentUtility - utilizationTargetBPS,
+                currentUtility
+            );
+            if (removeAmounts[index] == 0) {
+                assembly {
+                    mstore(removeAmounts, sub(mload(removeAmounts), 1))
+                    mstore(feeRates, sub(mload(feeRates), 1))
+                }
+            } else {
+                feeRates[index] = s_state.feeRates[i];
+                unchecked {
+                    ++index;
+                }
             }
             unchecked {
                 ++i;

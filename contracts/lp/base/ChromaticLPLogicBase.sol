@@ -20,7 +20,7 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
-import {LPStateLogicLib} from "~/lp/libraries/LPStateLogic.sol";
+import {LPStateLogicLib, AddLiquidityParam, RemoveLiquidityParam} from "~/lp/libraries/LPStateLogic.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
 import {IAutomateLP} from "~/lp/interfaces/IAutomateLP.sol";
 import {IChromaticLPCallback} from "~/lp/interfaces/IChromaticLPCallback.sol";
@@ -158,7 +158,7 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic 
 
     function _calcRemoveClbAmounts(
         uint256 lpTokenAmount
-    ) internal view returns (uint256[] memory clbTokenAmounts) {
+    ) internal view returns (int16[] memory feeRates, uint256[] memory clbTokenAmounts) {
         return s_state.calcRemoveClbAmounts(lpTokenAmount, totalSupply());
     }
 
@@ -169,31 +169,32 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic 
     function rebalance() external virtual {}
 
     function _addLiquidity(
-        uint256 amount,
-        address provider,
-        address recipient
-    ) internal returns (ChromaticLPReceipt memory receipt) {
-        if (amount <= s_config.automationFeeReserved) {
-            revert TooSmallAmountToAddLiquidity();
-        }
-        receipt = s_state.addLiquidity(
-            amount,
-            (amount - s_config.automationFeeReserved).mulDiv(s_config.utilizationTargetBPS, BPS),
-            provider,
-            recipient
-        );
+        int16[] memory feeRates,
+        uint256[] memory amounts,
+        AddLiquidityParam memory addParam
+    )
+        internal
+        returns (
+            ChromaticLPReceipt memory receipt
+        )
+    {
+        // if (amount <= s_config.automationFeeReserved) {
+        //     revert TooSmallAmountToAddLiquidity();
+        // }
+        if (feeRates.length == 0) revert AddableBinNotExist();
+        receipt = s_state.addLiquidity(feeRates, amounts, addParam);
 
         // slither-disable-next-line reentrancy-benign
         _createSettleTask(receipt.id);
     }
 
     function _removeLiquidity(
+        int16[] memory feeRates,
         uint256[] memory clbTokenAmounts,
-        uint256 lpTokenAmount,
-        address provider,
-        address recipient
+        RemoveLiquidityParam memory removeParam
     ) internal returns (ChromaticLPReceipt memory receipt) {
-        receipt = s_state.removeLiquidity(clbTokenAmounts, lpTokenAmount, provider, recipient);
+        if (feeRates.length == 0) revert RemovableBinNotExist();
+        receipt = s_state.removeLiquidity(feeRates, clbTokenAmounts, removeParam);
 
         // slither-disable-next-line reentrancy-benign
         _createSettleTask(receipt.id);
@@ -404,23 +405,13 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic 
     }
 
     function _rebalanceRemoveLiquidity(uint256 currentUtility) private returns (uint256 receiptId) {
-        uint256[] memory _clbTokenBalances = s_state.clbTokenBalances();
-        uint256 binCount = s_state.binCount();
-        uint256[] memory clbTokenAmounts = new uint256[](binCount);
-        for (uint256 i; i < binCount; ) {
-            clbTokenAmounts[i] = _clbTokenBalances[i].mulDiv(
-                currentUtility - s_config.utilizationTargetBPS,
-                currentUtility
-            );
-            unchecked {
-                ++i;
-            }
-        }
+        (int16[] memory feeRates, uint256[] memory removeAmounts) = s_state
+            .calcRebalanceRemoveAmounts(currentUtility, s_config.utilizationTargetBPS);
+
         ChromaticLPReceipt memory receipt = _removeLiquidity(
-            clbTokenAmounts,
-            0,
-            address(this),
-            address(this)
+            feeRates,
+            removeAmounts,
+            RemoveLiquidityParam({amount: 0, provider: address(this), recipient: address(this)})
         );
         //slither-disable-next-line reentrancy-events
         emit RebalanceRemoveLiquidity(receipt.id, receipt.oracleVersion, currentUtility);
@@ -430,7 +421,23 @@ abstract contract ChromaticLPLogicBase is ChromaticLPStorage, IChromaticLPLogic 
     function _rebalanceAddLiquidity(uint256 currentUtility) private returns (uint256 receiptId) {
         uint256 amount = _estimateRebalanceAddAmount(currentUtility);
 
-        ChromaticLPReceipt memory receipt = _addLiquidity(amount, address(this), address(this));
+        uint256 liquidityTarget = (amount - s_config.automationFeeReserved).mulDiv(
+            s_config.utilizationTargetBPS,
+            BPS
+        );
+        (int16[] memory feeRates, uint256[] memory amounts, uint256 liquidityAmount) = s_state
+            .distributeAmount(liquidityTarget);
+
+        ChromaticLPReceipt memory receipt = _addLiquidity(
+            feeRates,
+            amounts,
+            AddLiquidityParam({
+                amount: amount,
+                amountMarket: liquidityAmount,
+                provider: address(this),
+                recipient: address(this)
+            })
+        );
         //slither-disable-next-line reentrancy-events
         emit RebalanceAddLiquidity(receipt.id, receipt.oracleVersion, amount, currentUtility);
         return receipt.id;

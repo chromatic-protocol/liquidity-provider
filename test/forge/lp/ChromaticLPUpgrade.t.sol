@@ -26,6 +26,8 @@ interface INewFeature {
 contract LogicV2 is ChromaticLPLogic, INewFeature {
     uint256 internal counter;
 
+    constructor(bytes32 version) ChromaticLPLogic(version) {}
+
     function setCounter(uint256 initialValue) external onlyDao {
         console.log("newFeature called:", initialValue);
         counter = initialValue;
@@ -74,7 +76,7 @@ contract ChromaticLPUpgradeTest is LPHelper, LogUtil, IChromaticLPErrors {
         );
         increaseVersion(); // oracle update
 
-        v2 = new LogicV2();
+        v2 = new LogicV2("version2");
     }
 
     function test_Upgradeable() public {

@@ -41,7 +41,8 @@ contract WETH is IWETH9, ERC20 {
 
     function withdraw(uint256 amount) external override {
         _burn(msg.sender, amount);
-        (bool sent, bytes memory data) = msg.sender.call{value: amount}("");
+        (bool sent, ) = msg.sender.call{value: amount}("");
+        require(sent);
     }
 }
 

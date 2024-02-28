@@ -13,11 +13,14 @@ import {LPState} from "~/lp/libraries/LPState.sol";
 import {LPStateViewLib} from "~/lp/libraries/LPStateView.sol";
 import {LPStateValueLib} from "~/lp/libraries/LPStateValue.sol";
 import {LPConfigLib, LPConfig, AllocationStatus} from "~/lp/libraries/LPConfig.sol";
+import {LPStateLogicLib, AddLiquidityParam, RemoveLiquidityParam} from "~/lp/libraries/LPStateLogic.sol";
+import {BPS} from "~/lp/libraries/Constants.sol";
 
 contract ChromaticLPLogic is ChromaticLPLogicBase {
     using Math for uint256;
     using LPStateViewLib for LPState;
     using LPStateValueLib for LPState;
+    using LPStateLogicLib for LPState;
     using LPConfigLib for LPConfig;
 
     constructor(bytes32 _version) ChromaticLPLogicBase(_version) {}
@@ -29,7 +32,28 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
         uint256 amount,
         address recipient
     ) external nonReentrant returns (ChromaticLPReceipt memory receipt) {
-        receipt = _addLiquidity(amount, msg.sender, recipient);
+        // if (amount <= s_config.automationFeeReserved) {
+        //     revert TooSmallAmountToAddLiquidity();
+        // }
+        uint256 liquidityTarget = (amount - s_config.automationFeeReserved).mulDiv(
+            s_config.utilizationTargetBPS,
+            BPS
+        );
+
+        (int16[] memory feeRates, uint256[] memory amounts, uint256 liquidityAmount) = s_state
+            .distributeAmount(liquidityTarget);
+
+        receipt = _addLiquidity(
+            feeRates,
+            amounts,
+            AddLiquidityParam({
+                amount: amount,
+                amountMarket: liquidityAmount,
+                provider: msg.sender,
+                recipient: recipient
+            })
+        );
+
         //slither-disable-next-line reentrancy-events
         emit AddLiquidity({
             receiptId: receipt.id,
@@ -48,9 +72,19 @@ contract ChromaticLPLogic is ChromaticLPLogicBase {
         address recipient
     ) external nonReentrant returns (ChromaticLPReceipt memory receipt) {
         if (lpTokenAmount == 0) revert ZeroRemoveLiquidityError();
-        uint256[] memory clbTokenAmounts = _calcRemoveClbAmounts(lpTokenAmount);
+        (int16[] memory feeRates, uint256[] memory clbTokenAmounts) = _calcRemoveClbAmounts(
+            lpTokenAmount
+        );
 
-        receipt = _removeLiquidity(clbTokenAmounts, lpTokenAmount, msg.sender, recipient);
+        receipt = _removeLiquidity(
+            feeRates,
+            clbTokenAmounts,
+            RemoveLiquidityParam({
+                amount: lpTokenAmount,
+                provider: msg.sender,
+                recipient: recipient
+            })
+        );
         //slither-disable-next-line reentrancy-events
         emit RemoveLiquidity({
             receiptId: receipt.id,

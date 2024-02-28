@@ -121,4 +121,14 @@ interface IChromaticLPErrors {
      * @dev Error indicating that upgrading failed with a invalid contract address.
      */
     error UpgradeFailedNotContractAddress();
+
+    /**
+     * @dev Error indicating that there is no removable liquidity bin
+     */
+    error RemovableBinNotExist();
+
+    /**
+     * @dev Error indicating that there is no addable liquidity bin
+     */
+    error AddableBinNotExist();
 }
