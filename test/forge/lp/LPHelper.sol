@@ -31,7 +31,7 @@ contract LPHelper is BaseSetup, IChromaticLPEvents {
     function setUp() public virtual override {
         super.setUp();
         automateLP = new AutomateLP(automate);
-        lpLogic = new ChromaticLPLogic();
+        lpLogic = new ChromaticLPLogic("version");
     }
 
     function deployLP(
