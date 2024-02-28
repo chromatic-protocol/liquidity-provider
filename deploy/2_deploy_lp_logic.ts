@@ -5,7 +5,7 @@ import { getDefaultLPConfigs } from '~/hardhat/common/LPConfig'
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tool = await DeployTool.createAsync(hre, getDefaultLPConfigs())
-  const commitHash = 'dca513049f54948e2f343b41fa20322a383e538f'.substring(0, 7)
+  const commitHash = '5b34fc53cb22dd137191a8faf4df7c24043821cc'.substring(0, 7)
   const result = await tool.deployLPLogic(commitHash)
 }
 
