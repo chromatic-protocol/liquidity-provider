@@ -20,6 +20,11 @@ interface IAutomateBP {
     error OnlyAccessableByOwner();
 
     /**
+     * @dev Signifies that the function is only accessible by the owner or BP.
+     */
+    error OnlyOwnerOrBP();
+
+    /**
      * @dev Emitted when attempting to create a boost task while one already exists.
      */
     error AlreadyBoostTaskExist();

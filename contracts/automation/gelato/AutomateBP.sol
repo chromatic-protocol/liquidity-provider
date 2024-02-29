@@ -21,6 +21,11 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable2Step, IAutomateGe
         _;
     }
 
+    modifier onlyOwnerOrBP(address bp) virtual {
+        if (msg.sender != owner() && msg.sender != bp) revert OnlyOwnerOrBP();
+        _;
+    }
+
     /**
      * @dev Checks if the caller is the owner of the contract.
      */
@@ -57,7 +62,7 @@ contract AutomateBP is ReentrancyGuard, AutomateReady, Ownable2Step, IAutomateGe
     /**
      * @inheritdoc IAutomateBP
      */
-    function cancelBoostTask(IChromaticBP bp) external onlyOwner {
+    function cancelBoostTask(IChromaticBP bp) external onlyOwnerOrBP(address(bp)) {
         bytes32 taskId = getBoostTaskId(bp);
 
         if (taskId != 0) {
