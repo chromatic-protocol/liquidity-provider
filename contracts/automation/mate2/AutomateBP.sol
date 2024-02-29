@@ -21,6 +21,11 @@ contract AutomateBP is ReentrancyGuard, Ownable2Step, IAutomateMate2BP, IMate2Au
     uint32 public constant DEFAULT_UPKEEP_GAS_LIMIT = 5e7;
     uint32 public upkeepGasLimit;
 
+    modifier onlyOwnerOrBP(address bp) virtual {
+        if (msg.sender != owner() && msg.sender != bp) revert OnlyOwnerOrBP();
+        _;        
+    }
+
     constructor(IMate2AutomationRegistry1_1 _automate) ReentrancyGuard() Ownable2Step() {
         automate = _automate;
         upkeepGasLimit = DEFAULT_UPKEEP_GAS_LIMIT;
@@ -59,7 +64,7 @@ contract AutomateBP is ReentrancyGuard, Ownable2Step, IAutomateMate2BP, IMate2Au
     /**
      * @inheritdoc IAutomateBP
      */
-    function cancelBoostTask(IChromaticBP bp) external onlyOwner {
+    function cancelBoostTask(IChromaticBP bp) external onlyOwnerOrBP(address(bp)) {
         uint256 taskId = getBoostTaskId(bp);
 
         if (taskId != 0) {
