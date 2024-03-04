@@ -1,0 +1,91 @@
+name: pr to mage
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+    paths:
+      - contracts/**
+      - deployments/**
+      - hardhat.config.ts
+      - wagmi.config.mage.ts
+      - .github/workflows/pr-mage.yml
+      - package.json
+      - yarn.lock
+permissions:
+  contents: write
+
+jobs:
+  PR:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3 # Checkout our working repository
+      - name: Conventional Changelog Action
+        id: changelog
+        uses: chromatic-protocol/conventional-changelog-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file: false
+          pre-release: true
+          git-push: true
+          skip-on-empty: false
+          # skip-version-file: false
+          # skip-commit: false
+      - uses: chromatic-protocol/action-setup-foundry-yarn@v1
+      - name: generate wagmi code and PR
+        run: |
+          yarn wagmi generate -c wagmi.config.mage.ts
+      - uses: chromatic-protocol/action-github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.PR_ACTION_APP_ID }}
+          private_key: ${{ secrets.PR_ACTION_PRIVATE }}
+
+      # make a PR to chromatic-protocol/mage
+      - uses: actions/checkout@v3
+        with:
+          repository: chromatic-protocol/mage
+          ref: main
+          path: mage
+          token: ${{ steps.generate-token.outputs.token }}
+      - run: |
+          rm mage/src/abi/lp.ts
+          cp -r wagmi/index.ts mage/src/abi/lp.ts
+      - name: pull-request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          base: main
+          branch: gen-lp
+          path: mage
+          add-paths: |
+            src/abi/**
+          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: ${{ github.event.pull_request.title }}
+          title: Changes from contracts
+
+      # make a PR to chromatic-protocol/mage-hardhat
+      - uses: actions/checkout@v3
+        with:
+          repository: chromatic-protocol/mage-hardhat
+          ref: main
+          path: hardhat
+          token: ${{ steps.generate-token.outputs.token }}
+      - run: |
+          yes | cp -rf contracts/* hardhat/contracts/
+          yes | cp -rf deployments/* hardhat/deployments/
+
+      - name: pull-request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          base: main
+          branch: gen-lp
+          path: tasks
+          add-paths: |
+            contracts/**
+            deployments/**
+          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: ${{ github.event.pull_request.title }}
+          title: Changes from contracts
