@@ -22,10 +22,10 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3 # Checkout our working repository
+      - uses: actions/checkout@v4 # Checkout our working repository
       - name: Conventional Changelog Action
         id: changelog
-        uses: chromatic-protocol/conventional-changelog-action@v4
+        uses: chromatic-protocol/conventional-changelog-action@v5.2.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-file: false
@@ -34,18 +34,18 @@ jobs:
           skip-on-empty: false
           # skip-version-file: false
           # skip-commit: false
-      - uses: chromatic-protocol/action-setup-foundry-yarn@v1
+      - uses: chromatic-protocol/action-setup-foundry-yarn@v2
       - name: generate wagmi code and PR
         run: |
           yarn wagmi generate
-      - uses: chromatic-protocol/action-github-app-token@v1
+      - uses: chromatic-protocol/action-github-app-token@v2
         id: generate-token
         with:
           app_id: ${{ secrets.PR_ACTION_APP_ID }}
           private_key: ${{ secrets.PR_ACTION_PRIVATE }}
 
       # make a PR to chromatic-protocol/liquidity-provider-sdk
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: chromatic-protocol/liquidity-provider-sdk
           ref: main
@@ -55,7 +55,7 @@ jobs:
           rm -rf sdk/src/gen/*
           cp -r wagmi/* sdk/src/gen/
       - name: pull-request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
           base: main
           branch: gen-lp
@@ -67,7 +67,7 @@ jobs:
           title: Changes from contracts
 
       # make a PR to chromatic-protocol/chromatic-tasks
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: chromatic-protocol/chromatic-tasks
           ref: main
@@ -77,7 +77,7 @@ jobs:
           rm -rf tasks/src/gen/lp/*
           cp -r wagmi/* tasks/src/gen/lp/
       - name: pull-request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
           base: main
           branch: gen-lp
