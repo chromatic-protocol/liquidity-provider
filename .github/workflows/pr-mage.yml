@@ -82,7 +82,7 @@ jobs:
         with:
           base: main
           branch: gen-lp
-          path: tasks
+          path: hardhat
           add-paths: |
             contracts/**
             deployments/**
