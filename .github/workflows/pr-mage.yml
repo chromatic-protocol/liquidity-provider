@@ -73,7 +73,9 @@ jobs:
           ref: main
           path: hardhat
           token: ${{ steps.generate-token.outputs.token }}
-      - run: |
+      - name: copy contracts
+        shell: bash
+        run: |
           shopt -s extglob
           yes | cp -rf contracts/(lp|bp|automation) hardhat/contracts/
           yes | cp -rf deployments/* hardhat/deployments/
