@@ -74,7 +74,7 @@ jobs:
           path: hardhat
           token: ${{ steps.generate-token.outputs.token }}
       - run: |
-          yes | cp -rf contracts/* hardhat/contracts/
+          yes | cp -rf contracts/(lp|bp|automation) hardhat/contracts/
           yes | cp -rf deployments/* hardhat/deployments/
 
       - name: pull-request
