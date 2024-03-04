@@ -74,11 +74,10 @@ jobs:
           path: hardhat
           token: ${{ steps.generate-token.outputs.token }}
       - name: copy contracts
-        shell: bash
         run: |
           shopt -s extglob
-          yes | cp -rf contracts/(lp|bp|automation) hardhat/contracts/
-          yes | cp -rf deployments/* hardhat/deployments/
+          cp -rf contracts/+(lp|bp|automation) hardhat/contracts/
+          cp -rf deployments/* hardhat/deployments/
 
       - name: pull-request
         uses: peter-evans/create-pull-request@v5
